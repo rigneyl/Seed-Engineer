@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sparks Edit & Inspire · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <style>
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .control-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    select.sparks-select {
+      background: rgba(3,4,12,0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 2px 10px;
+      font-size: 11px;
+      color: var(--fg);
+    }
+    .spark-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr);
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .spark-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .textarea-small {
+      min-height: 150px;
+    }
+    .idea-block-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .idea-block {
+      font-size: 12px;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Sparks</div>
+        <div class="app-title">Sparks Edit &amp; Inspire</div>
+        <p class="app-subtitle">
+          Enhance and ignite your writing with Sparks. Experiment with multiple types of editing in one place,
+          then jump-start new material with structured prompts that help you move the story forward.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Edit + idea prompts</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Scope</span>
+          <span class="pill-value">Readability · tense · person · sensory</span>
+        </div>
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">Sparks Edit</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-edit-clear"><span>Clear</span></button>
+            <button class="btn btn" type="button" id="btn-edit-run"><span>Run Sparks Edit</span></button>
+          </div>
+        </header>
+        <p class="panel-subtitle">
+          Paste a paragraph or scene. Sparks Edit can improve readability and fluency, nudge tense or person,
+          and optionally attach a small sensory hook you can keep or delete.
+        </p>
+        <textarea id="edit-input" placeholder="Paste your draft here."></textarea>
+        <div class="controls-row">
+          <div class="control-group">
+            <span class="control-label">Tense</span>
+            <select id="select-tense" class="sparks-select">
+              <option value="keep">Keep tense</option>
+              <option value="past">Lean past</option>
+              <option value="present">Lean present</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <span class="control-label">Person</span>
+            <select id="select-person" class="sparks-select">
+              <option value="keep">Keep person</option>
+              <option value="first">First person</option>
+              <option value="third">Third person</option>
+              <option value="second">Second person</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="chk-readability" checked />
+              <span class="control-label">Readability &amp; fluency</span>
+            </label>
+          </div>
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="chk-sensory-hook" />
+              <span class="control-label">Sensory hook line</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Sparks Inspire</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-inspire-use-edit"><span>Use edit text</span></button>
+            <button class="btn btn" type="button" id="btn-inspire-run"><span>Run Sparks Inspire</span></button>
+          </div>
+        </header>
+        <p class="panel-subtitle">
+          Use Sparks Inspire when you feel stuck. It will scan your scene, pull out a few anchors, and generate prompts
+          for new dialogue, emotional beats, and sensory or setting expansions.
+        </p>
+        <textarea id="inspire-input" class="textarea-small" placeholder="Paste the same scene here, or click &quot;Use edit text&quot; to reuse the left panel."></textarea>
+        <div class="spark-layout" style="margin-top:8px;">
+          <div>
+            <div class="idea-block-title">Edited version</div>
+            <textarea id="edit-output" class="textarea-small" placeholder="Your Sparks Edit version will appear here." readonly></textarea>
+          </div>
+          <div>
+            <div class="idea-block-title">Sparks ideas</div>
+            <textarea id="inspire-output" class="textarea-small" placeholder="Idea prompts will appear here." readonly></textarea>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

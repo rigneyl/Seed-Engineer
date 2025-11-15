@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sensory Report · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <style>
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .sense-bars {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+    .sense-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 11px;
+    }
+    .sense-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .sense-name {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .sense-value {
+      font-size: 11px;
+      color: var(--fg);
+    }
+    .sense-bar-outer {
+      position: relative;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      overflow: hidden;
+    }
+    .sense-bar-inner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(227,179,65,0.2), rgba(227,179,65,0.9));
+      transform-origin: left center;
+      transform: scaleX(0);
+    }
+    .sense-note {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .results-block-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .results-block-inner {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .sense-summary {
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .sense-summary ul {
+      padding-left: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Show, don&apos;t tell</div>
+        <div class="app-title">Sensory Report</div>
+        <p class="app-subtitle">
+          Analyze your text and check your percentage usage for each of the five bodily senses. See whether you lean
+          on sight by default, neglect sound or smell, and how dense your sensory writing really is.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Five-sense breakdown</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Scope</span>
+          <span class="pill-value">Sight · sound · smell · taste · touch</span>
+        </div>
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">Draft</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-clear"><span>Clear</span></button>
+            <button class="btn btn" type="button" id="btn-run"><span>Run sensory report</span></button>
+          </div>
+        </header>
+        <p class="panel-subtitle">
+          Paste a scene, chapter, or passage. This tool doesn&apos;t judge quality — only how often you touch each
+          sense, and how those senses balance against each other.
+        </p>
+        <textarea id="input-text" placeholder="Paste your text here. For meaningful percentages, give it at least a few hundred words."></textarea>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Report</h2>
+          <div class="tag-row" id="tag-row"></div>
+        </header>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="results-block" id="results-block">
+          <div class="results-heading" id="results-heading">Waiting for input…</div>
+          <div class="results-list" id="results-list"></div>
+        </div>
+        <div class="footer-note">Lexicons are intentionally small and opinionated. Adjust them in app.js to match your voice or genre.</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

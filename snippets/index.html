@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Snippets Library · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <style>
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .snippets-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .snippets-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .field-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .field-row input[type="text"] {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(3,4,12,0.9);
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--fg);
+    }
+    .snippet-card {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: radial-gradient(circle at top left, rgba(227,179,65,0.05), transparent);
+    }
+    .snippet-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .snippet-title {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .snippet-meta {
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .snippet-preview {
+      font-size: 11px;
+      color: var(--muted);
+      max-height: 3.2em;
+      overflow: hidden;
+      white-space: pre-wrap;
+    }
+    .snippet-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .snippet-empty {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .buffer-note {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Utility</div>
+        <div class="app-title">Snippets Library</div>
+        <p class="app-subtitle">
+          Save frequently used pieces of text — from email sign-offs to favorite sentence templates — and drop them
+          into your writing with a click. Everything is stored locally in your browser.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Saved text pieces</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Scope</span>
+          <span class="pill-value">Snippets · boilerplate · templates</span>
+        </div>
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">New snippet</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-clear"><span>Clear</span></button>
+            <button class="btn btn" type="button" id="btn-save"><span>Save snippet</span></button>
+          </div>
+        </header>
+        <p class="panel-subtitle">
+          Give your snippet a short label and paste the text you want to reuse. You can keep variations — formal,
+          informal, long, short — and decide later which one to insert.
+        </p>
+        <div class="field-row">
+          <input type="text" id="snippet-name" placeholder="Snippet name (e.g. &quot;Pitch sign-off&quot;, &quot;Dark opening&quot;)" />
+        </div>
+        <textarea id="snippet-text" placeholder="Type or paste the snippet text here."></textarea>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Saved snippets</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-copy-buffer"><span>Copy buffer</span></button>
+          </div>
+        </header>
+        <p class="panel-subtitle">
+          Click &quot;Add to buffer&quot; to assemble several snippets, or &quot;Copy&quot; to send one directly to your clipboard.
+        </p>
+        <div class="snippets-layout" style="margin-top:8px;">
+          <div id="snippets-list" class="snippet-list">
+            <div class="snippet-empty">No snippets yet. Create one on the left and save it.</div>
+          </div>
+          <div>
+            <div class="panel-subtitle">Buffer</div>
+            <textarea id="buffer-text" class="textarea-small" placeholder="Snippets you add will appear here. You can paste this into Focus Writer or any tool."></textarea>
+            <div class="buffer-note">
+              Buffer is temporary. Your snippets themselves are stored in this browser via localStorage
+              under a single key, so exporting them is as simple as copying them out.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

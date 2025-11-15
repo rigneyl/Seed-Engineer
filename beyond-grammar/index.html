@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Beyond Grammar Report · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Beyond grammar</div>
+        <div class="app-title">Beyond Grammar Report</div>
+        <p class="app-subtitle">
+          Go way beyond basic grammar checking. Dig into exactly how to perfect your writing with a single report
+          that checks for overused words, tired clichés, awkward phrasings, and more.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Composite style report</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Scope</span>
+          <span class="pill-value">Overuse · clichés · awkward</span>
+        </div>
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">Draft</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-clear"><span>Clear</span></button>
+            <button class="btn btn" type="button" id="btn-analyze"><span>Run report</span></button>
+          </div>
+        </header>
+        <textarea id="input-text" placeholder="Paste a paragraph, page, or scene. This report will scan for repetition, clichés, and awkward constructions."></textarea>
+        <div class="hint-text">
+          Tip: this is a composite diagnostic. For deeper dives, you can still use the dedicated tools for repetition, pacing, and niche tone.
+        </div>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Report</h2>
+          <div class="tag-row" id="tag-row"></div>
+        </header>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="results-block">
+          <div class="results-heading" id="results-heading">Waiting for input…</div>
+          <div class="results-list" id="results-list"></div>
+        </div>
+        <div class="footer-note">Seed view · clichés and awkwardness lists are deliberately small and tweakable in app.js.</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

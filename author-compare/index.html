@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Author Comparison Lab · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <style>
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .author-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .author-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .author-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .author-table th,
+    .author-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      text-align: left;
+      vertical-align: top;
+    }
+    .author-table th {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .author-name {
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      padding: 0 6px;
+      font-size: 10px;
+    }
+    .score-pill span {
+      margin-left: 2px;
+    }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11px;
+    }
+    .metric-name {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .metric-val {
+      font-variant-numeric: tabular-nums;
+    }
+    .metric-note {
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .badge-author {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 1px 8px;
+      font-size: 10px;
+      margin-right: 4px;
+      margin-bottom: 2px;
+    }
+    .badge-author-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(227,179,65,0.8);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Author comparison</div>
+        <div class="app-title">Author Comparison Lab</div>
+        <p class="app-subtitle">
+          Measure your writing against stylised fingerprints of well-known authors. This local-only lab looks at
+          sentence length, dialogue share, lexical density, adverb / adjective load, pronouns, and dark vs warm tone,
+          then scores how close you are to each profile.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Style fingerprint</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Scope</span>
+          <span class="pill-value">Sentence · tone · dialogue · pronouns</span>
+        </div>
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">Sample</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-clear"><span>Clear</span></button>
+            <button class="btn btn" type="button" id="btn-run"><span>Run comparison</span></button>
+          </div>
+        </header>
+        <p class="panel-subtitle">
+          Paste a passage of at least 400–500 words in the voice you want to measure. For best results, use a single
+          mode (all prose, not mixed synopsis + outline).
+        </p>
+        <textarea id="input-text" placeholder="Paste your sample here."></textarea>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Comparison</h2>
+          <div class="tag-row" id="tag-row"></div>
+        </header>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="results-block">
+          <div class="results-heading" id="results-heading">Waiting for input…</div>
+          <div class="results-list" id="results-list"></div>
+        </div>
+        <div class="footer-note">
+          Profiles are intentionally simple, hand-built approximations – useful for directional feedback, not exact
+          imitation. Adjust ranges and weights in <code>app.js</code> if you want to bias toward your own canon.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

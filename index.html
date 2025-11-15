@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Writer Mechanics Suite · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="shared/base.css" />
+  <style>
+    .launcher-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .tool-card {
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: radial-gradient(circle at top left, rgba(227, 179, 65, 0.12), rgba(3, 4, 10, 0.96));
+      padding: 14px 14px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.55);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+    .tool-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      border-color: rgba(227, 179, 65, 0.85);
+    }
+    .tool-kicker {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .tool-title {
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+    .tool-desc {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .tool-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .tool-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .tool-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+    .launcher-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+    .launcher-footer {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Writer Mechanics Suite · v1.3</div>
+        <div class="app-title">Seed Engineer · Focus & Mechanics Tools</div>
+        <p class="app-subtitle">
+          A tiny offline suite for serious drafts: one focus-first writing space plus ten diagnostic tools
+          for mechanics, fiction depth, and misanthropic niche spice.
+        </p>
+        <p class="app-subtitle">
+          Go way beyond basic grammar checking. Dig into exactly how to perfect your writing with reports
+          that check for overused words, tired clichés, awkward phrasings, and more.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">HTML-first · Local</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Tools</span>
+          <span class="pill-value">12 seeds</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="launcher-section-title">Main workspace</div>
+      <div class="launcher-grid">
+        <a class="tool-card" href="focus-writer/index.html">
+          <div class="tool-kicker">Core</div>
+          <div class="tool-title">Focus Writer</div>
+          <div class="tool-desc">
+            Minimalistic writing space with local autosave plus open/download for plain text drafts.
+            Use the other tools as side diagnostics — this is home base.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Draft</span>
+            </div>
+            <span>Autosave + .txt export</span>
+          </div>
+        </a>
+      </div>
+
+      
+      <div class="launcher-section-title">Overview dashboard</div>
+      <div class="launcher-grid">
+        <a class="tool-card" href="manuscript-dashboard/index.html">
+          <div class="tool-kicker">Overview</div>
+          <div class="tool-title">Manuscript Snapshot Dashboard</div>
+          <div class="tool-desc">
+            Runs stitched metrics from the mechanics, pacing, mood, and distance checks to show where your draft
+            is heavy, thin, or leaking warmth.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Snapshot</span>
+            </div>
+            <span>Whole-chunk view</span>
+          </div>
+        </a>
+      </div>
+
+      
+
+<div class="launcher-section-title">Core mechanics</div>
+
+      <div class="launcher-grid">
+        <a class="tool-card" href="snippets/index.html">
+          <div class="tool-kicker">Utility</div>
+          <div class="tool-title">Snippets Library</div>
+          <div class="tool-desc">
+            Save frequently used pieces of text and drop them into your drafts with a click. Stored locally in your browser.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Snippets</span>
+            </div>
+            <span>Saved text pieces</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="rephrase-tool/index.html">
+          <div class="tool-kicker">Revision</div>
+          <div class="tool-title">Rephrase Studio</div>
+          <div class="tool-desc">
+            Rephrase your writing with ease: shift tone, length, and surface fluency, and get light sensory prompts in one local pass.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Rephrase</span>
+            </div>
+            <span>Tone · length · sensory</span>
+          </div>
+        </a>
+
+<a class="tool-card" href="beyond-grammar/index.html">
+  <div class="tool-kicker">Beyond grammar</div>
+  <div class="tool-title">Beyond Grammar Report</div>
+  <div class="tool-desc">
+    Composite style report that surfaces repetition, clichés, and awkward phrasings in one pass.
+  </div>
+  <div class="tool-meta-row">
+    <div class="tool-pill">
+      <span class="tool-pill-dot"></span>
+      <span>Report</span>
+    </div>
+    <span>Overuse · clichés · awkward</span>
+  </div>
+</a>
+
+        <a class="tool-card" href="clarity-clunkiness/index.html">
+          <div class="tool-kicker">Mechanics</div>
+          <div class="tool-title">Clarity &amp; Clunkiness Checker</div>
+          <div class="tool-desc">
+            Flags long, glue-heavy sentences and hedging language so you can tighten paragraphs by hand.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Sentences</span>
+            </div>
+            <span>Highlights clunky lines</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="readability-density/index.html">
+          <div class="tool-kicker">Mechanics</div>
+          <div class="tool-title">Readability &amp; Density Analyzer</div>
+          <div class="tool-desc">
+            Flesch-style readability, lexical density, and per-sentence difficulty for fast structural tuning.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Scores</span>
+            </div>
+            <span>Shows dense sections</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="overused-repeated/index.html">
+          <div class="tool-kicker">Mechanics</div>
+          <div class="tool-title">Overused &amp; Repeated Words Scanner</div>
+          <div class="tool-desc">
+            Frequency list with crutch-word tags so you can see what you lean on and where to cut.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Lexicon</span>
+            </div>
+            <span>Top 20 words</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="passive-weakverbs/index.html">
+          <div class="tool-kicker">Mechanics</div>
+          <div class="tool-title">Passive Voice &amp; Weak Verbs Finder</div>
+          <div class="tool-desc">
+            Hunts down was/were + verb-ed patterns and soft verb phrases so you can toughen the line.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Verbs</span>
+            </div>
+            <span>Passive &amp; soft spots</span>
+          </div>
+        </a>
+      </div>
+
+      
+      <div class="launcher-section-title">Sparks tools</div>
+      <div class="launcher-grid">
+        <a class="tool-card" href="sparks-studio/index.html">
+          <div class="tool-kicker">Sparks</div>
+          <div class="tool-title">Sparks Edit &amp; Inspire</div>
+          <div class="tool-desc">
+            Enhance and ignite your writing with Sparks: experiment with readability, tense, and person tweaks,
+            then generate prompts for new dialogue, emotional beats, and sensory expansions.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Sparks</span>
+            </div>
+            <span>Edit + idea prompts</span>
+          </div>
+        </a>
+      </div>
+
+      
+
+<div class="launcher-section-title">Fiction / depth tools</div>
+      <div class="launcher-grid">
+        <a class="tool-card" href="author-compare/index.html">
+          <div class="tool-kicker">Author comparison</div>
+          <div class="tool-title">Author Comparison Lab</div>
+          <div class="tool-desc">
+            Measure your writing against stylised fingerprints of authors like King, Gaiman, Bukowski, McCarthy, Ligotti, Cioran, and more.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Comparison</span>
+            </div>
+            <span>Sentence · tone · dialogue</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="sensory-report/index.html">
+          <div class="tool-kicker">Show, don&apos;t tell</div>
+          <div class="tool-title">Sensory Report</div>
+          <div class="tool-desc">
+            Analyze your text and see how much you lean on sight, sound, smell, taste, and touch — with percentages
+            per sense and overall sensory density.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Report</span>
+            </div>
+            <span>Five-sense breakdown</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="pacing-heatmap/index.html">
+          <div class="tool-kicker">Fiction · Depth</div>
+          <div class="tool-title">Pacing Heatmap</div>
+          <div class="tool-desc">
+            Breaks your scene into chunks and compares sentence length to show fast vs slow passages.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Flow</span>
+            </div>
+            <span>Chunk pacing map</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="sensory-meter/index.html">
+          <div class="tool-kicker">Fiction · Depth</div>
+          <div class="tool-title">Sensory Detail Meter</div>
+          <div class="tool-desc">
+            Counts sensory cues across sight, sound, smell, taste, and touch for richer scene work.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Senses</span>
+            </div>
+            <span>Channel balance</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="dialogue-balance/index.html">
+          <div class="tool-kicker">Fiction · Depth</div>
+          <div class="tool-title">Dialogue &amp; Balance Report</div>
+          <div class="tool-desc">
+            Estimates dialogue vs narration ratio so you can tune how talky or descriptive a passage feels.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Mode</span>
+            </div>
+            <span>Dialogue vs narration</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="launcher-section-title">Niche spice</div>
+      <div class="launcher-grid">
+        <a class="tool-card" href="bukowski-brutality/index.html">
+          <div class="tool-kicker">Niche spice</div>
+          <div class="tool-title">Bukowski Brutality Editor</div>
+          <div class="tool-desc">
+            Pushes you toward raw, unadorned lines by flagging hedges and ornamental language.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Brutality</span>
+            </div>
+            <span>Rawness vs polish</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="mccarthy-minimalism/index.html">
+          <div class="tool-kicker">Niche spice</div>
+          <div class="tool-title">McCarthy Minimalism Engine</div>
+          <div class="tool-desc">
+            Roughly gauges modifiers and commas to nudge you toward austere, stripped-down prose.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Minimal</span>
+            </div>
+            <span>Modifiers & commas</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="inhuman-distance/index.html">
+          <div class="tool-kicker">Niche spice</div>
+          <div class="tool-title">Inhuman Distance Checker</div>
+          <div class="tool-desc">
+            Tracks warmth vs cold, misanthropic lexicon to keep the tone detached and analytic.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Distance</span>
+            </div>
+            <span>Warmth leaks</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="lexical-mood/index.html">
+          <div class="tool-kicker">Niche spice</div>
+          <div class="tool-title">Lexical Mood Scanner</div>
+          <div class="tool-desc">
+            Counts despair, aggression, melancholy, contempt, hope, and numb words for a quick mood profile.
+          </div>
+          <div class="tool-meta-row">
+            <div class="tool-pill">
+              <span class="tool-pill-dot"></span>
+              <span>Mood</span>
+            </div>
+            <span>Emotional mix</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="launcher-footer">
+        All tools are HTML-first, local-first, and meant to be remixed.
+      </div>
+    </main>
+  </div>
+</body>
+</html>

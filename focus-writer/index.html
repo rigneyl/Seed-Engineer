@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Focus Writer · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <style>
+    .fw-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .fw-toolbar .btn {
+      box-shadow: none;
+      background: rgba(5,6,12,0.96);
+    }
+    .fw-toolbar .btn:hover {
+      box-shadow: 0 14px 30px rgba(0,0,0,0.75);
+    }
+    .fw-editor {
+      min-height: 420px;
+    }
+    .fw-status-row {
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .fw-status-left,
+    .fw-status-right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .fw-status-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Main workspace</div>
+        <div class="app-title">Focus Writer</div>
+        <p class="app-subtitle">
+          A quiet, minimalistic writing space. Draft, pause, come back later. Files never leave your machine:
+          open text files, edit, and download copies locally.
+        </p>
+      </div>
+      <div class="app-meta">
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Focus · Full draft</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Saving</span>
+          <span class="pill-value">Browser + file download</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel">
+      <header class="panel-header">
+        <h2 class="panel-title">Draft</h2>
+        <div class="fw-toolbar">
+          <button class="btn-secondary btn" type="button" id="fw-new"><span>New</span></button>
+          <button class="btn-secondary btn" type="button" id="fw-open"><span>Open file…</span></button>
+          <button class="btn btn" type="button" id="fw-save"><span>Download .txt</span></button>
+          <button class="btn-secondary btn" type="button" id="fw-clear-storage"><span>Clear autosave</span></button>
+          <input type="file" id="fw-file-input" accept=".txt,.md,.markdown,.text,.log" style="display:none" />
+        </div>
+      </header>
+
+      <textarea id="fw-editor" class="fw-editor" placeholder="This is your quiet page. Type, rant, draft.&#10;The app autosaves locally in this browser, and you can download a .txt copy at any time."></textarea>
+
+      <div class="fw-status-row">
+        <div class="fw-status-left">
+          <div class="fw-status-pill" id="fw-counts">0 words · 0 chars</div>
+          <div class="fw-status-pill" id="fw-reading">~0 min read</div>
+        </div>
+        <div class="fw-status-right">
+          <div class="fw-status-pill" id="fw-file-label">No file loaded</div>
+          <div class="fw-status-pill" id="fw-autosave-label">Autosave idle</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

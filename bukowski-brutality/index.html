@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bukowski Brutality Editor · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Niche spice</div>
+        <div class="app-title">Bukowski Brutality Editor</div>
+        <p class="app-subtitle">Pushes you toward shorter, plainer, more brutal lines by flagging hedges and ornamental language.</p>
+      </div>
+      <div class="app-meta">
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Local · HTML-only</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Seed</span>
+          <span class="pill-value">Bukowski Brutality</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">Draft</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-clear"><span>Clear</span></button>
+            <button class="btn" type="button" id="btn-analyze"><span>Analyze</span></button>
+          </div>
+        </header>
+        <textarea id="input-text" placeholder="Paste or write your text here. All checks run in your browser."></textarea>
+        <div class="hint-text">Tip: this tool is opinionated. Let it overreact — you stay in charge.</div>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Report</h2>
+          <div class="tag-row" id="tag-row"></div>
+        </header>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="results-block">
+          <div class="results-heading" id="results-heading">Waiting for input…</div>
+          <div class="results-list" id="results-list"></div>
+        </div>
+        <div class="footer-note">Seed view · tweak thresholds in app.js.</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

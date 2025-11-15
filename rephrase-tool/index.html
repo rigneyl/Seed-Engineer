@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rephrase Studio · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <style>
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .control-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    select.rephrase-select {
+      background: rgba(3,4,12,0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 2px 10px;
+      font-size: 11px;
+      color: var(--fg);
+    }
+    .rephrase-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .rephrase-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .textarea-small {
+      min-height: 160px;
+    }
+    .sensory-note {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .inline-tag {
+      display: inline-block;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 0px 6px;
+      margin: 1px 2px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Revision</div>
+        <div class="app-title">Rephrase Studio</div>
+        <p class="app-subtitle">
+          Rephrase your writing with ease. Transform a paragraph into variants that are more formal or informal,
+          shorter or longer, slightly smoother, and optionally nudged toward richer sensory detail — all locally,
+          with simple rule-based tweaks you can still override.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Rephrase helper</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Scope</span>
+          <span class="pill-value">Tone · length · fluency · sensory</span>
+        </div>
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">Original</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-clear"><span>Clear</span></button>
+            <button class="btn btn" type="button" id="btn-run"><span>Rephrase</span></button>
+          </div>
+        </header>
+        <p class="panel-subtitle">Paste 1–3 paragraphs you want to keep mostly intact but tuned.</p>
+        <textarea id="input-text" placeholder="Paste your paragraph here. This tool will keep the overall meaning while nudging tone, length, and surface phrasing."></textarea>
+        <div class="controls-row">
+          <div class="control-group">
+            <span class="control-label">Tone</span>
+            <select id="select-tone" class="rephrase-select">
+              <option value="neutral">Neutral clean-up</option>
+              <option value="formal">More formal</option>
+              <option value="informal">More informal</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <span class="control-label">Length</span>
+            <select id="select-length" class="rephrase-select">
+              <option value="keep">Keep length</option>
+              <option value="shorter">Shorter / tighter</option>
+              <option value="longer">Longer / more padded</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="chk-fluency" checked />
+              <span class="control-label">Fluency polish</span>
+            </label>
+          </div>
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="chk-sensory" />
+              <span class="control-label">Sensory prompts</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Suggestion</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-copy"><span>Copy text</span></button>
+          </div>
+        </header>
+        <div class="rephrase-layout">
+          <div>
+            <p class="panel-subtitle">Rephrased paragraph</p>
+            <textarea id="output-text" class="textarea-small" placeholder="Your rephrased version will appear here." readonly></textarea>
+          </div>
+          <div>
+            <p class="panel-subtitle">Sensory & tweak suggestions</p>
+            <textarea id="notes-text" class="textarea-small" placeholder="If sensory prompts are enabled, concrete suggestions will appear here." readonly></textarea>
+            <div class="sensory-note" id="tagline">
+              Generated with simple on-device rules — nothing leaves your browser. Use this as a starting point, not an oracle.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

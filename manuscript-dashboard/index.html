@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manuscript Snapshot Dashboard · Seed Engineer Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <style>
+    .snapshot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .snapshot-card {
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(4,5,12,0.96);
+      padding: 9px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+    .snapshot-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .snapshot-card-title {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .snapshot-pill {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 2px 7px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+    .snapshot-body {
+      font-size: 12px;
+      color: var(--fg);
+    }
+    .snapshot-body ul {
+      padding-left: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-kicker">Overview</div>
+        <div class="app-title">Manuscript Snapshot Dashboard</div>
+        <p class="app-subtitle">
+          Paste a chapter or essay and get a stitched overview from the mechanics, pacing, tone, and mood tools.
+          This doesn&apos;t replace the individual tools — it tells you where to look first.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Multi-lens overview</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Source</span>
+          <span class="pill-value">Local text only</span>
+        </div>
+        <a href="../index.html" class="back-link">← Back to launcher</a>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">Draft</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-clear"><span>Clear</span></button>
+            <button class="btn btn" type="button" id="btn-analyze"><span>Run snapshot</span></button>
+          </div>
+        </header>
+        <textarea id="input-text" placeholder="Paste a substantial chunk here — a scene, chapter, or long essay section. Then hit “Run snapshot.”"></textarea>
+        <div class="hint-text">Best results with 800–3000 words. For detailed nitpicking, still use the single-purpose tools.</div>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Snapshot</h2>
+          <div class="tag-row" id="tag-row"></div>
+        </header>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="results-block" style="margin-top:6px;">
+          <div class="results-heading" id="results-heading">Waiting for input…</div>
+          <div class="results-list" id="results-list"></div>
+        </div>
+        <div class="footer-note">Seed overview · thresholds are intentionally opinionated. Adjust in app.js.</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

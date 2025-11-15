@@ -1,0 +1,38 @@
+<!DOCTYPE html><html><head>
+<meta charset='UTF-8'><title>Pacing Heatmap</title>
+<link rel='stylesheet' href='../shared/base.css'>
+</head><body>
+<div class='app-shell'>
+<header class='app-header'>
+<div class='app-title-block'>
+<div class='app-kicker'>Fiction / Depth</div>
+<div class='app-title'>Pacing Heatmap</div>
+<p class='app-subtitle'>Chunk-based pacing view showing slow vs fast passages.</p>
+</div>
+    <a href="../index.html" class="back-link">← Back to launcher</a>
+  </header>
+<main class='app-layout'>
+<section class='panel'>
+<header class='panel-header'>
+<h2 class='panel-title'>Draft</h2>
+<div class='panel-actions'>
+<button class='btn-secondary btn' id='btn-clear'><span>Clear</span></button>
+<button class='btn btn' id='btn-analyze'><span>Analyze</span></button>
+</div>
+</header>
+<textarea id='input-text'></textarea>
+</section>
+
+<section class='panel panel-muted'>
+<header class='panel-header'><h2 class='panel-title'>Report</h2><div id='tag-row' class='tag-row'></div></header>
+<div id='stats-grid' class='stats-grid'></div>
+<div class='results-block'>
+<div id='results-heading' class='results-heading'>Waiting for input…</div>
+<div id='results-list' class='results-list'></div>
+</div>
+</section>
+</main>
+</div>
+<script src='../shared/utils.js'></script>
+<script src='app.js'></script>
+</body></html>
