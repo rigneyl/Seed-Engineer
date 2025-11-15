@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inhuman Distance Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A local-only diagnostic tool that measures how emotionally distant your writing is from humanity." />
+  <style>
+    :root {
+      --bg: #111111;
+      --bg-alt: #18181d;
+      --card: #1f1f24;
+      --border: #2a2a32;
+      --accent: #e3b341;
+      --accent-soft: rgba(227, 179, 65, 0.12);
+      --text: #f5f5f5;
+      --text-muted: #b0b0bd;
+      --danger: #ff6b6b;
+      --cold: #4fa3ff;
+      --neutral: #9b9bb5;
+      --warm: #ff9f43;
+      --radius-lg: 18px;
+      --radius-md: 10px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.65);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Inter", "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+        Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top, #22222a 0, #050508 55%);
+      color: var(--text);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1200px;
+      background: radial-gradient(circle at top left, #1c1c22 0, #050508 55%);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-soft);
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 span.badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--accent);
+      background: rgba(227, 179, 65, 0.06);
+      letter-spacing: 0.1em;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      max-width: 540px;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(227, 179, 65, 0.8);
+    }
+
+    .chip {
+      cursor: pointer;
+      user-select: none;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 5px 11px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.5);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.18s ease, background 0.18s ease,
+        color 0.18s ease, box-shadow 0.18s ease, transform 0.08s ease;
+    }
+
+    .chip span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: transparent;
+    }
+
+    .chip--active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 0 1px rgba(227, 179, 65, 0.1);
+    }
+
+    .chip--active span.dot {
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(227, 179, 65, 0.8);
+      border-color: transparent;
+    }
+
+    .chip:active {
+      transform: translateY(1px);
+    }
+
+    main {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .panel {
+      background: rgba(8, 8, 12, 0.9);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 14px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel--input {
+      flex: 1.1;
+    }
+
+    .panel--report {
+      flex: 1;
+    }
+
+    .panel-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .panel-label span.right {
+      font-size: 0.68rem;
+      opacity: 0.75;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text);
+      background: radial-gradient(circle at top left, #262631 0, #07070a 55%);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease,
+        background 0.18s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(227, 179, 65, 0.3);
+      background: radial-gradient(circle at top left, #262631 0, #050508 55%);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #050506;
+      color: var(--text);
+      padding: 6px 13px;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: var(--font-sans);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: border-color 0.18s ease, background 0.18s ease,
+        transform 0.08s ease, box-shadow 0.18s ease, color 0.18s ease;
+    }
+
+    button span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 7px rgba(227, 179, 65, 0.8);
+    }
+
+    button.primary {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, #1c1504, #403018);
+      box-shadow: 0 0 0 1px rgba(227, 179, 65, 0.2);
+    }
+
+    button.primary:hover {
+      background: linear-gradient(135deg, #241a06, #4b371a);
+      box-shadow: 0 0 18px rgba(227, 179, 65, 0.45);
+      transform: translateY(-0.5px);
+    }
+
+    button.secondary:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      background: #0a0a10;
+      transform: translateY(-0.5px);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
+
+    .score-block {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: radial-gradient(circle at top left, #1b1b22 0, #050508 55%);
+    }
+
+    .score-main {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .score-value {
+      font-size: 1.8rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .score-label {
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+
+    .score-tagline {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .score-pill {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.65);
+      color: var(--text-muted);
+      min-width: 110px;
+      text-align: center;
+    }
+
+    .score-pill.cold {
+      border-color: var(--cold);
+      color: var(--cold);
+      background: radial-gradient(circle at top, rgba(79, 163, 255, 0.16), #050508);
+    }
+
+    .score-pill.neutral {
+      border-color: var(--neutral);
+      color: var(--neutral);
+    }
+
+    .score-pill.warm {
+      border-color: var(--warm);
+      color: var(--warm);
+      background: radial-gradient(circle at top, rgba(255, 159, 67, 0.16), #050508);
+    }
+
+    .bar-block {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: #121218;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--cold), var(--neutral), var(--warm));
+      transition: width 0.5s ease;
+    }
+
+    .bar-indicator {
+      position: absolute;
+      top: -3px;
+      width: 2px;
+      height: 14px;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(227, 179, 65, 0.9);
+      transform: translateX(-50%);
+      transition: left 0.5s ease;
+    }
+
+    .section-title {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .flag-pill {
+      font-size: 0.68rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .flag-pill.active {
+      border-style: solid;
+      border-color: var(--danger);
+      color: var(--danger);
+      background: rgba(255, 107, 107, 0.08);
+    }
+
+    .lists-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .card {
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--border);
+      padding: 8px 9px;
+      background: rgba(7, 7, 12, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .card-header span.count {
+      font-size: 0.68rem;
+      opacity: 0.8;
+    }
+
+    .badge-mini {
+      font-size: 0.62rem;
+      border-radius: 999px;
+      padding: 2px 7px;
+      border: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .badge-mini.hot {
+      color: var(--danger);
+      border-color: rgba(255, 107, 107, 0.7);
+      background: rgba(255, 107, 107, 0.07);
+    }
+
+    .badge-mini.chill {
+      color: var(--cold);
+      border-color: rgba(79, 163, 255, 0.7);
+      background: rgba(79, 163, 255, 0.07);
+    }
+
+    .card-body {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      max-height: 150px;
+      overflow: auto;
+    }
+
+    .token-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .token {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.6);
+      white-space: nowrap;
+    }
+
+    .token.hit {
+      border-color: rgba(255, 107, 107, 0.8);
+      color: var(--danger);
+      background: rgba(255, 107, 107, 0.12);
+    }
+
+    .sentence-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sentence-row {
+      font-size: 0.7rem;
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
+    .sentence-badge {
+      flex-shrink: 0;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.62rem;
+    }
+
+    .sentence-badge.cold {
+      border-color: var(--cold);
+      color: var(--cold);
+    }
+
+    .sentence-badge.neutral {
+      border-color: var(--neutral);
+      color: var(--neutral);
+    }
+
+    .sentence-badge.warm {
+      border-color: var(--warm);
+      color: var(--warm);
+    }
+
+    .sentence-text {
+      color: var(--text-muted);
+    }
+
+    .sentence-text strong {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .helper-text {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .helper-text code {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    footer {
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      opacity: 0.9;
+    }
+
+    .footer-left {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .footer-right {
+      opacity: 0.7;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+    }
+
+    @media (max-width: 960px) {
+      body {
+        padding: 14px;
+      }
+
+      .app-shell {
+        padding: 16px;
+      }
+
+      main {
+        flex-direction: column;
+      }
+
+      .panel--input,
+      .panel--report {
+        flex: unset;
+      }
+
+      textarea {
+        min-height: 180px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .controls-row {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .score-block {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .score-pill {
+        align-self: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="title-block">
+        <h1>
+          Inhuman Distance Checker
+          <span class="badge">Local-only · HTML seed</span>
+        </h1>
+        <div class="subtitle">
+          Diagnose how much warmth, empathy, and moral framing is leaking into your misanthropic or
+          existential writing. No AI, no tracking — just deterministic pattern checks in your browser.
+        </div>
+      </div>
+      <div class="controls-row">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span>Mode: Analytic misanthropy</span>
+        </div>
+        <button id="sampleBtn" class="secondary" type="button">
+          <span class="dot"></span>
+          Load sample
+        </button>
+        <button id="exportBtn" class="secondary" type="button">
+          Export report (.md)
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel panel--input">
+        <div class="panel-label">
+          <span>Source text</span>
+          <span class="right">Paste or write directly · Nothing leaves this file</span>
+        </div>
+        <textarea id="inputText" placeholder="Paste your bleak essay, misanthropic meditation, or cold philosophical fragment here..."></textarea>
+        <div class="toolbar">
+          <button id="analyzeBtn" class="primary" type="button">
+            <span class="dot"></span>
+            Analyze warmth leakage
+          </button>
+          <button id="sterilizeBtn" class="secondary" type="button">
+            Sterilize warmth (rewrite suggestions)
+          </button>
+          <button id="clearBtn" class="secondary" type="button">
+            Clear
+          </button>
+          <div class="hint">
+            Tip: For best results, run after a full pass of your draft — the tool is a final “distance check”.
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel--report">
+        <div class="panel-label">
+          <span>Inhuman distance report</span>
+          <span class="right" id="wordCountLabel">0 words · 0 warmth hits</span>
+        </div>
+
+        <div class="score-block">
+          <div>
+            <div class="score-main">
+              <div class="score-value" id="scoreValue">100%</div>
+              <div>
+                <div class="score-label">Inhuman distance</div>
+                <div class="score-tagline" id="scoreTagline">Pure analytic detachment.</div>
+              </div>
+            </div>
+          </div>
+          <div class="score-pill chill" id="scorePill">Cold analyst</div>
+        </div>
+
+        <div class="bar-block">
+          <div class="bar-labels">
+            <span>Humanistic</span>
+            <span>Inhuman</span>
+          </div>
+          <div class="bar">
+            <div class="bar-fill" id="barFill"></div>
+            <div class="bar-indicator" id="barIndicator" style="left: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="section-title">Flagged channels</div>
+        <div class="pill-row" id="flagPills">
+          <div class="flag-pill" data-flag="empathy">Empathy</div>
+          <div class="flag-pill" data-flag="sentimentality">Sentimentality</div>
+          <div class="flag-pill" data-flag="humanity">“Believe in humanity”</div>
+          <div class="flag-pill" data-flag="warmth">Warmth</div>
+          <div class="flag-pill" data-flag="moral">Moral framing</div>
+          <div class="flag-pill" data-flag="compassion">Compassion vocab</div>
+        </div>
+
+        <div class="lists-grid">
+          <div class="card">
+            <div class="card-header">
+              <span>Warmth contaminants</span>
+              <span class="count" id="contaminantCount">0 distinct · 0 total hits</span>
+            </div>
+            <div class="card-body" id="contaminantList">
+              <div class="helper-text">
+                When detected, warm, empathic, or moral language will appear here. Keep this list short if you want the prose to feel post-human.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span>Purification hints</span>
+              <span class="badge-mini hot" id="heatBadge">Clean</span>
+            </div>
+            <div class="card-body" id="purificationHints">
+              <div class="helper-text">
+                Run an analysis to get targeted suggestions: removing moral framing, collapsing sentimental phrases, and flattening any “faith in humanity”.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Tone drift by sentence</div>
+        <div class="card">
+          <div class="card-body" id="sentenceMap">
+            <div class="helper-text">
+              Each sentence is tagged as <code>cold</code>, <code>neutral</code>, or <code>warm</code> based on warmth terms.
+              Use this like a debug view — tighten or replace any warm segments.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-left">
+        <span>Inhuman Distance % is a rough heuristic — a compass, not scripture.</span>
+      </div>
+      <div class="footer-right">
+        Seed tool · Runs entirely in your browser.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const LEXICON = {
+      empathy: [
+        "empathy",
+        "empathetic",
+        "empathise",
+        "empathize",
+        "i understand",
+        "i get you",
+        "i feel you",
+        "i’m sorry",
+        "i am sorry",
+        "i care",
+        "i hear you",
+        "supportive",
+        "reassure",
+        "comforting"
+      ],
+      sentimentality: [
+        "beautiful",
+        "heartwarming",
+        "touching",
+        "hopeful",
+        "hope",
+        "inspiring",
+        "uplifting",
+        "lovely",
+        "wonderful",
+        "kindness",
+        "gratitude",
+        "blessing",
+        "blessed",
+        "miracle",
+        "happy ending"
+      ],
+      humanity: [
+        "believe in humanity",
+        "faith in humanity",
+        "people are good",
+        "people are basically good",
+        "we’re all in this together",
+        "we are all in this together",
+        "deep down we’re good",
+        "deep down we are good",
+        "humanity can change",
+        "we can do better",
+        "people are kind"
+      ],
+      warmth: [
+        "warm",
+        "warmth",
+        "tender",
+        "tenderness",
+        "loving",
+        "love",
+        "caring",
+        "kind",
+        "kindly",
+        "gentle",
+        "gentleness",
+        "nurturing",
+        "healing",
+        "connection",
+        "togetherness",
+        "belonging"
+      ],
+      moral: [
+        "should",
+        "shouldn’t",
+        "ought",
+        "ought to",
+        "right thing",
+        "wrong",
+        "good person",
+        "bad person",
+        "better person",
+        "moral",
+        "immoral",
+        "virtue",
+        "virtuous",
+        "ethical",
+        "unethical",
+        "deserve",
+        "deserving"
+      ],
+      compassion: [
+        "compassion",
+        "compassionate",
+        "sympathy",
+        "sympathetic",
+        "forgive",
+        "forgiveness",
+        "mercy",
+        "charity",
+        "kindness",
+        "helping others",
+        "care for others",
+        "care for each other",
+        "care for one another"
+      ]
+    };
+
+    const STERILIZE_MAP = {
+      "love": "attachment mechanism",
+      "loved": "attached",
+      "loving": "affectional",
+      "hope": "predictive bias",
+      "hopeful": "optimistic projection",
+      "beautiful": "pleasing to the nervous system",
+      "kindness": "social grooming behaviour",
+      "compassion": "prosocial conditioning",
+      "compassionate": "prosocially conditioned",
+      "forgive": "absolve behaviourally",
+      "forgiveness": "behavioural absolution",
+      "good person": "socially reinforced actor",
+      "bad person": "socially punished actor",
+      "deserve": "socially allocated",
+      "humanity": "the species",
+      "people": "organisms",
+      "together": "co-located"
+    };
+
+    const inputEl = document.getElementById("inputText");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const sterilizeBtn = document.getElementById("sterilizeBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const sampleBtn = document.getElementById("sampleBtn");
+    const exportBtn = document.getElementById("exportBtn");
+
+    const wordCountLabel = document.getElementById("wordCountLabel");
+    const scoreValue = document.getElementById("scoreValue");
+    const scoreTagline = document.getElementById("scoreTagline");
+    const scorePill = document.getElementById("scorePill");
+    const barFill = document.getElementById("barFill");
+    const barIndicator = document.getElementById("barIndicator");
+    const contaminantCount = document.getElementById("contaminantCount");
+    const contaminantList = document.getElementById("contaminantList");
+    const purificationHints = document.getElementById("purificationHints");
+    const heatBadge = document.getElementById("heatBadge");
+    const sentenceMap = document.getElementById("sentenceMap");
+
+    const flagPills = Array.from(
+      document.querySelectorAll(".flag-pill")
+    );
+
+    function tokenize(text) {
+      const lowered = text.toLowerCase();
+      const words = lowered
+        .split(/[^a-zA-Z0-9']+/)
+        .filter(Boolean);
+      return words;
+    }
+
+    function analyseText(rawText) {
+      const text = rawText || "";
+      const lowered = text.toLowerCase();
+      const words = tokenize(text);
+      const wordCount = words.length;
+
+      const hits = {};
+      const categoryHits = {};
+      let totalHits = 0;
+
+      Object.keys(LEXICON).forEach(cat => {
+        categoryHits[cat] = 0;
+        LEXICON[cat].forEach(term => {
+          const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp("\\b" + safeTerm + "\\b", "gi");
+          const matches = lowered.match(regex);
+          if (matches) {
+            const key = term;
+            if (!hits[key]) hits[key] = 0;
+            hits[key] += matches.length;
+            totalHits += matches.length;
+            categoryHits[cat] += matches.length;
+          }
+        });
+      });
+
+      const warmthDensity = wordCount > 0 ? totalHits / wordCount : 0;
+      let distanceRaw = 100 - warmthDensity * 300;
+      if (distanceRaw < 0) distanceRaw = 0;
+      if (distanceRaw > 100) distanceRaw = 100;
+      const distanceScore = Math.round(distanceRaw);
+
+      return {
+        text,
+        wordCount,
+        hits,
+        categoryHits,
+        totalHits,
+        distanceScore
+      };
+    }
+
+    function classifyDistance(distance) {
+      if (distance >= 80) {
+        return {
+          label: "Cold analyst",
+          className: "cold",
+          tagline: "Pure analytic detachment.",
+          heatBadge: "Sterile",
+          heatClass: "chill"
+        };
+      } else if (distance >= 55) {
+        return {
+          label: "Controlled distance",
+          className: "neutral",
+          tagline: "Mostly detached, with minor human leakage.",
+          heatBadge: "Trace warmth",
+          heatClass: "hot"
+        };
+      } else if (distance >= 30) {
+        return {
+          label: "Warm drift",
+          className: "warm",
+          tagline: "Warmth, sentiment, or moralising is softening the prose.",
+          heatBadge: "Warm",
+          heatClass: "hot"
+        };
+      } else {
+        return {
+          label: "Humanistic mush",
+          className: "warm",
+          tagline: "Heavy emotional or moral framing dominates the text.",
+          heatBadge: "Overheated",
+          heatClass: "hot"
+        };
+      }
+    }
+
+    function updateUI(result) {
+      const { text, wordCount, hits, categoryHits, totalHits, distanceScore } = result;
+
+      wordCountLabel.textContent = wordCount + " words · " + totalHits + " warmth hits";
+
+      scoreValue.textContent = distanceScore + "%";
+      const classification = classifyDistance(distanceScore);
+      scoreTagline.textContent = classification.tagline;
+
+      scorePill.textContent = classification.label;
+      scorePill.classList.remove("cold", "neutral", "warm");
+      scorePill.classList.add(classification.className);
+
+      barFill.style.width = (100 - distanceScore) + "%";
+      barIndicator.style.left = distanceScore + "%";
+
+      flagPills.forEach(pill => {
+        const key = pill.getAttribute("data-flag");
+        pill.classList.toggle("active", (categoryHits[key] || 0) > 0);
+      });
+
+      const contaminantEntries = Object.entries(hits).sort((a, b) => b[1] - a[1]);
+      contaminantCount.textContent =
+        contaminantEntries.length +
+        " distinct · " +
+        totalHits +
+        " total hits";
+
+      if (contaminantEntries.length === 0) {
+        contaminantList.innerHTML =
+          '<div class="helper-text">No warmth contaminants detected. The voice is cold, distant, and largely free of sentimental or moral leakage.</div>';
+      } else {
+        const tokensHtml = contaminantEntries
+          .map(([term, count]) => {
+            return '<span class="token hit">' + term + " · " + count + "x</span>";
+          })
+          .join("");
+        contaminantList.innerHTML =
+          '<div class="token-list">' + tokensHtml + "</div>";
+      }
+
+      const hints = [];
+      if (categoryHits.empathy > 0) {
+        hints.push("Empathy language detected. Consider removing phrases that signal understanding or emotional care; keep the narrator observational rather than consoling.");
+      }
+      if (categoryHits.sentimentality > 0) {
+        hints.push("Sentimental terms present. Replace overtly uplifting or heartwarming language with flat description or ambiguity.");
+      }
+      if (categoryHits.humanity > 0) {
+        hints.push("“Faith in humanity” tones detected. Remove collective reassurance and treat the species as an object of study, not a moral project.");
+      }
+      if (categoryHits.warmth > 0) {
+        hints.push("Warm, connective vocabulary found. Collapse intimacy into detached phrasing that emphasises mechanisms, not feelings.");
+      }
+      if (categoryHits.moral > 0) {
+        hints.push("Moral framing present. Replace “should/ought/good” with consequences, incentives, or observed outcomes.");
+      }
+      if (categoryHits.compassion > 0) {
+        hints.push("Compassion-heavy vocabulary detected. Recast helping/forgiving as behavioural or structural responses rather than virtues.");
+      }
+
+      if (hints.length === 0) {
+        purificationHints.innerHTML =
+          '<div class="helper-text">No major warmth channels detected. If you want to push further, you can still strip first-person pronouns, soften any latent hope, and emphasise structural or biological framing.</div>';
+        heatBadge.textContent = classification.heatBadge;
+        heatBadge.classList.remove("hot", "chill");
+        heatBadge.classList.add(classification.heatClass);
+      } else {
+        const listHtml =
+          "<ul>" +
+          hints
+            .map(
+              h =>
+                '<li style="margin-bottom:4px;">' +
+                h +
+                "</li>"
+            )
+            .join("") +
+          "</ul>";
+        purificationHints.innerHTML = listHtml;
+        heatBadge.textContent = classification.heatBadge;
+        heatBadge.classList.remove("hot", "chill");
+        heatBadge.classList.add("hot");
+      }
+
+      renderSentenceMap(text);
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function renderSentenceMap(text) {
+      if (!text.trim()) {
+        sentenceMap.innerHTML =
+          '<div class="helper-text">Each sentence will be analysed here once you run a check. Look for hotspots of warmth and decide whether to neutralise or isolate them.</div>';
+        return;
+      }
+
+      const lowered = text.toLowerCase();
+      const rawSentences = text
+        .split(/([.!?]+)\s+/)
+        .reduce((acc, part, index, arr) => {
+          if (index % 2 === 0) {
+            const sentence = (part || "") + (arr[index + 1] || "");
+            if (sentence.trim()) acc.push(sentence.trim());
+          }
+          return acc;
+        }, []);
+
+      if (rawSentences.length === 0) {
+        sentenceMap.innerHTML =
+          '<div class="helper-text">Text is too fragmentary to map by sentence. Add a few complete sentences.</div>';
+        return;
+      }
+
+      const rows = rawSentences.map(sentence => {
+        const sLower = sentence.toLowerCase();
+        let hitCount = 0;
+        const hitTerms = [];
+
+        Object.values(LEXICON).forEach(list => {
+          list.forEach(term => {
+            const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const regex = new RegExp("\\b" + safeTerm + "\\b", "gi");
+            const matches = sLower.match(regex);
+            if (matches) {
+              hitCount += matches.length;
+              hitTerms.push(term);
+            }
+          });
+        });
+
+        let state = "cold";
+        if (hitCount === 0) {
+          state = "cold";
+        } else if (hitCount === 1) {
+          state = "neutral";
+        } else {
+          state = "warm";
+        }
+
+        let highlighted = escapeHtml(sentence);
+        hitTerms.forEach(term => {
+          const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp("\\b" + safeTerm + "\\b", "gi");
+          highlighted = highlighted.replace(
+            regex,
+            match => "<strong>" + escapeHtml(match) + "</strong>"
+          );
+        });
+
+        const badgeLabel =
+          state === "cold" ? "COLD" : state === "neutral" ? "NEUTRAL" : "WARM";
+
+        return (
+          '<div class="sentence-row">' +
+          '<span class="sentence-badge ' +
+          state +
+          '">' +
+          badgeLabel +
+          "</span>" +
+          '<span class="sentence-text">' +
+          highlighted +
+          "</span>" +
+          "</div>"
+        );
+      });
+
+      sentenceMap.innerHTML =
+        '<div class="sentence-list">' + rows.join("") + "</div>";
+    }
+
+    function sterilizeText() {
+      let text = inputEl.value;
+      if (!text.trim()) return;
+
+      Object.entries(STERILIZE_MAP).forEach(([human, cold]) => {
+        const safeTerm = human.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp("\\b" + safeTerm + "\\b", "gi");
+        text = text.replace(regex, match => {
+          const isCapitalised = match[0] === match[0].toUpperCase();
+          if (isCapitalised) {
+            return cold.charAt(0).toUpperCase() + cold.slice(1);
+          }
+          return cold;
+        });
+      });
+
+      inputEl.value = text;
+      const result = analyseText(text);
+      updateUI(result);
+    }
+
+    function exportReport() {
+      const text = inputEl.value || "";
+      const result = analyseText(text);
+      const { wordCount, hits, categoryHits, totalHits, distanceScore } = result;
+      const classification = classifyDistance(distanceScore);
+
+      const contaminantEntries = Object.entries(hits).sort(
+        (a, b) => b[1] - a[1]
+      );
+
+      const lines = [];
+      lines.push("# Inhuman Distance Report");
+      lines.push("");
+      lines.push("Distance Score: **" + distanceScore + "%**");
+      lines.push("");
+      lines.push("- Mode: Analytic misanthropy");
+      lines.push("- Classification: " + classification.label);
+      lines.push("- Words: " + wordCount);
+      lines.push("- Warmth hits: " + totalHits);
+      lines.push("");
+      lines.push("## Warmth Channels");
+      lines.push("");
+      Object.keys(LEXICON).forEach(cat => {
+        const labelMap = {
+          empathy: "Empathy",
+          sentimentality: "Sentimentality",
+          humanity: "“Believe in humanity” tones",
+          warmth: "Warmth / intimacy",
+          moral: "Moral framing",
+          compassion: "Compassion vocabulary"
+        };
+        const count = categoryHits[cat] || 0;
+        lines.push("- " + labelMap[cat] + ": " + count);
+      });
+      lines.push("");
+      lines.push("## Warmth Contaminants");
+      lines.push("");
+      if (contaminantEntries.length === 0) {
+        lines.push("_No warmth contaminants detected._");
+      } else {
+        contaminantEntries.forEach(([term, count]) => {
+          lines.push("- " + term + ": " + count + "×");
+        });
+      }
+      lines.push("");
+      lines.push("## Notes");
+      lines.push("");
+      lines.push(
+        "Use this as a compass rather than a law. High distance scores favour cold, observational misanthropy and existential detachment."
+      );
+      lines.push(
+        "If warmth appears, decide whether it serves contrast — or whether you want to sterilise it further."
+      );
+      lines.push("");
+      lines.push("---");
+      lines.push("");
+      lines.push("_Generated locally by Inhuman Distance Checker (HTML seed)._");
+
+      const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "inhuman-distance-report.md";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    const SAMPLE_TEXT = `I used to tell myself I believed in humanity. That people were capable of becoming better, kinder versions of themselves if given enough time, empathy, and understanding.
+
+Now, when I watch a crowd, I don't see potential. I see habits. I see organisms running scripts they didn't write and won't question, glued together by sentimentality and fear. Kindness appears almost at random, like a glitch in a machine that was built to optimise for comfort rather than truth.
+
+I don't think people are \"bad\" in a moral sense. I think they're indifferent to anything that doesn't stroke their own nervous system. Even the warmest acts of compassion usually smuggle in a quiet transaction: validation, belonging, the soothing belief that we are the sort of creatures who deserve to exist.
+
+I no longer feel the need to fix any of this. Observation is enough. The species will do what it always does: repeat itself with minor cosmetic changes, call that progress, and label any refusal to partake as cold, cynical, or broken.`;
+
+    analyzeBtn.addEventListener("click", () => {
+      const result = analyseText(inputEl.value);
+      updateUI(result);
+    });
+
+    sterilizeBtn.addEventListener("click", () => {
+      sterilizeText();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      inputEl.value = "";
+      const result = analyseText("");
+      updateUI(result);
+    });
+
+    sampleBtn.addEventListener("click", () => {
+      inputEl.value = SAMPLE_TEXT;
+      const result = analyseText(inputEl.value);
+      updateUI(result);
+    });
+
+    exportBtn.addEventListener("click", () => {
+      exportReport();
+    });
+
+    updateUI(analyseText(""));
+
+  </script>
+</body>
+</html>

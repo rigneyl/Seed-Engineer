@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>McCarthy Mode — Textarea Build (Live Analysis, LTR)</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body dir="ltr">
+  <header class="topbar">
+    <div class="brand">McCarthy Mode</div>
+    <div class="controls">
+      <select id="preset" aria-label="Preset">
+        <option value="light">Preset: Light McCarthy</option>
+        <option value="strict">Preset: Strict McCarthy</option>
+        <option value="dialogue">Preset: Dialogue Focus</option>
+      </select>
+      <button id="convertDialogue" title="Convert quoted dialogue to McCarthy-style (no quotation marks)">Convert Dialogue</button>
+      <button id="exportBtn" title="Download as .txt">Export</button>
+      <button id="importBtn" title="Import a .txt file">Import</button>
+      <button id="clearBtn" title="Clear (keeps rollback)">Clear</button>
+      <span id="status" aria-live="polite"></span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="editor-wrap">
+      <label class="label">Draft (plain text, LTR)</label>
+      <textarea id="source" class="source" dir="ltr" spellcheck="false"
+        placeholder="Type or paste here. Analysis runs live."></textarea>
+      <div class="legend">
+        <span class="pill bad">“ ”</span><span class="legend-label">Quoted dialogue</span>
+        <span class="pill warn">; !</span><span class="legend-label">Noisy punctuation</span>
+        <span class="pill note">-ly</span><span class="legend-label">Adverbs</span>
+        <span class="pill info">, , ,</span><span class="legend-label">Comma heavy</span>
+      </div>
+
+      <label class="label">Preview with Highlights</label>
+      <div id="preview" class="preview" dir="ltr"></div>
+    </section>
+
+    <aside class="panel">
+      <div class="section">
+        <h2>Signals</h2>
+        <div id="signals" class="signals"></div>
+      </div>
+
+      <div class="section">
+        <h2>Dialogue Lint</h2>
+        <ul id="dialogueHints" class="list"></ul>
+        <p class="tip">McCarthy often omits quotation marks. Keep attributions plain (he said / she said). Avoid adverbial tags.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <span>Offline · No external AI/APIs</span>
+    <span>Auto-saves locally</span>
+  </footer>
+
+  <template id="tooltip"><div class="tooltip"></div></template>
+  <script src="script.js"></script>
+</body>
+</html>

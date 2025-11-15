@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Essay Skeleton Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Shared base styles: replace this file with your own global base.css -->
+  <link rel="stylesheet" href="base.css">
+
+  <style>
+    :root {
+      --border-soft: rgba(255, 255, 255, 0.08);
+      --border-soft-strong: rgba(255, 255, 255, 0.15);
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-shell {
+      flex: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-sizing: border-box;
+    }
+
+    .app-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .app-header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+
+    .field-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .field-block label {
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+
+    .thesis-input {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .thesis-input input {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .mode-select select {
+      min-width: 170px;
+      box-sizing: border-box;
+    }
+
+    .options-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .inline-option {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.78rem;
+      opacity: 0.9;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .inline-option input {
+      margin: 0;
+    }
+
+    .app-main {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .skeleton-column {
+      flex: 2;
+      min-width: 0;
+      border-radius: 0.6rem;
+      padding: 1rem;
+      border: 1px solid var(--border-soft);
+      box-sizing: border-box;
+    }
+
+    .current-thesis {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      margin-bottom: 0.5rem;
+    }
+
+    .current-thesis strong {
+      font-weight: 600;
+    }
+
+    .sidebar {
+      flex: 1;
+      min-width: 230px;
+      border-radius: 0.6rem;
+      padding: 0.75rem 0.9rem 0.9rem;
+      border: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      box-sizing: border-box;
+    }
+
+    .sidebar h2 {
+      font-size: 0.95rem;
+      margin: 0 0 0.1rem 0;
+    }
+
+    .sidebar small {
+      opacity: 0.8;
+      font-size: 0.75rem;
+      display: block;
+    }
+
+    .notes-area textarea {
+      width: 100%;
+      min-height: 100px;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    .section-block {
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px dashed var(--border-soft-strong);
+    }
+
+    .section-block:last-of-type {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .section-title {
+      font-size: 0.96rem;
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    .questions-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .question-row {
+      display: flex;
+      gap: 0.4rem;
+      align-items: flex-start;
+    }
+
+    .question-input {
+      flex: 1;
+      box-sizing: border-box;
+    }
+
+    .question-input textarea {
+      width: 100%;
+      resize: none;
+      min-height: 1.9rem;
+      line-height: 1.35;
+      box-sizing: border-box;
+    }
+
+    .tiny-button {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.4rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tiny-button.secondary {
+      opacity: 0.85;
+    }
+
+    .add-question-row {
+      margin-top: 0.4rem;
+    }
+
+    .app-footer {
+      margin-top: 1.2rem;
+      padding: 0.75rem 1rem 1.4rem;
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 0.35rem;
+    }
+
+    .markdown-export {
+      margin-top: 0.75rem;
+      display: none;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .markdown-export textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .hint-text {
+      font-size: 0.78rem;
+      opacity: 0.85;
+    }
+
+    .hint-text strong {
+      font-weight: 600;
+    }
+
+    .sidebar-section {
+      padding-bottom: 0.4rem;
+      border-bottom: 1px dashed var(--border-soft);
+    }
+
+    .sidebar-section:last-of-type {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .shortcut-list {
+      margin: 0.25rem 0 0;
+      padding-left: 1rem;
+    }
+
+    .shortcut-list li {
+      font-size: 0.75rem;
+      opacity: 0.85;
+      margin-bottom: 0.1rem;
+    }
+
+    .custom-config {
+      margin-top: 0.35rem;
+      display: none;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .custom-config textarea {
+      width: 100%;
+      min-height: 60px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 860px) {
+      .app-main {
+        flex-direction: column;
+      }
+      .sidebar {
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <h1>Essay Skeleton Generator</h1>
+      <div class="top-row">
+        <div class="field-block thesis-input">
+          <label for="thesisInput">Thesis / Core claim</label>
+          <input id="thesisInput" type="text" placeholder="e.g. Humanity is on its last legs">
+        </div>
+        <div class="field-block mode-select">
+          <label for="modeSelect">Mode</label>
+          <select id="modeSelect">
+            <option value="argumentative">Argumentative</option>
+            <option value="reflective">Reflective</option>
+            <option value="polemic">Polemic / Rant</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div class="field-block">
+          <label>&nbsp;</label>
+          <button id="generateBtn" type="button">Generate skeleton</button>
+        </div>
+      </div>
+
+      <div class="options-row">
+        <label class="inline-option">
+          <input type="checkbox" id="weaveThesis" checked>
+          <span>Weave thesis into each question</span>
+        </label>
+
+        <div class="controls-row">
+          <button id="exportBtn" type="button">Export as Markdown</button>
+          <button id="downloadBtn" type="button">Download .md file</button>
+        </div>
+      </div>
+
+      <div class="markdown-export" id="markdownExport">
+        <label for="markdownOutput">Markdown output</label>
+        <textarea id="markdownOutput" readonly></textarea>
+        <div class="controls-row">
+          <button id="copyBtn" type="button">Copy to clipboard</button>
+          <span class="hint-text">This is plain text. Paste into your editor or notes app.</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="app-main">
+      <section class="skeleton-column" id="skeletonContainer">
+        <p class="hint-text">
+          Enter a thesis, pick a mode, and click <strong>Generate skeleton</strong> to get a structured list of questions
+          rewritten to explicitly reference your thesis. Edit, add, or remove questions in place. Use the shortcuts
+          (<strong>Ctrl+Enter</strong> to generate, <strong>Ctrl+Shift+M</strong> to export).
+        </p>
+      </section>
+
+      <aside class="sidebar">
+        <section class="sidebar-section">
+          <h2>Mode description</h2>
+          <div id="modeDescription" class="hint-text">
+            Argumentative: make a clear claim, support it with evidence, and address counterarguments.
+          </div>
+          <div id="customConfig" class="custom-config">
+            <div class="field-block">
+              <label for="customName">Custom mode name (optional)</label>
+              <input id="customName" type="text" placeholder="e.g. Misanthropic Essay Skeleton">
+            </div>
+            <div class="field-block">
+              <label for="customDescription">Custom mode description (optional)</label>
+              <textarea id="customDescription" placeholder="Describe how this custom skeleton should be used."></textarea>
+            </div>
+            <div class="controls-row" style="justify-content: flex-start; margin-top: 0.1rem;">
+              <button id="saveCustomBtn" type="button" class="tiny-button">Save current skeleton as custom preset</button>
+              <button id="resetCustomBtn" type="button" class="tiny-button secondary">Reset custom preset</button>
+            </div>
+            <small>Custom presets are stored in your browser only (localStorage). No data leaves this device.</small>
+          </div>
+        </section>
+
+        <section class="sidebar-section">
+          <h2>Quick notes</h2>
+          <div class="notes-area">
+            <textarea id="notesInput" data-autoresize="true" placeholder="Notes about this essay, pitfalls to avoid, or reminders to yourself."></textarea>
+          </div>
+        </section>
+
+        <section class="sidebar-section">
+          <h2>Shortcuts</h2>
+          <ul class="shortcut-list">
+            <li><strong>Ctrl + Enter</strong> — Generate skeleton</li>
+            <li><strong>Ctrl + Shift + M</strong> — Export to Markdown</li>
+            <li><strong>Ctrl + Shift + D</strong> — Download .md file</li>
+          </ul>
+        </section>
+
+        <section class="sidebar-section">
+          <h2>Usage</h2>
+          <small>
+            1. Write a thesis. 2. Pick a mode. 3. Generate. 4. Edit questions (they will reference your thesis). 5. Export to Markdown and draft against it.
+          </small>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="app-footer">
+      Essay Skeleton Generator · © 2025 Luke Rigney · HTML-first · Local-only
+    </footer>
+  </main>
+
+  <script>
+    const templates = {
+      argumentative: {
+        key: "argumentative",
+        label: "Argumentative",
+        description:
+          "For making a clear claim and defending it with evidence, structure, and counterarguments.",
+        sections: [
+          {
+            title: "Introduction",
+            questions: [
+              "What is the core claim I am making in this essay?",
+              "What tension, contradiction, or image will hook the reader quickly?",
+              "What minimal context does the reader need to feel the stakes of this claim?",
+              "Why does this argument matter now, rather than in the abstract?"
+            ]
+          },
+          {
+            title: "Section 1 – Set up and definitions",
+            questions: [
+              "How can I define the key terms or concepts clearly and concretely?",
+              "What background or history sets up the argument without bloating it?",
+              "What assumptions do I need to surface so the reader knows my starting point?"
+            ]
+          },
+          {
+            title: "Section 2 – Main evidence and reasoning",
+            questions: [
+              "What is my strongest example, case study, or line of reasoning that supports the claim?",
+              "How does this evidence directly connect to my thesis, not just sit beside it?",
+              "What pattern emerges when I put several examples side by side?"
+            ]
+          },
+          {
+            title: "Section 3 – Objections and complications",
+            questions: [
+              "What objections or counterarguments would a smart, skeptical reader raise?",
+              "Which of these objections are strong enough that I must address them honestly?",
+              "How can I acknowledge complexity without dissolving my claim into mush?"
+            ]
+          },
+          {
+            title: "Conclusion",
+            questions: [
+              "If the reader accepts my argument, what should they think or do differently?",
+              "What simple sentence captures the cost of ignoring this argument?",
+              "What is one vivid image or line that can echo after the essay ends?"
+            ]
+          }
+        ]
+      },
+
+      reflective: {
+        key: "reflective",
+        label: "Reflective",
+        description:
+          "For exploring experience, doubt, and change over time rather than proving a hard claim.",
+        sections: [
+          {
+            title: "Introduction",
+            questions: [
+              "What question, tension, or observation is at the heart of this essay?",
+              "What moment or image from my own life can serve as an entry point?",
+              "What expectation does the reader likely have that I can gently subvert?"
+            ]
+          },
+          {
+            title: "Section 1 – Before",
+            questions: [
+              "How did I think, act, or feel about this topic earlier in my life?",
+              "What stories did I tell myself that now feel incomplete or naive?",
+              "Who or what taught me the earlier way of seeing things?"
+            ]
+          },
+          {
+            title: "Section 2 – Turning points",
+            questions: [
+              "What specific events or realizations began to shift my perspective?",
+              "What details from those moments make them feel alive on the page?",
+              "What did I resist admitting to myself at the time?"
+            ]
+          },
+          {
+            title: "Section 3 – After (for now)",
+            questions: [
+              "How do I see this topic differently now, even if the view is still unstable?",
+              "What contradictions remain in my current position?",
+              "What would I say to an earlier version of myself about this shift?"
+            ]
+          },
+          {
+            title: "Conclusion",
+            questions: [
+              "What is the one insight I would like the reader to carry into their own life?",
+              "What remains unresolved or open that I am willing to leave on the table?",
+              "How can I end on an image or question rather than a neat slogan?"
+            ]
+          }
+        ]
+      },
+
+      polemic: {
+        key: "polemic",
+        label: "Polemic / Rant",
+        description:
+          "For sharp, unapologetic attacks on an idea, behavior, or system — with teeth.",
+        sections: [
+          {
+            title: "Introduction",
+            questions: [
+              "In the bluntest possible terms, what am I accusing, attacking, or refusing?",
+              "What familiar scene or cliché captures the absurdity or hypocrisy quickly?",
+              "How can I make it clear this is not just personal bitterness but a pattern worth attacking?"
+            ]
+          },
+          {
+            title: "Section 1 – The façade",
+            questions: [
+              "How does the target (industry, idea, person, system) present itself as good or harmless?",
+              "What language, slogans, or aesthetics are used to appear virtuous or helpful?",
+              "Where are the cracks in that polished surface most visible?"
+            ]
+          },
+          {
+            title: "Section 2 – The machinery",
+            questions: [
+              "What mechanisms actually keep people stuck, exploited, numbed, or distracted?",
+              "Who profits — financially, socially, or psychologically — from things staying this way?",
+              "What examples show the machinery running in plain sight?"
+            ]
+          },
+          {
+            title: "Section 3 – The cost",
+            questions: [
+              "What does this system do to people’s dignity, time, or sense of self?",
+              "What happens if nothing changes — what kind of person does this world produce?",
+              "Where does my own complicity or participation sit inside this critique?"
+            ]
+          },
+          {
+            title: "Conclusion",
+            questions: [
+              "What minimal, concrete refusal or action am I actually asking from the reader?",
+              "What line can I end on that makes going back to sleep a little harder?",
+              "If this essay is a warning, what exactly is it warning against?"
+            ]
+          }
+        ]
+      },
+
+      custom: {
+        key: "custom",
+        label: "Custom",
+        description:
+          "Roll your own skeleton. You can save any current layout as a re-usable preset.",
+        sections: [
+          { title: "Introduction", questions: [] },
+          { title: "Section 1", questions: [] },
+          { title: "Section 2", questions: [] },
+          { title: "Section 3", questions: [] },
+          { title: "Conclusion", questions: [] }
+        ]
+      }
+    };
+
+    const CUSTOM_STORAGE_KEY = "essaySkeletonCustomTemplate";
+
+    const thesisInput = document.getElementById("thesisInput");
+    const modeSelect = document.getElementById("modeSelect");
+    const generateBtn = document.getElementById("generateBtn");
+    const skeletonContainer = document.getElementById("skeletonContainer");
+    const modeDescription = document.getElementById("modeDescription");
+    const weaveThesisCheckbox = document.getElementById("weaveThesis");
+
+    const exportBtn = document.getElementById("exportBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const markdownExport = document.getElementById("markdownExport");
+    const markdownOutput = document.getElementById("markdownOutput");
+    const copyBtn = document.getElementById("copyBtn");
+
+    const notesInput = document.getElementById("notesInput");
+    const customConfig = document.getElementById("customConfig");
+    const customNameInput = document.getElementById("customName");
+    const customDescriptionInput = document.getElementById("customDescription");
+    const saveCustomBtn = document.getElementById("saveCustomBtn");
+    const resetCustomBtn = document.getElementById("resetCustomBtn");
+
+    function initAutoResize(el) {
+      const resize = () => {
+        el.style.height = "auto";
+        el.style.height = el.scrollHeight + "px";
+      };
+      el.addEventListener("input", resize);
+      resize();
+    }
+
+    function initAllAutoResize() {
+      document.querySelectorAll("textarea[data-autoresize], .question-input textarea").forEach(el => {
+        initAutoResize(el);
+      });
+    }
+
+    function createCurrentThesisBanner(thesisText) {
+      const banner = document.createElement("div");
+      banner.className = "current-thesis";
+      if (thesisText) {
+        banner.innerHTML = 'Current thesis: <strong>' + escapeHtml(thesisText) + "</strong>";
+      } else {
+        banner.textContent = "No thesis set yet. Questions will stay generic until you type one.";
+      }
+      return banner;
+    }
+
+    function adaptQuestionToThesis(text, thesis, weave) {
+      if (!weave || !thesis) return text;
+
+      let t = thesis.trim();
+      const maxLen = 140;
+      if (t.length > maxLen) {
+        t = t.slice(0, maxLen - 1) + "…";
+      }
+
+      const lower = text.toLowerCase();
+
+      if (lower.includes("this essay")) {
+        return text.replace(/this essay/gi, 'this essay about "' + t + '"');
+      }
+
+      if (lower.includes("this topic")) {
+        return text.replace(/this topic/gi, 'this topic — "' + t + '"');
+      }
+
+      if (lower.includes("this claim")) {
+        return text.replace(/this claim/gi, 'this claim that "' + t + '"');
+      }
+
+      if (lower.includes("my thesis")) {
+        return text.replace(/my thesis/gi, 'my thesis that "' + t + '"');
+      }
+
+      return text + ' (specifically about: "' + t + '")';
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function createSectionBlock(section, thesis, weave) {
+      const wrapper = document.createElement("section");
+      wrapper.className = "section-block";
+      wrapper.dataset.sectionTitle = section.title;
+
+      const header = document.createElement("div");
+      header.className = "section-title";
+      header.textContent = section.title;
+      wrapper.appendChild(header);
+
+      const list = document.createElement("ul");
+      list.className = "questions-list";
+
+      (section.questions || []).forEach(q => {
+        const adapted = adaptQuestionToThesis(q, thesis, weave);
+        list.appendChild(createQuestionRow(adapted));
+      });
+
+      wrapper.appendChild(list);
+
+      const addRow = document.createElement("div");
+      addRow.className = "add-question-row";
+      const addBtn = document.createElement("button");
+      addBtn.type = "button";
+      addBtn.className = "tiny-button";
+      addBtn.textContent = "+ Add question";
+      addBtn.addEventListener("click", () => {
+        list.appendChild(createQuestionRow(""));
+        initAllAutoResize();
+      });
+      addRow.appendChild(addBtn);
+      wrapper.appendChild(addRow);
+
+      return wrapper;
+    }
+
+    function createQuestionRow(text) {
+      const li = document.createElement("li");
+      li.className = "question-row";
+
+      const inputWrapper = document.createElement("div");
+      inputWrapper.className = "question-input";
+
+      const textarea = document.createElement("textarea");
+      textarea.rows = 1;
+      textarea.dataset.autoresize = "true";
+      textarea.value = text || "";
+
+      inputWrapper.appendChild(textarea);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "tiny-button secondary";
+      deleteBtn.textContent = "✕";
+      deleteBtn.title = "Remove question";
+      deleteBtn.addEventListener("click", () => {
+        li.remove();
+      });
+
+      li.appendChild(inputWrapper);
+      li.appendChild(deleteBtn);
+
+      return li;
+    }
+
+    function renderSkeleton(modeKey) {
+      const template = templates[modeKey];
+      if (!template) return;
+
+      const thesis = thesisInput.value.trim();
+      const weave = weaveThesisCheckbox.checked;
+
+      modeDescription.textContent = template.description || "";
+      customConfig.style.display = modeKey === "custom" ? "flex" : "none";
+
+      skeletonContainer.innerHTML = "";
+
+      const banner = createCurrentThesisBanner(thesis);
+      skeletonContainer.appendChild(banner);
+
+      template.sections.forEach(section => {
+        skeletonContainer.appendChild(createSectionBlock(section, thesis, weave));
+      });
+
+      initAllAutoResize();
+    }
+
+    function buildMarkdown() {
+      const thesis = thesisInput.value.trim();
+      let md = "# Skeleton: " + (thesis || "[No thesis set]") + "\n\n";
+
+      const sectionBlocks = skeletonContainer.querySelectorAll(".section-block");
+      sectionBlocks.forEach(block => {
+        const title = block.dataset.sectionTitle || "Section";
+        md += "## " + title + "\n";
+
+        const inputs = block.querySelectorAll(".question-input textarea");
+        inputs.forEach(input => {
+          const text = input.value.trim();
+          if (text) {
+            md += "- " + text + "\n";
+          }
+        });
+
+        md += "\n";
+      });
+
+      return md;
+    }
+
+    function showMarkdown() {
+      const md = buildMarkdown();
+      markdownOutput.value = md;
+      markdownExport.style.display = "flex";
+    }
+
+    function downloadMarkdown() {
+      const md = buildMarkdown();
+      const blob = new Blob([md], { type: "text/markdown" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const thesis = thesisInput.value.trim() || "essay-skeleton";
+      const safeName = thesis.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      a.href = url;
+      a.download = safeName + ".md";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function copyMarkdown() {
+      const md = markdownOutput.value;
+      if (!md) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(md).catch(() => {
+          markdownOutput.select();
+          document.execCommand("copy");
+        });
+      } else {
+        markdownOutput.select();
+        document.execCommand("copy");
+      }
+    }
+
+    function serializeCurrentSkeleton() {
+      const sectionBlocks = skeletonContainer.querySelectorAll(".section-block");
+      const sections = [];
+
+      sectionBlocks.forEach(block => {
+        const title = block.dataset.sectionTitle || "Section";
+        const questions = [];
+        const inputs = block.querySelectorAll(".question-input textarea");
+        inputs.forEach(input => {
+          const text = input.value.trim();
+          if (text) {
+            questions.push(text);
+          }
+        });
+        sections.push({ title, questions });
+      });
+
+      return sections;
+    }
+
+    function saveCustomPreset() {
+      const sections = serializeCurrentSkeleton();
+      if (!sections.length) {
+        alert("There is no skeleton to save. Generate or create one first.");
+        return;
+      }
+
+      const name = customNameInput.value.trim();
+      const description = customDescriptionInput.value.trim();
+
+      const customTemplate = {
+        key: "custom",
+        label: name || "Custom",
+        description:
+          description ||
+          "Custom skeleton based on your saved layout. Edit questions directly or overwrite the preset.",
+        sections
+      };
+
+      try {
+        localStorage.setItem(CUSTOM_STORAGE_KEY, JSON.stringify(customTemplate));
+      } catch (e) {
+        console.warn("Could not save custom preset:", e);
+      }
+
+      templates.custom = customTemplate;
+      modeDescription.textContent = templates.custom.description;
+      alert("Custom preset saved in this browser.");
+    }
+
+    function loadCustomPreset() {
+      try {
+        const raw = localStorage.getItem(CUSTOM_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.sections) {
+          templates.custom = parsed;
+          customNameInput.value = parsed.label && parsed.label !== "Custom" ? parsed.label : "";
+          customDescriptionInput.value = parsed.description || "";
+        }
+      } catch (e) {
+        console.warn("Could not load custom preset:", e);
+      }
+    }
+
+    function resetCustomPreset() {
+      if (!confirm("Reset custom preset back to a blank skeleton?")) return;
+
+      localStorage.removeItem(CUSTOM_STORAGE_KEY);
+      templates.custom = {
+        key: "custom",
+        label: "Custom",
+        description:
+          "Roll your own skeleton. You can save any current layout as a re-usable preset.",
+        sections: [
+          { title: "Introduction", questions: [] },
+          { title: "Section 1", questions: [] },
+          { title: "Section 2", questions: [] },
+          { title: "Section 3", questions: [] },
+          { title: "Conclusion", questions: [] }
+        ]
+      };
+
+      customNameInput.value = "";
+      customDescriptionInput.value = "";
+
+      if (modeSelect.value === "custom") {
+        renderSkeleton("custom");
+      }
+    }
+
+    function handleKeydown(e) {
+      const key = e.key.toLowerCase();
+      const ctrl = e.ctrlKey || e.metaKey;
+      const shift = e.shiftKey;
+
+      if (ctrl && !shift && key === "enter") {
+        e.preventDefault();
+        generateBtn.click();
+      }
+
+      if (ctrl && shift && key === "m") {
+        e.preventDefault();
+        exportBtn.click();
+      }
+
+      if (ctrl && shift && key === "d") {
+        e.preventDefault();
+        downloadBtn.click();
+      }
+    }
+
+    generateBtn.addEventListener("click", () => {
+      const modeKey = modeSelect.value;
+      renderSkeleton(modeKey);
+      markdownExport.style.display = "none";
+    });
+
+    exportBtn.addEventListener("click", showMarkdown);
+    downloadBtn.addEventListener("click", downloadMarkdown);
+    copyBtn.addEventListener("click", copyMarkdown);
+
+    modeSelect.addEventListener("change", () => {
+      const modeKey = modeSelect.value;
+      renderSkeleton(modeKey);
+      markdownExport.style.display = "none";
+    });
+
+    weaveThesisCheckbox.addEventListener("change", () => {
+      const modeKey = modeSelect.value;
+      renderSkeleton(modeKey);
+      markdownExport.style.display = "none";
+    });
+
+    saveCustomBtn.addEventListener("click", saveCustomPreset);
+    resetCustomBtn.addEventListener("click", resetCustomPreset);
+
+    document.addEventListener("keydown", handleKeydown);
+
+    loadCustomPreset();
+    renderSkeleton("argumentative");
+    initAllAutoResize();
+  </script>
+</body>
+</html>

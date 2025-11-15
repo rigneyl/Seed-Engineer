@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Author Comparator · Local Style Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0b0b10;
+      --bg-alt: #14141c;
+      --bg-soft: #181821;
+      --fg: #f5f5f7;
+      --fg-muted: #b0b0c3;
+      --accent: #e3b341;
+      --accent-soft: rgba(227, 179, 65, 0.1);
+      --border-subtle: #272733;
+      --danger: #ff5c5c;
+      --radius-lg: 14px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.45);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    [data-theme="light"] {
+      --bg: #fafafa;
+      --bg-alt: #ffffff;
+      --bg-soft: #f3f3f7;
+      --fg: #101018;
+      --fg-muted: #55556a;
+      --accent: #d3981f;
+      --accent-soft: rgba(211, 152, 31, 0.1);
+      --border-subtle: #d3d3e0;
+      --danger: #d73838;
+      --shadow-soft: 0 14px 30px rgba(15, 15, 30, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top, #181824 0, #05050a 55%);
+      color: var(--fg);
+      min-height: 100vh;
+    }
+
+    .app-root {
+      max-width: 1220px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+
+    header.app-header {
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .title-block h1 {
+      font-size: 1.9rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-pill {
+      font-size: 0.7rem;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: rgba(255,255,255,0.02);
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .title-block p {
+      margin: 6px 0 0;
+      font-size: 0.9rem;
+      color: var(--fg-muted);
+      max-width: 540px;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .chip {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: rgba(255,255,255,0.02);
+      color: var(--fg);
+      padding: 6px 13px;
+      font-size: 0.8rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.16s ease transform, 0.16s ease box-shadow, 0.16s ease background, 0.16s ease border-color;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), #ffdd7a);
+      color: #111;
+      border-color: transparent;
+      box-shadow: 0 12px 25px rgba(0,0,0,0.55);
+    }
+
+    button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.7);
+    }
+
+    button.secondary {
+      color: var(--fg-muted);
+    }
+
+    button.secondary:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--accent-soft);
+    }
+
+    .chip {
+      cursor: default;
+      font-weight: 500;
+    }
+
+    .chip.badge {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .panel {
+      background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(0,0,0,0.4));
+      border-radius: 18px;
+      border: 1px solid var(--border-subtle);
+      padding: 14px 14px 16px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(227,179,65,0.1), transparent 55%);
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .panel-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 0.98rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--fg-muted);
+    }
+
+    .panel-header .sub {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+
+    .editor-top-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .editor-controls {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tiny-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--fg-muted);
+    }
+
+    textarea#userText {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(5,5,10,0.9);
+      color: var(--fg);
+      padding: 10px 11px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      outline: none;
+      transition: 0.16s ease border-color, 0.16s ease box-shadow, 0.16s ease background;
+    }
+
+    [data-theme="light"] textarea#userText {
+      background: #ffffff;
+    }
+
+    textarea#userText:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(227,179,65,0.35);
+      background: rgba(10,10,15,0.95);
+    }
+
+    .editor-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+
+    .editor-stats span {
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .analyze-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .analyze-bar-left {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      color: var(--fg-muted);
+    }
+
+    select,
+    input[type="text"],
+    input[type="number"] {
+      padding: 6px 8px;
+      border-radius: 9px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(5,5,10,0.9);
+      color: var(--fg);
+      font-size: 0.78rem;
+      outline: none;
+    }
+
+    [data-theme="light"] select,
+    [data-theme="light"] input[type="text"],
+    [data-theme="light"] input[type="number"] {
+      background: #ffffff;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(227,179,65,0.35);
+    }
+
+    .theme-toggle {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 8px;
+      font-size: 0.74rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--fg-muted);
+    }
+
+    .theme-toggle span.dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .analysis-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .author-list {
+      max-height: 152px;
+      overflow: auto;
+      padding: 6px 0 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.03);
+      background: rgba(5,5,10,0.4);
+    }
+
+    .author-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.13s ease background;
+    }
+
+    .author-row:hover {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .author-row input[type="checkbox"] {
+      margin-right: 6px;
+    }
+
+    .author-name {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .author-name span.tagline {
+      font-size: 0.68rem;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .score-pill {
+      font-size: 0.7rem;
+      padding: 3px 7px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--fg-muted);
+    }
+
+    .score-pill.strong {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .score-pill.weak {
+      opacity: 0.7;
+    }
+
+    .analysis-output {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 8px 10px;
+      background: rgba(4,4,8,0.8);
+      font-size: 0.8rem;
+      color: var(--fg-muted);
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .analysis-output h3 {
+      margin: 4px 0 6px;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--fg);
+    }
+
+    .analysis-output .global-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .metric-pill {
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.75rem;
+    }
+
+    .author-card {
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 6px 8px;
+      margin-top: 6px;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .author-card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .author-card-header h4 {
+      margin: 0;
+      font-size: 0.83rem;
+    }
+
+    .author-card-header .sim {
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .author-card p {
+      margin: 4px 0 3px;
+    }
+
+    .author-card .tiny {
+      font-size: 0.72rem;
+      color: var(--fg-muted);
+    }
+
+    .author-card blockquote {
+      margin: 4px 0 2px;
+      padding-left: 7px;
+      border-left: 2px solid rgba(255,255,255,0.12);
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+      font-style: italic;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .mini-badge {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--fg-muted);
+    }
+
+    .mini-badge.hot {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .author-search-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 4px;
+      justify-content: space-between;
+    }
+
+    .author-search-row input[type="text"] {
+      flex: 1;
+    }
+
+    .author-search-row button {
+      font-size: 0.7rem;
+      padding-inline: 8px;
+    }
+
+    .new-author-section {
+      margin-top: 14px;
+      border-top: 1px dashed rgba(255,255,255,0.12);
+      padding-top: 10px;
+    }
+
+    .new-author-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 980px) {
+      .new-author-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 6px;
+    }
+
+    .field label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--fg-muted);
+    }
+
+    .field textarea {
+      min-height: 70px;
+      resize: vertical;
+      padding: 6px 8px;
+      border-radius: 9px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(7,7,12,0.9);
+      color: var(--fg);
+      font-size: 0.78rem;
+      font-family: var(--font-sans);
+    }
+
+    [data-theme="light"] .field textarea {
+      background: #ffffff;
+    }
+
+    .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(227,179,65,0.35);
+      outline: none;
+    }
+
+    .field-note {
+      font-size: 0.7rem;
+      color: var(--fg-muted);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    footer.app-footer {
+      margin-top: 16px;
+      font-size: 0.72rem;
+      color: var(--fg-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      opacity: 0.8;
+    }
+
+    .muted {
+      color: var(--fg-muted);
+    }
+
+    .danger-text {
+      color: var(--danger);
+    }
+
+    .linkish {
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="app-root">
+    <header class="app-header">
+      <div class="title-block">
+        <h1>
+          Author Comparator
+          <span class="title-pill">Local Style Lab</span>
+        </h1>
+        <p>Paste or write text, then see how closely it matches the stylistic fingerprints of Marquez, Woolf, Hemingway, Morrison, Murakami, Bukowski, and more. Add your own authors to the arsenal.</p>
+      </div>
+      <div class="header-controls">
+        <div class="theme-toggle" id="themeToggle">
+          <span class="dot"></span>
+          <span>Theme</span>
+        </div>
+        <span class="chip badge">HTML-first · Local-only · No tracking</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-inner">
+          <div class="panel-header">
+            <h2>Draft</h2>
+            <div class="sub">Write or paste the text you want to compare.</div>
+          </div>
+
+          <div class="editor-top-row">
+            <div class="tiny-label">Text input</div>
+            <div class="editor-controls">
+              <button class="secondary" id="sampleBtn" type="button">Load sample</button>
+              <button class="secondary" id="clearBtn" type="button">Clear</button>
+            </div>
+          </div>
+
+          <textarea id="userText" placeholder="Write a paragraph or two here, then hit Analyze."></textarea>
+
+          <div class="editor-stats" id="editorStats">
+            <span>Words: 0</span>
+            <span>Sentences: 0</span>
+            <span>Avg sentence length: 0</span>
+            <span>Adverbs (-ly): 0</span>
+          </div>
+
+          <div class="analyze-bar">
+            <div class="analyze-bar-left">
+              <span class="pill-label">Compare to selection</span>
+              <button class="primary" id="analyzeBtn" type="button">Analyze</button>
+            </div>
+            <div class="tiny-label muted">Tip: pick 1–3 authors for clearer feedback.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-inner analysis-section">
+          <div class="panel-header">
+            <h2>Authors & Analysis</h2>
+            <div class="sub">Toggle authors, then inspect similarities.</div>
+          </div>
+
+          <div class="author-search-row">
+            <input type="text" id="authorFilter" placeholder="Filter authors (e.g. modern, surreal, misanthropic)…">
+            <button class="secondary" id="selectAllBtn" type="button">All</button>
+            <button class="secondary" id="clearSelectionBtn" type="button">None</button>
+          </div>
+
+          <div class="author-list" id="authorList"></div>
+
+          <div class="analysis-output" id="analysisOutput">
+            <h3>Style glance</h3>
+            <div class="global-metrics" id="globalMetrics"></div>
+            <div id="authorCards">
+              <p class="muted">Write some text and click Analyze to see how it stacks up against your chosen authors.</p>
+            </div>
+          </div>
+
+          <div class="new-author-section">
+            <div class="panel-header">
+              <h2>Add Author</h2>
+              <div class="sub">Extend the comparison arsenal with your own profiles.</div>
+            </div>
+            <div class="new-author-grid">
+              <div>
+                <div class="field">
+                  <label for="newAuthorName">Name</label>
+                  <input type="text" id="newAuthorName" placeholder="e.g. Cormac McCarthy">
+                  <div class="field-note">This will appear in the author list.</div>
+                </div>
+                <div class="field">
+                  <label for="newAuthorDesc">Style note</label>
+                  <textarea id="newAuthorDesc" placeholder="One or two lines describing this author's style."></textarea>
+                </div>
+                <div class="field">
+                  <label for="newAuthorSample">Example sentence</label>
+                  <textarea id="newAuthorSample" placeholder="Paste a characteristic sentence or short extract."></textarea>
+                </div>
+              </div>
+              <div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="newAvgLen">Avg sentence length</label>
+                    <input type="number" id="newAvgLen" min="3" max="60" step="1" placeholder="e.g. 10">
+                    <div class="field-note">Approximate number of words per sentence.</div>
+                  </div>
+                  <div class="field">
+                    <label for="newAdverbRatio">Adverb ratio</label>
+                    <input type="number" id="newAdverbRatio" min="0" max="0.4" step="0.01" placeholder="e.g. 0.06">
+                    <div class="field-note">Rough ratio of -ly adverbs to total words.</div>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="newDialogRatio">Dialogue ratio</label>
+                    <input type="number" id="newDialogRatio" min="0" max="0.9" step="0.05" placeholder="e.g. 0.3">
+                    <div class="field-note">How much dialogue they tend to use.</div>
+                  </div>
+                  <div class="field">
+                    <label for="newAbstractRatio">Abstract noun ratio</label>
+                    <input type="number" id="newAbstractRatio" min="0" max="0.4" step="0.01" placeholder="e.g. 0.12">
+                    <div class="field-note">How often they lean on abstract concepts.</div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="newLexicon">Lexical hints</label>
+                  <input type="text" id="newLexicon" placeholder="Comma-separated: dust, horse, sun, river">
+                  <div class="field-note">Optional: favourite nouns/verbs/themes; used lightly in similarity.</div>
+                </div>
+                <button class="secondary" id="saveAuthorBtn" type="button">Save author (local)</button>
+                <div class="field-note tiny-label" id="authorSaveStatus"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div>Author Comparator · HTML-first seed · v1.0</div>
+      <div>All analysis is heuristic and local. No data leaves your browser.</div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PageWriter v2.0 — Write → Analyze → Edit</title>
+<style>
+  :root{ --bg:#0B0C10; --ink:#EAEAEA; --muted:#9DA3AE; --card:#121319; --grid:#1a1b22; --accent:#7AE0FF;
+         --passive:#FF8FA3; --filler:#FFD166; --repeat:#72F1B8; --tone:#C4B5FD; }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;}
+  header{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;padding:12px 16px;
+    background:linear-gradient(180deg,rgba(11,12,16,.95),rgba(11,12,16,.7) 70%,rgba(11,12,16,0));border-bottom:1px solid var(--grid)}
+  .brand{font-weight:800;letter-spacing:.3px}
+  .spacer{flex:1}
+  main{max-width:1100px;margin:0 auto;padding:16px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+  button{background:#151723;color:var(--ink);border:1px solid var(--grid);border-radius:12px;padding:8px 12px;cursor:pointer;font-weight:600}
+  button:hover{border-color:var(--accent)}
+  select{background:#151723;color:var(--ink);border:1px solid var(--grid);border-radius:10px;padding:6px 8px}
+  .editor{min-height:65vh;padding:18px 20px;outline:none;border:1px solid var(--grid);border-radius:16px;background:#0b0d13;
+    font:16px/1.75 ui-serif,"EB Garamond",Georgia,serif;white-space:pre-wrap;word-break:break-word;caret-color:var(--accent)}
+  .editor[contenteditable="false"]{background:#0f1118}
+  .hint{color:var(--muted);font-size:.9rem}
+  mark{padding:1px 2px;border-radius:4px}
+  mark.passive{background: color-mix(in srgb, var(--passive) 18%, transparent); outline: 1px solid color-mix(in srgb, var(--passive) 50%, transparent)}
+  mark.filler{background: color-mix(in srgb, var(--filler) 18%, transparent); outline: 1px solid color-mix(in srgb, var(--filler) 50%, transparent)}
+  mark.repeat{background: color-mix(in srgb, var(--repeat) 18%, transparent); outline: 1px solid color-mix(in srgb, var(--repeat) 50%, transparent)}
+  mark.tone{background: color-mix(in srgb, var(--tone) 18%, transparent); outline: 1px solid color-mix(in srgb, var(--tone) 50%, transparent)}
+  .meta{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0;color:var(--muted)}
+  .chip{border:1px solid var(--grid);border-radius:999px;padding:3px 8px}
+  .goal{display:flex;align-items:center;gap:8px;margin-left:auto}
+  progress{width:160px;height:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">PageWriter</div>
+  <div class="spacer"></div>
+  <div class="goal">
+    <span>Goal</span>
+    <select id="goalSelect">
+      <option value="250">250</option>
+      <option value="300">300</option>
+      <option value="400" selected>400</option>
+      <option value="500">500</option>
+    </select>
+    <progress id="goalBar" max="100" value="0"></progress>
+    <span id="goalPct">0%</span>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <button id="modeWrite" data-mode="Write">Write</button>
+    <button id="modeAnalyze" data-mode="Analyze">Analyze</button>
+    <button id="modeEdit" data-mode="Edit">Edit</button>
+    <span class="spacer"></span>
+    <button id="loadSample">Load sample</button>
+    <button id="resetBtn">New session</button>
+  </div>
+
+  <div id="stageHint" class="hint">Write your page. When you reach your goal, click Analyze.</div>
+
+  <div id="editor" class="editor" contenteditable="true" spellcheck="false" data-placeholder="Write your page…"></div>
+
+  <div class="meta" id="stats">
+    <span class="chip">Words: <b id="mWords">0</b></span>
+    <span class="chip">Unique: <b id="mUnique">0</b></span>
+    <span class="chip">TTR: <b id="mTTR">0</b></span>
+    <span class="chip">Avg sentence: <b id="mASL">0</b></span>
+    <span class="chip">Repeat hits: <b id="cRepeat">0</b></span>
+    <span class="chip">Filler hits: <b id="cFiller">0</b></span>
+    <span class="chip">Passive hits: <b id="cPassive">0</b></span>
+    <span class="chip">Tone hits: <b id="cTone">0</b></span>
+  </div>
+</main>
+
+<script>
+(function(){
+  const editor = document.getElementById('editor');
+  const goalSelect = document.getElementById('goalSelect');
+  const goalBar = document.getElementById('goalBar');
+  const goalPct = document.getElementById('goalPct');
+  const stageHint = document.getElementById('stageHint');
+  const $ = id => document.getElementById(id);
+
+  function esc(s){ return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+  function toWords(text){ return text.toLowerCase().match(/[a-zA-Z']{2,}/g) || []; }
+  function sentences(text){ return text.match(/[^.!?\\n]+[.!?\\n]+|[^.!?\\n]+$/g) || []; }
+  function uniq(arr){ return Array.from(new Set(arr)); }
+
+  const STOP = new Set("a,an,the,and,or,but,so,of,to,in,on,for,with,as,by,at,from,that,this,those,these,be,been,being,is,are,was,were,am,i,you,he,she,it,they,we,me,my,your,his,her,its,their,our,not,no,do,does,did,if,then,than,there,here,when,where,while,what,which,who,whom,why,how,into,over,under,about,after,before,because,through,up,down,out,off,also,too,very".split(',').map(s=>s.trim()));
+  const FILLER = new Set(["very","really","just","actually","basically","literally","quite","pretty","somewhat","rather","perhaps","maybe","kind of","sort of","a bit","a little","in order to","due to the fact","at the end of the day","as you know","needless to say","in my opinion","I think","I feel"]);
+  const TONE = new Set(["seems","appears","probably","possibly","arguably","hopefully","honestly","frankly","obviously","clearly","of course","to be honest","with all due respect","for what it's worth","I guess","I suppose"]);
+  const AUX = "(?:is|are|am|was|were|be|been|being|has been|have been|had been|will be|would be|should be|could be|to be)";
+  const PARTICIPLE = "(?:[a-zA-Z]+(?:ed|en)|known|seen|made|given|done|taken|built|bought|caught|felt|found|held|kept|left|lost|paid|put|read|said|sent|set|sold|told|won|written)";
+  const passiveRe = new RegExp("\\b"+AUX+"\\s+"+PARTICIPLE+"\\b", "gi");
+
+  function findAllRegexRanges(text, regex){
+    const ranges=[]; regex.lastIndex = 0; let m;
+    while((m = regex.exec(text))){ ranges.push({start:m.index,end:m.index+m[0].length}); if(!regex.global) break; }
+    return ranges;
+  }
+  function mergeRanges(arr){
+    if(arr.length===0) return [];
+    arr.sort((a,b)=>a.start-b.start||a.end-b.end);
+    const out=[arr[0]];
+    for(let i=1;i<arr.length;i++){
+      const prev = out[out.length-1], cur = arr[i];
+      if(cur.start <= prev.end){ prev.end = Math.max(prev.end, cur.end); }
+      else out.push({...cur});
+    }
+    return out;
+  }
+  function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\\]\\\\]/g, r=>"\\"+r); }
+
+  function computeNgrams(tokens, n){
+    const map = new Map();
+    for(let i=0;i<=tokens.length-n;i++){
+      const grams = tokens.slice(i,i+n);
+      if(grams.some(w=>STOP.has(w))) continue;
+      if(grams.join('').length < 5) continue;
+      const key = grams.join(' ');
+      map.set(key,(map.get(key)||0)+1);
+    }
+    return map;
+  }
+
+  function layerRanges(text){
+    const ranges = { repeat:[], filler:[], passive:[], tone:[] };
+    const lower = text.toLowerCase();
+    const phraseSet = new Set([...FILLER, ...TONE]);
+    for(const phrase of phraseSet){
+      const cls = FILLER.has(phrase) ? 'filler' : 'tone';
+      const re = new RegExp("\\b"+escapeRegex(phrase)+"\\b","gi");
+      for(const r of findAllRegexRanges(text, re)) ranges[cls].push(r);
+    }
+    for(const r of findAllRegexRanges(text, passiveRe)) ranges.passive.push(r);
+    const words = (text.toLowerCase().match(/[a-zA-Z']{2,}/g) || []);
+    const freq = new Map(); words.forEach(w=>freq.set(w,(freq.get(w)||0)+1));
+    const repeatedWords = new Set(Array.from(freq.entries()).filter(([w,c])=>c>=3 && !STOP.has(w) && w.length>2).map(([w])=>w));
+    for(const w of repeatedWords){
+      const re = new RegExp("\\b"+escapeRegex(w)+"\\b","gi");
+      for(const r of findAllRegexRanges(text, re)) ranges.repeat.push(r);
+    }
+    for(const n of [2,3]){
+      const grams = computeNgrams(words, n);
+      grams.forEach((c, key)=>{
+        if(c>1){
+          const re = new RegExp("(?<![A-Za-z])"+escapeRegex(key)+"(?![A-Za-z])","gi");
+          for(const r of findAllRegexRanges(lower, re)){
+            ranges.repeat.push({start:r.start, end:r.start+key.length});
+          }
+        }
+      });
+    }
+    for(const k of Object.keys(ranges)) ranges[k] = mergeRanges(ranges[k]);
+    return ranges;
+  }
+
+  function wrapWithMarks(text, rangesByLayer){
+    const draw=[];
+    for(const [cls, arr] of Object.entries(rangesByLayer)){
+      for(const r of arr) draw.push({start:r.start,end:r.end,cls});
+    }
+    if(draw.length===0) return esc(text);
+    draw.sort((a,b)=>a.start-b.start||b.end-a.end);
+    let out='', i=0;
+    for(const r of draw){
+      if(r.start < i) continue;
+      out += esc(text.slice(i,r.start));
+      out += '<mark class="'+r.cls+'">'+esc(text.slice(r.start,r.end))+'</mark>';
+      i = r.end;
+    }
+    out += esc(text.slice(i));
+    return out;
+  }
+
+  function updateStats(raw, ranges){
+    const words = toWords(raw);
+    $('mWords').textContent = words.length;
+    $('mUnique').textContent = uniq(words).length;
+    $('mTTR').textContent = (words.length? (uniq(words).length/words.length):0).toFixed(2);
+    const sents = sentences(raw);
+    $('mASL').textContent = (sents.length? (words.length/sents.length):0).toFixed(1);
+    $('cRepeat').textContent = ranges.repeat.length;
+    $('cFiller').textContent = ranges.filler.length;
+    $('cPassive').textContent = ranges.passive.length;
+    $('cTone').textContent = ranges.tone.length;
+  }
+
+  function updateGoal(raw){
+    const target = parseInt(goalSelect.value,10);
+    const wc = toWords(raw).length;
+    const pct = Math.min(100, Math.floor(100*wc/target));
+    goalBar.value = pct; goalPct.textContent = pct + '%';
+  }
+
+  let mode = 'Write';
+  function setMode(next){
+    mode = next;
+    if(mode === 'Write'){
+      stageHint.textContent = 'Write your page. When you reach your goal, click Analyze.';
+      editor.contentEditable = 'true';
+      editor.innerText = editor.innerText; // ensure raw view
+    } else if(mode === 'Analyze'){
+      const raw = editor.innerText;
+      const ranges = layerRanges(raw);
+      editor.contentEditable = 'false';
+      editor.innerHTML = wrapWithMarks(raw, ranges);
+      updateStats(raw, ranges);
+      stageHint.textContent = 'Review highlights. Click Edit to revise in-place.';
+    } else if(mode === 'Edit'){
+      const raw = editor.innerText; // from Analyze
+      editor.contentEditable = 'true';
+      editor.innerText = raw;
+      stageHint.textContent = 'Revise your page. Highlights update as you type.';
+      runLiveAnalysis();
+    }
+  }
+
+  let liveTimer = null;
+  function runLiveAnalysis(){
+    if(mode!=='Edit') return;
+    const raw = editor.innerText;
+    const ranges = layerRanges(raw);
+    const scroll = editor.scrollTop;
+    editor.innerHTML = wrapWithMarks(raw, ranges);
+    editor.scrollTop = scroll;
+    placeCaretAtEnd(editor);
+    updateStats(raw, ranges);
+  }
+  function placeCaretAtEnd(el){
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(range);
+  }
+
+  editor.addEventListener('input', ()=>{
+    updateGoal(editor.innerText);
+    if(mode==='Edit'){
+      clearTimeout(liveTimer);
+      liveTimer = setTimeout(runLiveAnalysis, 160);
+    }
+  });
+  editor.addEventListener('paste', e=>{
+    e.preventDefault();
+    const t = (e.clipboardData||window.clipboardData).getData('text');
+    document.execCommand('insertText', false, t);
+  });
+  goalSelect.addEventListener('change', ()=> updateGoal(editor.innerText));
+
+  document.getElementById('modeWrite').onclick = ()=> setMode('Write');
+  document.getElementById('modeAnalyze').onclick = ()=> setMode('Analyze');
+  document.getElementById('modeEdit').onclick = ()=> setMode('Edit');
+
+  document.getElementById('loadSample').onclick = ()=>{
+    const sample = `I think this draft is maybe kind of fine, but it is being written in a way that could be improved. It was made quickly. It seems pretty good, I guess, but it is very, very repetitive. At the end of the day, the point is basically clear. The experiment was conducted by the team and the results were analyzed. It was decided that the approach would be changed.
+
+I actually feel that it is perhaps a bit long. It is said that the work was done well, but it appears that several mistakes were made. The text is really just a little messy, and it could be a lot tighter. In order to finish, we will be finishing soon.`;
+    editor.innerText = sample;
+    updateGoal(sample);
+  };
+
+  document.getElementById('resetBtn').onclick = ()=>{
+    if(!confirm('Start a new session? This will clear your page.')) return;
+    editor.innerHTML='';
+    updateGoal('');
+    ['mWords','mUnique','mTTR','mASL','cRepeat','cFiller','cPassive','cTone'].forEach(id=> $(id).textContent='0');
+    setMode('Write');
+  };
+
+  setMode('Write');
+  updateGoal('');
+})();</script>
+</body>
+</html>

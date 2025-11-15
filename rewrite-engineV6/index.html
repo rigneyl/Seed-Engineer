@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>The Rewrite Engine — MVP (Save • Open • Grammar)</title>
+<style>
+  :root{
+    --bg:#0B0C10; --ink:#E6E6E6; --muted:#9DA3AE; --card:#121319; --accent:#7AE0FF; --ring:#2A9D8F;
+    --passive:#FF8FA3; --filler:#FFD166; --repeat:#72F1B8; --tone:#C4B5FD; --grammar:#FFB3BA; --grid:#1a1b22;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  header{position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:12px;
+    padding:12px 16px; background:linear-gradient(180deg, rgba(11,12,16,.95), rgba(11,12,16,.75) 70%, rgba(11,12,16,0));
+    backdrop-filter: blur(6px); border-bottom:1px solid var(--grid)}
+  .brand{font-weight:700; letter-spacing:.5px}
+  .tag{color:var(--muted); font-size:.9rem}
+  .docname{background:#0f1117; border:1px solid var(--grid); border-radius:10px; padding:6px 10px; color:var(--ink); min-width:180px}
+  .shell{display:grid; grid-template-columns:320px 1fr; min-height:calc(100% - 62px)}
+  aside{border-right:1px solid var(--grid); background:var(--card); padding:14px; display:flex; flex-direction:column; gap:12px}
+  .panel{background:#0f1016; border:1px solid var(--grid); border-radius:14px; padding:12px}
+  .panel h3{margin:0 0 8px 0; font-size:.95rem; font-weight:700}
+  .meta{display:grid; grid-template-columns:1fr auto; gap:6px; font-size:.92rem}
+  .meta div{color:var(--muted)}
+  .toggle{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:6px 0; font-size:.95rem}
+  .toggle input{accent-color:var(--accent)}
+  .legend{display:grid; grid-template-columns: 16px 1fr; gap:8px; align-items:center; font-size:.9rem}
+  .dot{width:12px; height:12px; border-radius:3px}
+  main{position:relative; overflow:auto}
+  .toolbar{position:sticky; top:0; z-index:4; display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    padding:10px 14px; border-bottom:1px solid var(--grid); background:linear-gradient(180deg, rgba(18,19,25,.97), rgba(18,19,25,.6))}
+  button,.btn{background:#151723; color:var(--ink); border:1px solid var(--grid); border-radius:12px; padding:8px 12px;
+    cursor:pointer; font-weight:600; transition:transform .05s ease, border-color .2s ease}
+  button:hover{border-color:var(--accent)} button:active{transform:translateY(1px)}
+  .btn-ghost{background:transparent} .btn-accent{border-color:var(--accent)}
+  .spacer{flex:1}
+  .editor-wrap{display:grid; grid-template-columns:1fr 300px; gap:12px; padding:18px}
+  .editor{min-height:65vh; padding:18px 20px; outline:none; border:1px solid var(--grid); border-radius:16px; background:#0b0d13;
+    line-height:1.75; letter-spacing:.1px; caret-color:var(--accent); font:16px/1.75 ui-serif,"EB Garamond",Georgia,serif;
+    white-space:pre-wrap; word-break:break-word}
+  .editor:focus{box-shadow:0 0 0 2px rgba(122,224,255,.2)}
+  .placeholder{color:#6B7280}
+  mark{padding:1px 2px; border-radius:4px}
+  mark.passive{background:color-mix(in srgb, var(--passive) 18%, transparent); outline:1px solid color-mix(in srgb, var(--passive) 50%, transparent)}
+  mark.filler{background:color-mix(in srgb, var(--filler) 18%, transparent); outline:1px solid color-mix(in srgb, var(--filler) 50%, transparent)}
+  mark.repeat{background:color-mix(in srgb, var(--repeat) 18%, transparent); outline:1px solid color-mix(in srgb, var(--repeat) 50%, transparent)}
+  mark.tone{background:color-mix(in srgb, var(--tone) 18%, transparent); outline:1px solid color-mix(in srgb, var(--tone) 50%, transparent)}
+  mark.grammar{background:color-mix(in srgb, var(--grammar) 18%, transparent); outline:1px solid color-mix(in srgb, var(--grammar) 55%, transparent)}
+  .side{border:1px solid var(--grid); border-radius:16px; background:#0b0d13; padding:10px; min-height:65vh; overflow:auto}
+  .side h4{margin:6px 8px 8px; font-size:.95rem}
+  .issue{border:1px solid var(--grid); border-radius:10px; padding:8px; margin:8px; background:#0f1016}
+  .issue small{color:var(--muted)}
+  .issue .row{display:flex; gap:8px; align-items:center; margin-top:6px}
+  .issue button{padding:6px 10px; border-radius:10px}
+  .minimap{position:fixed; right:12px; bottom:12px; width:8px; height:160px; background:#0e1018; border:1px solid var(--grid); border-radius:999px; overflow:hidden}
+  .minimap span{display:block; width:100%}
+  footer{padding:10px 14px; color:var(--muted); border-top:1px solid var(--grid)}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.9rem}
+  @media (max-width: 1100px){ .editor-wrap{grid-template-columns:1fr} .minimap{display:none} }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">The Rewrite Engine</div>
+    <div class="tag">Write • Save • Open • Analyze • Grammar</div>
+    <div class="spacer"></div>
+    <input id="docName" class="docname" placeholder="Untitled document"/>
+    <a class="btn btn-ghost" href="#" id="loadSample">Load sample</a>
+  </header>
+
+  <div class="shell">
+    <aside>
+      <div class="panel">
+        <h3>Highlights</h3>
+        <label class="toggle"><span>Repetition</span><span><input type="checkbox" data-toggle="repeat" checked> <span class="mono" id="cRepeat">0</span></span></label>
+        <label class="toggle"><span>Filter words</span><span><input type="checkbox" data-toggle="filler" checked> <span class="mono" id="cFiller">0</span></span></label>
+        <label class="toggle"><span>Passive voice</span><span><input type="checkbox" data-toggle="passive" checked> <span class="mono" id="cPassive">0</span></span></label>
+        <label class="toggle"><span>Tonal noise</span><span><input type="checkbox" data-toggle="tone" checked> <span class="mono" id="cTone">0</span></span></label>
+        <label class="toggle"><span>Grammar & spelling</span><span><input type="checkbox" data-toggle="grammar" checked> <span class="mono" id="cGrammar">0</span></span></label>
+        <div style="height:8px"></div>
+        <div class="legend"><span class="dot" style="background:var(--repeat)"></span><span>Repeated words/phrases</span></div>
+        <div class="legend"><span class="dot" style="background:var(--filler)"></span><span>Filter words / fluff</span></div>
+        <div class="legend"><span class="dot" style="background:var(--passive)"></span><span>Passive voice heuristics</span></div>
+        <div class="legend"><span class="dot" style="background:var(--tone)"></span><span>Hedges / tonal noise</span></div>
+        <div class="legend"><span class="dot" style="background:var(--grammar)"></span><span>Grammar & spelling (LanguageTool)</span></div>
+      </div>
+      <div class="panel">
+        <h3>Stats</h3>
+        <div class="meta"><div>Words</div><div id="mWords">0</div></div>
+        <div class="meta"><div>Unique</div><div id="mUnique">0</div></div>
+        <div class="meta"><div>Type-token ratio</div><div id="mTTR">0</div></div>
+        <div class="meta"><div>Avg. sentence length</div><div id="mASL">0</div></div>
+        <div class="meta"><div>Repeat density</div><div id="mRepeatD">0%</div></div>
+      </div>
+      <div class="panel">
+        <h3>Export</h3>
+        <button id="copyPlain">Copy plain text</button>
+        <button id="downloadTXT">Download .txt</button>
+        <button id="downloadJSON" class="btn-accent" title="Counts and locations only">Download JSON report</button>
+      </div>
+      <div class="panel" style="color:var(--muted); font-size:.9rem">
+        Tip: Autosaves every 5 seconds. Use the Grammar button for suggestions you can click to apply.
+      </div>
+    </aside>
+
+    <main>
+      <div class="toolbar">
+        <button id="newBtn">New</button>
+        <input id="openFile" type="file" accept=".txt,.md,.rewrite.json,application/json" style="display:none"/>
+        <button id="openBtn">Open…</button>
+        <button id="saveBtn">Save</button>
+        <div style="width:10px"></div>
+        <button id="analyzeBtn" class="btn-accent">Analyze</button>
+        <button id="grammarBtn">Grammar</button>
+        <button id="clearBtn" class="btn-ghost">Clear</button>
+        <span class="spacer"></span>
+        <label style="display:flex; align-items:center; gap:8px; color:var(--muted);">
+          <input type="checkbox" id="nativeSpell" checked>
+          native spellcheck
+        </label>
+        <span class="mono" id="status">Ready</span>
+      </div>
+
+      <div class="editor-wrap">
+        <div id="editor" class="editor" contenteditable="true" spellcheck="true" data-placeholder="Write here…"></div>
+
+        <div class="side" id="issuesPanel" aria-live="polite">
+          <h4>Suggestions</h4>
+          <div id="issues"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="minimap" id="minimap" aria-hidden="true"></div>
+
+  <footer>
+    The Rewrite Engine • It doesn’t fix — it reveals patterns (and now suggests fixes).
+  </footer>
+
+<script>
+(function(){
+  // ---------- Elements
+  const editor = document.getElementById('editor');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const grammarBtn = document.getElementById('grammarBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const loadSample = document.getElementById('loadSample');
+  const statusEl = document.getElementById('status');
+  const minimap = document.getElementById('minimap');
+  const copyPlain = document.getElementById('copyPlain');
+  const downloadJSON = document.getElementById('downloadJSON');
+  const downloadTXT = document.getElementById('downloadTXT');
+  const docName = document.getElementById('docName');
+  const newBtn = document.getElementById('newBtn');
+  const openBtn = document.getElementById('openBtn');
+  const openFile = document.getElementById('openFile');
+  const saveBtn = document.getElementById('saveBtn');
+  const nativeSpell = document.getElementById('nativeSpell');
+  const issuesPanel = document.getElementById('issuesPanel');
+  const issuesEl = document.getElementById('issues');
+
+  const counters = {
+    repeat: byId('cRepeat'), filler: byId('cFiller'),
+    passive: byId('cPassive'), tone: byId('cTone'), grammar: byId('cGrammar')
+  };
+
+  // ---------- Toggle state
+  const toggles = { repeat:true, filler:true, passive:true, tone:true, grammar:true };
+  document.querySelectorAll('[data-toggle]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{ toggles[cb.dataset.toggle] = cb.checked; analyze(); });
+  });
+
+  // ---------- Placeholder behavior
+  const ph = () => {
+    if(!editor.textContent.trim()) editor.classList.add('placeholder');
+    else editor.classList.remove('placeholder');
+  };
+  editor.addEventListener('input', ph); ph();
+  editor.addEventListener('paste', e=>{
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    document.execCommand('insertText', false, text);
+  });
+
+  // ---------- Dictionaries
+  const STOP = new Set("a,an,the,and,or,but,so,of,to,in,on,for,with,as,by,at,from,that,this,those,these,be,been,being,is,are,was,were,am,i,you,he,she,it,they,we,me,my,your,his,her,its,their,our,not,no,do,does,did,if,then,than,there,here,when,where,while,what,which,who,whom,why,how,into,over,under,about,after,before,because,through,up,down,out,off,also,too,very".split(',').map(s=>s.trim()));
+  const FILLER = new Set(["very","really","just","actually","basically","literally","quite","pretty","somewhat","rather","perhaps","maybe","kind of","sort of","a bit","a little","in order to","due to the fact","at the end of the day","as you know","needless to say","in my opinion","I think","I feel"]);
+  const TONE = new Set(["seems","appears","probably","possibly","arguably","hopefully","honestly","frankly","obviously","clearly","of course","to be honest","with all due respect","for what it's worth","I guess","I suppose"]);
+
+  // Passive voice (simple)
+  const AUX = "(?:is|are|am|was|were|be|been|being|has been|have been|had been|will be|would be|should be|could be|to be)";
+  const PARTICIPLE = "(?:[a-zA-Z]+(?:ed|en)|known|seen|made|given|done|taken|built|bought|caught|felt|found|held|kept|left|lost|paid|put|read|said|sent|set|sold|told|won|written)";
+  const passiveRe = new RegExp(`\\b${AUX}\\s+${PARTICIPLE}\\b`, 'gi');
+
+  // ---------- Utils
+  function byId(id){ return document.getElementById(id); }
+  function esc(s){ return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+  function toWords(text){ return text.toLowerCase().match(/[a-zA-Z']{2,}/g) || []; }
+  function sentences(text){ return text.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) || []; }
+  function uniq(arr){ return Array.from(new Set(arr)); }
+  function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, r=>`\\${r}`); }
+
+  function computeNgrams(tokens, n){
+    const map = new Map();
+    for(let i=0;i<=tokens.length-n;i++){
+      const grams = tokens.slice(i,i+n);
+      if(grams.some(w=>STOP.has(w))) continue;
+      if(grams.join('').length < 5) continue;
+      const key = grams.join(' ');
+      map.set(key, (map.get(key)||0)+1);
+    }
+    return map;
+  }
+
+  function findAllRegexRanges(text, regex){
+    const ranges = []; regex.lastIndex = 0; let m;
+    while((m = regex.exec(text))){ ranges.push({start:m.index, end:m.index+m[0].length}); if(!regex.global) break; }
+    return ranges;
+  }
+
+  function mergeRanges(arr){
+    if(arr.length===0) return [];
+    arr.sort((a,b)=>a.start-b.start || a.end-b.end);
+    const out=[arr[0]];
+    for(let i=1;i<arr.length;i++){
+      const prev = out[out.length-1];
+      const cur = arr[i];
+      if(cur.start <= prev.end){ prev.end = Math.max(prev.end, cur.end); }
+      else out.push({...cur});
+    }
+    return out;
+  }
+
+  function wrapWithMarks(text, layers){
+    const toDraw = [];
+    for(const [cls, ranges] of Object.entries(layers)){
+      if(!toggles[cls]) continue;
+      for(const r of ranges){ toDraw.push({start:r.start, end:r.end, cls, meta:r.meta}); }
+    }
+    if(toDraw.length===0) return esc(text);
+    toDraw.sort((a,b)=> a.start-b.start || b.end-a.end);
+    let out = '', i = 0;
+    for(const r of toDraw){
+      if(r.start < i) continue;
+      const frag = text.slice(r.start, r.end);
+      const tip = r.meta?.msg ? ` data-tip="${esc(r.meta.msg)}"` : '';
+      out += esc(text.slice(i, r.start));
+      out += `<mark class="${r.cls}"${tip}>` + esc(frag) + '</mark>';
+      i = r.end;
+    }
+    out += esc(text.slice(i));
+    return out;
+  }
+
+  function updateMinimap(layers){
+    const h = minimap.clientHeight; const total = Math.max(editor.textContent.length, 1);
+    minimap.innerHTML = '';
+    const colors = {repeat:'var(--repeat)', filler:'var(--filler)', passive:'var(--passive)', tone:'var(--tone)', grammar:'var(--grammar)'};
+    for(const [cls, arr] of Object.entries(layers)){
+      if(!toggles[cls]) continue;
+      for(const r of arr){
+        const y = (r.start / total) * h;
+        const dot = document.createElement('span');
+        dot.style.height = '3px';
+        dot.style.marginTop = Math.max(0, y - minimap.childElementCount) + 'px';
+        dot.style.background = colors[cls];
+        minimap.appendChild(dot);
+      }
+    }
+  }
+
+  // ---------- Pattern analysis (existing)
+  function layerRanges(text){
+    const ranges = { repeat:[], filler:[], passive:[], tone:[], grammar:[] };
+
+    // Filler & Tone (phrase-aware)
+    const lower = text.toLowerCase();
+    const phraseSet = new Set([...FILLER, ...TONE]);
+    for(const phrase of phraseSet){
+      const cls = FILLER.has(phrase) ? 'filler' : 'tone';
+      const re = new RegExp(`\\b${escapeRegex(phrase)}\\b`, 'gi');
+      for(const r of findAllRegexRanges(text, re)) ranges[cls].push(r);
+    }
+
+    // Passive
+    for(const r of findAllRegexRanges(text, passiveRe)) ranges.passive.push(r);
+
+    // Repetition
+    const words = toWords(text);
+    const freq = new Map(); words.forEach(w=>freq.set(w,(freq.get(w)||0)+1));
+    const repeatedWords = new Set(Array.from(freq.entries()).filter(([w,c])=>c>=3 && !STOP.has(w) && w.length>2).map(([w])=>w));
+    for(const w of repeatedWords){
+      const re = new RegExp(`\\b${escapeRegex(w)}\\b`, 'gi');
+      for(const r of findAllRegexRanges(text, re)) ranges.repeat.push(r);
+    }
+    for(const n of [2,3]){
+      const grams = computeNgrams(words, n);
+      grams.forEach((c, key)=>{
+        if(c>1){
+          const re = new RegExp(`(?<![A-Za-z])${escapeRegex(key)}(?![A-Za-z])`, 'gi');
+          for(const r of findAllRegexRanges(lower, re)){
+            ranges.repeat.push({start:r.start, end:r.start+key.length});
+          }
+        }
+      });
+    }
+
+    // Merge overlaps
+    for(const k of Object.keys(ranges)){ ranges[k] = mergeRanges(ranges[k]); }
+    return ranges;
+  }
+
+  // ---------- Grammar via LanguageTool
+  async function grammarCheck(text){
+    const url = "https://api.languagetool.org/v2/check";
+    const body = new URLSearchParams({ text, language:"en-US" });
+    const res = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/x-www-form-urlencoded" }, body });
+    if(!res.ok) throw new Error("Grammar service unavailable");
+    const data = await res.json();
+    // Convert matches → ranges + meta
+    const ranges = [];
+    issuesEl.innerHTML = '';
+    (data.matches || []).forEach((m, idx)=>{
+      const start = m.offset, end = m.offset + m.length;
+      const repl = (m.replacements && m.replacements[0] && m.replacements[0].value) || '';
+      const msg = `${m.message}${repl ? ` → “${repl}”` : ''}`;
+      ranges.push({ start, end, meta: { msg, repl, idx } });
+
+      // sidebar item
+      const card = document.createElement('div');
+      card.className = 'issue';
+      card.dataset.idx = String(idx);
+      const original = text.slice(start, end);
+      card.innerHTML = `
+        <div><strong>${esc(m.rule?.issueType || m.rule?.id || 'Issue')}</strong></div>
+        <div><small>${esc(m.message)}</small></div>
+        <div class="row"><code>${esc(original)}</code>${repl ? ` → <code>${esc(repl)}</code>`:''}</div>
+        <div class="row">
+          ${repl ? `<button data-action="apply" data-start="${start}" data-end="${end}" data-repl="${esc(repl)}">Apply</button>`:''}
+          <button data-action="locate" data-start="${start}" data-end="${end}">Find</button>
+          <button data-action="ignore" data-start="${start}" data-end="${end}">Ignore</button>
+        </div>
+      `;
+      issuesEl.appendChild(card);
+    });
+    counters.grammar.textContent = ranges.length;
+    return ranges;
+  }
+
+  // Sidebar actions
+  issuesEl.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    const start = +btn.dataset.start, end = +btn.dataset.end;
+    const action = btn.dataset.action;
+    if(action === 'locate'){ highlightTemporary(start, end); }
+    else if(action === 'apply'){
+      const repl = btn.dataset.repl || '';
+      applyReplacement(start, end, repl);
+    } else if(action === 'ignore'){
+      // No-op; re-run analyze to remove highlight after text changes
+      status('Ignored.');
+    }
+  });
+
+  function highlightTemporary(start, end){
+    // Move selection to the approximate position inside contenteditable
+    editor.focus();
+    // Convert linear offsets → node/offset by walking textContent
+    const range = document.createRange();
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
+    let acc = 0, set = false;
+    while(walker.nextNode()){
+      const node = walker.currentNode;
+      const next = acc + node.textContent.length;
+      if(!set && start >= acc && start <= next){
+        range.setStart(node, start - acc);
+        set = true;
+      }
+      if(set && end >= acc && end <= next){
+        range.setEnd(node, end - acc);
+        break;
+      }
+      acc = next;
+    }
+    const sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(range);
+    status('Located issue in the editor.');
+  }
+
+  function applyReplacement(start, end, repl){
+    const text = editor.innerText;
+    const updated = text.slice(0, start) + repl + text.slice(end);
+    editor.innerText = updated;
+    analyze(); // re-render layers
+    status('Applied suggestion.');
+  }
+
+  // ---------- Render & stats
+  function analyze(extraGrammarRanges = null){
+    const text = editor.innerText;
+    const t0 = performance.now();
+    const ranges = layerRanges(text);
+    if(extraGrammarRanges){ ranges.grammar = extraGrammarRanges.map(r=>({start:r.start, end:r.end, meta:r.meta})); }
+    counters.repeat.textContent = ranges.repeat.length;
+    counters.filler.textContent = ranges.filler.length;
+    counters.passive.textContent = ranges.passive.length;
+    counters.tone .textContent = ranges.tone.length;
+    if(!extraGrammarRanges) counters.grammar.textContent = '0';
+
+    // Stats
+    const words = toWords(text);
+    byId('mWords').textContent = words.length;
+    byId('mUnique').textContent = uniq(words).length;
+    byId('mTTR').textContent = (words.length? (uniq(words).length/words.length):0).toFixed(2);
+    const sents = sentences(text);
+    const avgLen = sents.length? (words.length / sents.length) : 0;
+    byId('mASL').textContent = avgLen.toFixed(1);
+    const repTokens = ranges.repeat.reduce((acc,r)=> acc + text.slice(r.start,r.end).split(/\s+/).length, 0);
+    byId('mRepeatD').textContent = (words.length? (100*repTokens/words.length):0).toFixed(1)+"%";
+
+    // Render
+    const html = wrapWithMarks(text, ranges);
+    editor.innerHTML = html || '<span class="placeholder">Write here…</span>';
+    updateMinimap(ranges);
+
+    const dt = (performance.now()-t0).toFixed(1);
+    status(`Analyzed in ${dt} ms`);
+  }
+
+  // ---------- Save/Open/Autosave
+  function getDoc(){
+    return {
+      name: docName.value.trim() || 'Untitled',
+      content: editor.innerText,
+      updatedAt: new Date().toISOString(),
+      version: 2
+    };
+  }
+  function setDoc(d){
+    docName.value = d.name || 'Untitled';
+    editor.innerText = d.content || '';
+    analyze();
+  }
+  function download(filename, blob){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+  function save(){
+    const d = getDoc();
+    const blob = new Blob([JSON.stringify(d, null, 2)], {type:'application/json'});
+    download(`${sanitizeName(d.name)}.rewrite.json`, blob);
+    status('Saved.');
+  }
+  function exportTXT(){
+    const d = getDoc();
+    const blob = new Blob([d.content], {type:'text/plain'});
+    download(`${sanitizeName(d.name)}.txt`, blob);
+  }
+  function sanitizeName(n){ return n.replace(/[\\/:*?"<>|]+/g,'_').slice(0,120) || 'Untitled'; }
+
+  // Autosave every 5s
+  setInterval(()=>{
+    const d = getDoc();
+    localStorage.setItem('rewrite.autosave', JSON.stringify(d));
+  }, 5000);
+
+  // Restore autosave if present
+  try{
+    const raw = localStorage.getItem('rewrite.autosave');
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && d.content){ setDoc(d); status('Restored from autosave.'); }
+    }
+  } catch(e){ /* ignore */ }
+
+  // ---------- Events
+  analyzeBtn.addEventListener('click', ()=> analyze());
+  grammarBtn.addEventListener('click', async ()=>{
+    try{
+      status('Checking grammar…');
+      const text = editor.innerText;
+      const gRanges = await grammarCheck(text);
+      analyze(gRanges);
+      status(`Grammar suggestions: ${gRanges.length}`);
+    }catch(err){
+      console.error(err);
+      status('Grammar service unavailable.');
+    }
+  });
+
+  clearBtn.addEventListener('click', ()=>{
+    editor.innerHTML=''; counters.repeat.textContent=counters.filler.textContent=counters.passive.textContent=counters.tone.textContent=counters.grammar.textContent='0';
+    byId('mWords').textContent=byId('mUnique').textContent=byId('mASL').textContent=byId('mTTR').textContent='0'; byId('mRepeatD').textContent='0%';
+    status('Cleared'); minimap.innerHTML=''; issuesEl.innerHTML=''; ph();
+  });
+
+  copyPlain.addEventListener('click', ()=>{
+    const text = editor.innerText;
+    navigator.clipboard.writeText(text).then(()=> status('Plain text copied'));
+  });
+  downloadJSON.addEventListener('click', ()=>{
+    const text = editor.innerText;
+    const ranges = layerRanges(text);
+    const payload = { counts: { repeat:ranges.repeat.length, filler:ranges.filler.length, passive:ranges.passive.length, tone:ranges.tone.length }, ranges };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    download('rewrite-engine-report.json', blob);
+  });
+  downloadTXT.addEventListener('click', exportTXT);
+
+  loadSample.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const sample = `I think this draft is maybe kind of fine, but it is being written in a way that could be improved. It was made quickly. It seems pretty good, I guess, but it is very, very repetitive. At the end of the day, the point is basically clear. The experiment was conducted by the team and the results were analyzed. It was decided that the approach would be changed.
+
+I actually feel that it is perhaps a bit long. It is said that the work was done well, but it appears that several mistakes were made. The text is really just a little messy, and it could be a lot tighter. In order to finish, we will be finishing soon.`;
+    if(!editor.innerText.trim()) editor.innerText = sample; else editor.innerText += ('\n\n'+sample);
+    analyze(); status('Sample loaded.');
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e)=>{
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ analyze(); }
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); save(); }
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='o'){ e.preventDefault(); openFile.click(); }
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='g'){ e.preventDefault(); grammarBtn.click(); }
+  });
+
+  // Save/Open buttons
+  saveBtn.addEventListener('click', save);
+  newBtn.addEventListener('click', ()=>{
+    if(editor.innerText.trim().length && !confirm('Start a new document? Unsaved changes will be kept in autosave.')) return;
+    docName.value = 'Untitled';
+    editor.innerText = '';
+    analyze();
+    status('New document.');
+  });
+  openBtn.addEventListener('click', ()=> openFile.click());
+  openFile.addEventListener('change', async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const text = await file.text();
+    try{
+      if(file.name.endsWith('.rewrite.json')){
+        const d = JSON.parse(text);
+        setDoc(d); status(`Opened “${file.name}”.`);
+      } else {
+        setDoc({ name: file.name.replace(/\.[^.]+$/,''), content: text });
+        status(`Opened “${file.name}”.`);
+      }
+    }catch(err){
+      console.error(err);
+      setDoc({ name: file.name.replace(/\.[^.]+$/,''), content: text });
+      status(`Opened as plain text.`);
+    } finally {
+      openFile.value = '';
+    }
+  });
+
+  // Native spellcheck toggle
+  nativeSpell.addEventListener('change', ()=>{
+    editor.setAttribute('spellcheck', nativeSpell.checked ? 'true' : 'false');
+    status(`Native spellcheck ${nativeSpell.checked ? 'on' : 'off'}.`);
+  });
+
+  // Tooltip for inline mark (hover = show message via title)
+  editor.addEventListener('mouseover', (e)=>{
+    const mark = e.target.closest('mark'); if(!mark) return;
+    const msg = mark.getAttribute('data-tip'); if(msg) mark.title = msg;
+  });
+
+  // ---------- Helpers
+  function status(msg){ statusEl.textContent = msg; }
+
+})();
+</script>
+</body>
+</html>

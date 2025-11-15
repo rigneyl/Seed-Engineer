@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Page Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #111217;
+      --bg-elevated: #181a21;
+      --border-subtle: #2a2d3a;
+      --accent: #f0b553;
+      --accent-soft: rgba(240, 181, 83, 0.12);
+      --text: #f7f7fb;
+      --text-muted: #a0a4b8;
+      --danger: #ff6b6b;
+      --danger-soft: rgba(255, 107, 107, 0.12);
+      --success: #3fd38a;
+      --success-soft: rgba(63, 211, 138, 0.12);
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.35);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+      --transition-fast: 150ms ease-out;
+      --transition-med: 190ms ease-out;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: radial-gradient(circle at 0 0, #202336 0, #111217 45%, #080910 100%);
+      color: var(--text);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .app-shell {
+      max-width: 1200px;
+      width: 100%;
+      max-height: 720px;
+      height: 100%;
+      background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(0,0,0,0.35));
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    .app-header {
+      padding: 14px 18px 10px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-title-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-logo-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 9px;
+      background: radial-gradient(circle at 30% 20%, #ffe29f 0, #ffa99f 55%, #ff719a 100%);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.32), 0 0 32px rgba(255, 183, 125, 0.6);
+    }
+
+    .app-title-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .app-title-text h1 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #fdfdfc;
+    }
+
+    .app-title-text span {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .bar-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .chip {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      padding: 5px 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(10,10,16,0.8);
+    }
+
+    .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #24e28a;
+      box-shadow: 0 0 10px rgba(36, 226, 138, 0.9);
+    }
+
+    .chip span.key {
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 600;
+      color: #e3e5ff;
+    }
+
+    .chip span.value {
+      opacity: 0.9;
+    }
+
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(240, 181, 83, 0.6);
+      background: radial-gradient(circle at 30% 0, rgba(240, 181, 83, 0.18) 0, rgba(240,181,83,0.03) 35%, rgba(0,0,0,0.8) 100%);
+      color: #fefcf9;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: background var(--transition-med), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+      box-shadow: 0 0 0 rgba(240, 181, 83, 0);
+    }
+
+    .btn-ghost {
+      border-color: var(--border-subtle);
+      background: rgba(8,9,16,0.9);
+      color: var(--text-muted);
+      text-transform: none;
+      letter-spacing: 0.02em;
+      font-size: 12px;
+      padding-inline: 10px;
+    }
+
+    .btn-ghost strong {
+      color: #f3f3ff;
+      font-weight: 500;
+    }
+
+    .btn.primary {
+      border-color: rgba(240, 181, 83, 0.9);
+      box-shadow: 0 0 0 rgba(240, 181, 83, 0.2);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(240, 181, 83, 0.23);
+      border-color: rgba(240, 181, 83, 1);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(17,19,28,0.96);
+      border-color: rgba(108, 112, 151, 0.95);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 12px rgba(240, 181, 83, 0.15);
+    }
+
+    .btn-icon {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .app-main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 3.1fr) minmax(0, 2.4fr);
+      padding: 12px 14px 14px 14px;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .focus-mode .app-main {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .focus-mode .inspector-panel {
+      display: none;
+    }
+
+    .editor-panel,
+    .inspector-panel {
+      background: radial-gradient(circle at 10% 0, rgba(250, 223, 162, 0.04), rgba(5, 6, 8, 0.96));
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      padding: 12px 12px 10px 12px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .panel-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #f4f2ff;
+    }
+
+    .panel-title span {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .page-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .page-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(240, 181, 83, 1);
+    }
+
+    .editor-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .editor-toolbar-left,
+    .editor-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.04);
+      background: rgba(5,6,9,0.9);
+      font-size: 11px;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill span.label {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #d8ddff;
+    }
+
+    .pill span.value {
+      color: #f6f6ff;
+      opacity: 0.9;
+    }
+
+    .pill-shortcut {
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,9,16,0.9);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: #e4e7ff;
+    }
+
+    .editor-textarea {
+      flex: 1;
+      width: 100%;
+      resize: none;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: radial-gradient(circle at 0 0, rgba(245, 222, 179, 0.02), rgba(6, 7, 11, 0.98));
+      color: var(--text);
+      padding: 14px 14px 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.5;
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.6);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+      min-height: 0;
+    }
+
+    .editor-textarea:focus {
+      border-color: rgba(240, 181, 83, 0.9);
+      box-shadow: 0 0 0 1px rgba(240, 181, 83, 0.6);
+      background: radial-gradient(circle at 0 0, rgba(245, 222, 179, 0.04), rgba(6, 7, 11, 0.98));
+    }
+
+    .status-strip {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(6,7,12,0.9);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .status-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--success);
+      box-shadow: 0 0 10px rgba(63, 211, 138, 0.9);
+    }
+
+    .status-pill.has-issues .dot {
+      background: var(--danger);
+      box-shadow: 0 0 10px rgba(255, 107, 107, 0.9);
+    }
+
+    .status-pill.has-issues {
+      border-color: rgba(255, 107, 107, 0.6);
+      background: rgba(60, 12, 20, 0.85);
+    }
+
+    .status-right {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .status-right span {
+      opacity: 0.8;
+    }
+
+    .inspector-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 4px;
+      align-items: center;
+    }
+
+    .tab-btn {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .tab-btn span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-soft);
+      color: #fffaf2;
+      border-color: rgba(240, 181, 83, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .tab-btn.active span.dot {
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(240, 181, 83, 0.8);
+    }
+
+    .tab-btn.danger span.dot {
+      background: rgba(255, 107, 107, 0.35);
+    }
+
+    .tab-btn.danger.active {
+      border-color: rgba(255, 107, 107, 0.8);
+      background: var(--danger-soft);
+    }
+
+    .inspector-body {
+      flex: 1;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: radial-gradient(circle at 100% 0, rgba(240, 181, 83, 0.03), rgba(5, 6, 11, 0.98));
+      padding: 10px 10px 8px 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .tab-panel {
+      display: none;
+      flex: 1;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .previous-page-box {
+      white-space: pre-wrap;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.4;
+      color: #e1e2f3;
+      padding-right: 2px;
+    }
+
+    .muted {
+      color: var(--text-muted);
+    }
+
+    .section-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #d5d8ff;
+      margin-bottom: 4px;
+      opacity: 0.9;
+    }
+
+    .list {
+      list-style: none;
+      padding-left: 0;
+      margin: 6px 0 8px 0;
+    }
+
+    .list li {
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.03);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .list li:last-child {
+      border-bottom: none;
+    }
+
+    .list-label {
+      color: #f1f2ff;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      gap: 5px;
+    }
+
+    .badge-danger {
+      border-color: rgba(255, 107, 107, 0.8);
+      color: #ffc9c9;
+      background: rgba(60, 12, 20, 0.75);
+    }
+
+    .badge-ok {
+      border-color: rgba(63, 211, 138, 0.8);
+      color: #c2ffe1;
+      background: rgba(5, 41, 24, 0.75);
+    }
+
+    .tone-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .tone-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .tone-label {
+      width: 92px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #f3e9ff;
+    }
+
+    .tone-bar-track {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(0,0,0,0.8));
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .tone-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff9a9e, #fecf6a, #7cf7c9);
+      transform-origin: left;
+      transition: width 220ms ease-out;
+    }
+
+    .tone-value {
+      width: 54px;
+      text-align: right;
+      color: #f6f0ff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tone-note {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .delta-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 4px 0;
+      font-size: 11px;
+    }
+
+    .delta-list li {
+      padding: 1px 0;
+    }
+
+    .delta-up {
+      color: #ffb347;
+    }
+
+    .delta-down {
+      color: #6ee7b7;
+    }
+
+    .checklist {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0 0;
+      font-size: 11px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 4px;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .check-box {
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #c2ffe1;
+    }
+
+    .check-box.on {
+      background: rgba(63, 211, 138, 0.18);
+      border-color: rgba(63, 211, 138, 0.9);
+    }
+
+    .check-box.on::after {
+      content: "✓";
+    }
+
+    .badge-small {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.12);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .inline-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(22, 24, 34, 0.96);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 10px;
+      color: #d9ddff;
+      gap: 4px;
+    }
+
+    .inline-tag span.dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.6);
+    }
+
+    .scroll-fade {
+      position: relative;
+    }
+
+    .scroll-fade::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 26px;
+      background: linear-gradient(to bottom, rgba(9,10,16,0), rgba(9,10,16,0.96));
+      pointer-events: none;
+    }
+
+    .inspector-body-inner {
+      flex: 1;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .app-footer {
+      padding: 6px 12px 8px 12px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .kbd-list {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .kbd {
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(5,6,12,0.96);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: #f7f7ff;
+    }
+
+    .app-footer-right {
+      opacity: 0.8;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 8px;
+      }
+      .app-shell {
+        max-height: none;
+        height: 100%;
+      }
+      .app-main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .inspector-panel {
+        display: none;
+      }
+      .focus-mode .inspector-panel {
+        display: none;
+      }
+    }
+
+    .pill-tone {
+      border-color: rgba(240, 181, 83, 0.6);
+      background: rgba(20,12,4,0.96);
+      color: #fce7c6;
+    }
+
+    .pill-tone span.value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .muted-note {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <header class="app-header">
+      <div class="app-title-block">
+        <div class="app-logo-dot"></div>
+        <div class="app-title-text">
+          <h1>The Page Editor</h1>
+          <span>One page at a time · Local only</span>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="bar-group">
+        <div class="chip">
+          <div class="chip-dot"></div>
+          <span class="key">Mode</span>
+          <span class="value" id="focusModeLabel">Full View</span>
+        </div>
+        <button class="btn-ghost btn" id="focusToggleBtn" type="button">
+          <span class="btn-icon">◎</span>
+          <span>Focus</span>
+          <span class="pill-shortcut">F</span>
+        </button>
+        <button class="btn primary" id="runChecksBtn" type="button" title="Run all checks (Ctrl+Enter)">
+          <span class="btn-icon">★</span>
+          <span>Run Checks</span>
+          <span class="pill-shortcut">Ctrl+Enter</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="editor-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h2>Current Page</h2>
+            <span id="projectNameLabel">Draft · Local session</span>
+          </div>
+          <div class="page-info">
+            <span class="page-dot"></span>
+            <span id="pageLabel">Page 1</span>
+          </div>
+        </div>
+        <div class="editor-toolbar">
+          <div class="editor-toolbar-left">
+            <div class="pill" id="wordCountPill">
+              <span class="label">Words</span>
+              <span class="value" id="wordCountValue">0</span>
+            </div>
+            <div class="pill" id="sentenceCountPill">
+              <span class="label">Sentences</span>
+              <span class="value" id="sentenceCountValue">0</span>
+            </div>
+            <div class="pill pill-tone">
+              <span class="label">Dominant Tone</span>
+              <span class="value" id="dominantToneLabel">Neutral</span>
+            </div>
+          </div>
+          <div class="editor-toolbar-right">
+            <button class="btn-ghost btn" id="prevPageBtn" type="button" title="Previous page (Ctrl+←)">← Prev</button>
+            <button class="btn-ghost btn" id="nextPageBtn" type="button" title="Next page (Ctrl+→)">Next →</button>
+            <button class="btn primary" id="newPageBtn" type="button">New Page</button>
+          </div>
+        </div>
+        <textarea id="editor" class="editor-textarea" spellcheck="true" placeholder="Write a single page. Hit Run Checks when you’re done."></textarea>
+        <div class="status-strip">
+          <div class="status-left">
+            <div class="status-pill" id="issuesStatusPill">
+              <span class="dot"></span>
+              <span id="issuesStatusText">No checks run yet</span>
+            </div>
+            <div class="status-pill">
+              <span class="dot" style="background: transparent; box-shadow: none; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); width: 9px; height: 9px;"></span>
+              <span>Local-only · Uses your browser’s storage</span>
+            </div>
+          </div>
+          <div class="status-right">
+            <span id="lastRunLabel">Checks: —</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="inspector-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h2>Inspector</h2>
+            <span>Previous page · Consistency · Style · Tone</span>
+          </div>
+        </div>
+        <div class="inspector-tabs">
+          <button class="tab-btn active" data-tab="tab-prev" type="button">
+            <span class="dot"></span>Prev page
+          </button>
+          <button class="tab-btn" data-tab="tab-consistency" type="button">
+            <span class="dot"></span>Consistency
+          </button>
+          <button class="tab-btn danger" data-tab="tab-style" type="button">
+            <span class="dot"></span>Style &amp; grammar
+          </button>
+          <button class="tab-btn" data-tab="tab-tone" type="button">
+            <span class="dot"></span>Tone
+          </button>
+        </div>
+        <div class="inspector-body scroll-fade">
+          <div class="inspector-body-inner">
+            <div id="tab-prev" class="tab-panel active">
+              <div class="section-label">Previous page snapshot</div>
+              <div class="muted" id="prevPageMeta">No previous page yet. Page 1 is your starting point.</div>
+              <div class="previous-page-box" id="prevPageText"></div>
+            </div>
+
+            <div id="tab-consistency" class="tab-panel">
+              <div class="section-label">Continuity &amp; voice</div>
+              <div id="consistencySummary" class="muted">
+                Run checks to compare this page with the previous one.
+              </div>
+              <ul class="list" id="consistencyList"></ul>
+            </div>
+
+            <div id="tab-style" class="tab-panel">
+              <div class="section-label">Structure, clutter &amp; roughness</div>
+              <div id="styleSummary" class="muted">
+                Run checks to inspect long sentences, filler words and passive patterns.
+              </div>
+              <ul class="list" id="styleList"></ul>
+              <div class="section-label" style="margin-top:8px;">Checklist</div>
+              <ul class="checklist">
+                <li>
+                  <span class="check-box" id="checkLongSentences"></span>
+                  <span>Very long sentences reviewed</span>
+                </li>
+                <li>
+                  <span class="check-box" id="checkFillerWords"></span>
+                  <span>Filler / hedging trimmed</span>
+                </li>
+                <li>
+                  <span class="check-box" id="checkPassives"></span>
+                  <span>Passive constructions intentional</span>
+                </li>
+              </ul>
+              <p class="muted-note">
+                This is a rule-based helper, not a full grammar engine. Your judgment wins.
+              </p>
+            </div>
+
+            <div id="tab-tone" class="tab-panel">
+              <div class="section-label">Mood signal vs previous page</div>
+              <div id="toneSummary" class="muted">
+                Run checks to scan emotional tone on this page.
+              </div>
+              <div class="tone-bars" id="toneBars"></div>
+              <div class="tone-note" id="toneNote"></div>
+              <ul class="delta-list" id="toneDeltaList"></ul>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="app-footer">
+      <div class="kbd-list">
+        <span>Shortcuts</span>
+        <span class="kbd">Ctrl+Enter · Run checks</span>
+        <span class="kbd">Ctrl+← / Ctrl+→ · Switch page</span>
+        <span class="kbd">F · Focus mode</span>
+      </div>
+      <div class="app-footer-right">
+        <span>
+          Export draft as
+          <button class="btn-ghost btn" id="exportMdBtn" type="button">Markdown</button>
+          <button class="btn-ghost btn" id="exportJsonBtn" type="button">JSON</button>
+        </span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      const STORAGE_KEY = "pageEditorProject_v1";
+
+      let project = {
+        title: "Untitled Draft",
+        pages: [
+          { index: 1, text: "", toneProfile: null }
+        ]
+      };
+      let currentPageIndex = 0;
+      let lastToneProfile = null;
+      let lastIssuesCount = 0;
+
+      const editorEl = document.getElementById("editor");
+      const pageLabelEl = document.getElementById("pageLabel");
+      const wordCountValueEl = document.getElementById("wordCountValue");
+      const sentenceCountValueEl = document.getElementById("sentenceCountValue");
+      const dominantToneLabelEl = document.getElementById("dominantToneLabel");
+      const prevPageMetaEl = document.getElementById("prevPageMeta");
+      const prevPageTextEl = document.getElementById("prevPageText");
+      const consistencySummaryEl = document.getElementById("consistencySummary");
+      const consistencyListEl = document.getElementById("consistencyList");
+      const styleSummaryEl = document.getElementById("styleSummary");
+      const styleListEl = document.getElementById("styleList");
+      const toneSummaryEl = document.getElementById("toneSummary");
+      const toneBarsEl = document.getElementById("toneBars");
+      const toneNoteEl = document.getElementById("toneNote");
+      const toneDeltaListEl = document.getElementById("toneDeltaList");
+      const issuesStatusPill = document.getElementById("issuesStatusPill");
+      const issuesStatusText = document.getElementById("issuesStatusText");
+      const lastRunLabel = document.getElementById("lastRunLabel");
+      const focusModeLabel = document.getElementById("focusModeLabel");
+      const appShell = document.getElementById("appShell");
+
+      const checkLongSentences = document.getElementById("checkLongSentences");
+      const checkFillerWords = document.getElementById("checkFillerWords");
+      const checkPassives = document.getElementById("checkPassives");
+
+      const prevPageBtn = document.getElementById("prevPageBtn");
+      const nextPageBtn = document.getElementById("nextPageBtn");
+      const newPageBtn = document.getElementById("newPageBtn");
+      const runChecksBtn = document.getElementById("runChecksBtn");
+      const focusToggleBtn = document.getElementById("focusToggleBtn");
+      const exportMdBtn = document.getElementById("exportMdBtn");
+      const exportJsonBtn = document.getElementById("exportJsonBtn");
+
+      const tabs = document.querySelectorAll(".tab-btn");
+      const tabPanels = document.querySelectorAll(".tab-panel");
+
+      const toneCategories = {
+        melancholy: [
+          "empty","emptiness","tired","tiredness","alone","lonely","loneliness","fall","fading","decay",
+          "wilt","wilted","wasted","waste","meaningless","hollow","grey","gray","desolate","bleak"
+        ],
+        despair: [
+          "hopeless","hopelessness","never","nothing","pointless","meaningless","futile","worthless",
+          "void","ruined","ruin","broken","shattered","end","ending","gave up","give up","no way out"
+        ],
+        aggression: [
+          "hate","hated","hateful","rage","furious","anger","angry","spite","spiteful","violence",
+          "cruel","cruelty","damage","destroy","ruin","smash","tear","attack","revenge","contempt"
+        ],
+        contempt: [
+          "disgust","disgusted","pathetic","idiot","stupid","worthless","vermin","filth","trash",
+          "beneath","inferior","scum","clown","fraud","liar","weak"
+        ],
+        numb: [
+          "numb","blank","empty","nothing","detached","distant","cold","lifeless","still","muted",
+          "quiet","silenced","shut down"
+        ],
+        hope: [
+          "maybe","still","yet","however","light","glimmer","chance","possible","possibility","begin",
+          "start","again","repair","heal","mend","survive","survival","endure","enduring"
+        ],
+        neutral: []
+      };
+
+      function loadProject() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
+            project = parsed;
+            currentPageIndex = 0;
+          }
+        } catch (e) {
+          console.warn("Could not load saved project:", e);
+        }
+      }
+
+      function saveProject() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+        } catch (e) {
+          console.warn("Could not save project:", e);
+        }
+      }
+
+      function setCurrentPage(idx) {
+        if (idx < 0 || idx >= project.pages.length) return;
+        project.pages[currentPageIndex].text = editorEl.value;
+        currentPageIndex = idx;
+        const page = project.pages[currentPageIndex];
+        editorEl.value = page.text || "";
+        pageLabelEl.textContent = "Page " + page.index;
+        updateCounts();
+        updatePrevPagePanel();
+      }
+
+      function newPage() {
+        project.pages[currentPageIndex].text = editorEl.value;
+        const newIndex = project.pages.length + 1;
+        project.pages.push({ index: newIndex, text: "", toneProfile: null });
+        setCurrentPage(project.pages.length - 1);
+        editorEl.focus();
+      }
+
+      function prevPage() {
+        if (currentPageIndex > 0) {
+          setCurrentPage(currentPageIndex - 1);
+        }
+      }
+
+      function nextPage() {
+        if (currentPageIndex < project.pages.length - 1) {
+          setCurrentPage(currentPageIndex + 1);
+        }
+      }
+
+      function updatePrevPagePanel() {
+        if (currentPageIndex === 0) {
+          prevPageMetaEl.textContent = "No previous page yet. Page 1 is your starting point.";
+          prevPageTextEl.textContent = "";
+          return;
+        }
+        const prev = project.pages[currentPageIndex - 1];
+        prevPageMetaEl.textContent = "Page " + prev.index + " · " + countWords(prev.text) + " words";
+        prevPageTextEl.textContent = prev.text || "";
+      }
+
+      function countWords(text) {
+        if (!text) return 0;
+        const tokens = text.trim().split(/[\s\n\r]+/).filter(Boolean);
+        return tokens.length;
+      }
+
+      function countSentences(text) {
+        if (!text) return 0;
+        const segments = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+        return segments.length;
+      }
+
+      function updateCounts() {
+        const text = editorEl.value;
+        const words = countWords(text);
+        const sentences = countSentences(text);
+        wordCountValueEl.textContent = words;
+        sentenceCountValueEl.textContent = sentences;
+      }
+
+      function tokenize(text) {
+        if (!text) return [];
+        return text
+          .toLowerCase()
+          .replace(/[^a-z0-9'\s]+/g, " ")
+          .split(/[\s\n\r]+/)
+          .filter(Boolean);
+      }
+
+      function getPronounAndTenseProfile(text) {
+        const tokens = tokenize(text);
+        const pronounsFirst = ["i", "me", "my", "mine"];
+        const pronounsSecond = ["you", "your", "yours"];
+        const pronounsThird = ["he", "she", "they", "him", "her", "them", "his", "hers", "theirs"];
+        const presentMarkers = ["is","are","do","does","has","have","am"];
+        const pastMarkers = ["was","were","did","had"];
+        let first = 0, second = 0, third = 0;
+        let present = 0, past = 0;
+
+        for (const t of tokens) {
+          if (pronounsFirst.includes(t)) first++;
+          if (pronounsSecond.includes(t)) second++;
+          if (pronounsThird.includes(t)) third++;
+          if (presentMarkers.includes(t)) present++;
+          if (pastMarkers.includes(t)) past++;
+        }
+
+        const pov = (function() {
+          const max = Math.max(first, second, third);
+          if (max === 0) return "Mixed / none";
+          if (max === first) return "First person";
+          if (max === second) return "Second person";
+          return "Third person";
+        })();
+
+        const tense = (function() {
+          if (past === 0 && present === 0) return "Unclear";
+          if (past > present * 1.3) return "Past-leaning";
+          if (present > past * 1.3) return "Present-leaning";
+          return "Blended";
+        })();
+
+        return { pov, tense, counts: { first, second, third, present, past } };
+      }
+
+      function getNameCandidates(text) {
+        const matches = text.match(/(?:^|[.!?]\s+)([^.!?]+)/g) || [text];
+        const names = new Set();
+        for (const sentence of matches) {
+          const words = sentence.trim().split(/\s+/);
+          words.forEach((word, idx) => {
+            const clean = word.replace(/[^A-Za-z'-]/g, "");
+            if (!clean) return;
+            const isFirst = idx === 0;
+            const isTitleCase = /^[A-Z][a-z]+$/.test(clean);
+            if (isTitleCase && !isFirst) {
+              names.add(clean);
+            }
+          });
+        }
+        return Array.from(names).slice(0, 24);
+      }
+
+      function getSentenceStats(text) {
+        const sentencesRaw = text.split(/([.!?]+)/);
+        let sentences = [];
+        let current = "";
+        for (let i = 0; i < sentencesRaw.length; i += 2) {
+          const part = sentencesRaw[i];
+          const punct = sentencesRaw[i + 1] || "";
+          const combined = (part + (punct || "")).trim();
+          if (combined) sentences.push(combined);
+        }
+
+        const longThreshold = 30;
+        let veryLong = [];
+        let totalWords = 0;
+
+        sentences.forEach((s, idx) => {
+          const wc = countWords(s);
+          totalWords += wc;
+          if (wc >= longThreshold) {
+            veryLong.push({
+              index: idx + 1,
+              words: wc,
+              snippet: s.slice(0, 80) + (s.length > 80 ? "…" : "")
+            });
+          }
+        });
+
+        const avgLength = sentences.length ? (totalWords / sentences.length) : 0;
+
+        return { sentences, avgLength, veryLong };
+      }
+
+      function findFillerWords(text) {
+        const fillers = [
+          "maybe","perhaps","somewhat","kind of","sort of","a bit","little bit",
+          "really","very","actually","basically","literally","just","quite","almost","pretty"
+        ];
+        const lower = text.toLowerCase();
+        let results = [];
+        fillers.forEach(f => {
+          const re = new RegExp("\\b" + f.replace(" ", "\\s+") + "\\b", "g");
+          let match;
+          let count = 0;
+          while ((match = re.exec(lower)) !== null) {
+            count++;
+          }
+          if (count > 0) {
+            results.push({ phrase: f, count });
+          }
+        });
+        results.sort((a,b) => b.count - a.count);
+        return results;
+      }
+
+      function findPassivePatterns(text) {
+        const beForms = ["is","are","was","were","be","been","being"];
+        const tokens = text.split(/\s+/);
+        let patterns = [];
+        for (let i = 0; i < tokens.length - 1; i++) {
+          const rawA = tokens[i];
+          const rawB = tokens[i + 1];
+          const a = rawA.toLowerCase().replace(/[^a-z]/g, "");
+          const b = rawB.toLowerCase().replace(/[^a-z]/g, "");
+          if (beForms.includes(a) && /[a-z]+ed$/.test(b)) {
+            const snippet = [rawA, rawB, tokens[i+2] || ""].join(" ").trim();
+            patterns.push(snippet);
+          }
+        }
+        return patterns.slice(0, 10);
+      }
+
+      function getToneProfile(text) {
+        const tokens = tokenize(text);
+        const total = tokens.length || 1;
+        const scores = {
+          melancholy: 0,
+          despair: 0,
+          aggression: 0,
+          contempt: 0,
+          numb: 0,
+          hope: 0,
+          neutral: 0
+        };
+
+        function countMatches(list) {
+          let c = 0;
+          for (const t of tokens) {
+            if (list.includes(t)) c++;
+          }
+          return c;
+        }
+
+        scores.melancholy = countMatches(toneCategories.melancholy);
+        scores.despair = countMatches(toneCategories.despair);
+        scores.aggression = countMatches(toneCategories.aggression);
+        scores.contempt = countMatches(toneCategories.contempt);
+        scores.numb = countMatches(toneCategories.numb);
+        scores.hope = countMatches(toneCategories.hope);
+
+        const emotionalTotal = scores.melancholy + scores.despair + scores.aggression +
+          scores.contempt + scores.numb + scores.hope;
+
+        const denom = emotionalTotal || total;
+
+        const percentages = {};
+        Object.keys(scores).forEach(key => {
+          if (key === "neutral") return;
+          percentages[key] = emotionalTotal ? (scores[key] / emotionalTotal * 100) : 0;
+        });
+
+        const sumEmo = Object.values(percentages).reduce((a,b) => a + b, 0);
+        const neutralPct = Math.max(0, 100 - sumEmo);
+        percentages.neutral = neutralPct;
+
+        let dominant = "Neutral";
+        let max = 0;
+        Object.entries(percentages).forEach(([key, value]) => {
+          if (value > max) {
+            max = value;
+            dominant = key.charAt(0).toUpperCase() + key.slice(1);
+          }
+        });
+
+        return { scores, percentages, dominant };
+      }
+
+      function runChecks() {
+        project.pages[currentPageIndex].text = editorEl.value;
+
+        const text = editorEl.value || "";
+        const prevText = currentPageIndex > 0 ? project.pages[currentPageIndex - 1].text || "" : "";
+        const words = countWords(text);
+        const sentences = countSentences(text);
+        wordCountValueEl.textContent = words;
+        sentenceCountValueEl.textContent = sentences;
+
+        let issuesCount = 0;
+
+        consistencyListEl.innerHTML = "";
+        styleListEl.innerHTML = "";
+        toneBarsEl.innerHTML = "";
+        toneDeltaListEl.innerHTML = "";
+        toneNoteEl.textContent = "";
+
+        const currentProfile = getPronounAndTenseProfile(text);
+        const prevProfile = prevText ? getPronounAndTenseProfile(prevText) : null;
+
+        let consistencyHtml = "";
+        if (!prevText) {
+          consistencySummaryEl.textContent = "No previous page to compare. This page sets your baseline for POV and tense.";
+        } else {
+          consistencySummaryEl.textContent = "Comparing this page with Page " + project.pages[currentPageIndex - 1].index + ".";
+          if (prevProfile.pov !== currentProfile.pov) {
+            issuesCount++;
+            consistencyHtml += createListItemHtml(
+              "Point of view shift",
+              prevProfile.pov + " → " + currentProfile.pov,
+              true
+            );
+          } else {
+            consistencyHtml += createListItemHtml(
+              "Point of view",
+              currentProfile.pov + " (stable with previous page)",
+              false
+            );
+          }
+
+          if (prevProfile.tense !== currentProfile.tense) {
+            issuesCount++;
+            consistencyHtml += createListItemHtml(
+              "Tense shift",
+              prevProfile.tense + " → " + currentProfile.tense,
+              true
+            );
+          } else {
+            consistencyHtml += createListItemHtml(
+              "Tense",
+              currentProfile.tense + " (stable with previous page)",
+              false
+            );
+          }
+
+          const prevNames = getNameCandidates(prevText);
+          const currentNames = getNameCandidates(text);
+
+          const missingNames = prevNames.filter(n => !currentNames.includes(n));
+          const newNames = currentNames.filter(n => !prevNames.includes(n));
+
+          if (missingNames.length > 0) {
+            issuesCount++;
+            consistencyHtml += createListItemHtml(
+              "Names fading",
+              "Previously used but absent here: " + missingNames.join(", "),
+              true
+            );
+          }
+
+          if (newNames.length > 0) {
+            consistencyHtml += createListItemHtml(
+              "New names introduced",
+              newNames.join(", "),
+              false
+            );
+          }
+        }
+
+        consistencyHtml += createListItemHtml(
+          "Pronoun balance",
+          "1st: " + currentProfile.counts.first +
+          " · 2nd: " + currentProfile.counts.second +
+          " · 3rd: " + currentProfile.counts.third,
+          false
+        );
+
+        consistencyListEl.innerHTML = consistencyHtml;
+
+        const sentenceStats = getSentenceStats(text);
+        const fillerStats = findFillerWords(text);
+        const passivePatterns = findPassivePatterns(text);
+
+        let styleHtml = "";
+
+        if (sentenceStats.sentences.length === 0) {
+          styleSummaryEl.textContent = "No sentences detected yet. Write a little more, then run checks.";
+        } else {
+          styleSummaryEl.textContent =
+            "Average sentence length: " + sentenceStats.avgLength.toFixed(1) + " words. " +
+            (sentenceStats.veryLong.length ? sentenceStats.veryLong.length + " very long sentence(s) flagged." : "No very long sentences flagged.");
+        }
+
+        if (sentenceStats.veryLong.length > 0) {
+          issuesCount++;
+          styleHtml += createListItemHtml(
+            "Very long sentences",
+            sentenceStats.veryLong.map(s => "#" + s.index + " (" + s.words + "w) " + s.snippet).join(" · "),
+            true
+          );
+          toggleChecklist(checkLongSentences, false);
+        } else {
+          styleHtml += createListItemHtml(
+            "Very long sentences",
+            "None flagged (>" + 30 + " words).",
+            false
+          );
+          toggleChecklist(checkLongSentences, true);
+        }
+
+        if (fillerStats.length > 0) {
+          issuesCount++;
+          styleHtml += createListItemHtml(
+            "Filler & hedging",
+            fillerStats.map(f => f.phrase + " ×" + f.count).join(" · "),
+            true
+          );
+          toggleChecklist(checkFillerWords, false);
+        } else {
+          styleHtml += createListItemHtml(
+            "Filler & hedging",
+            "No common filler phrases detected.",
+            false
+          );
+          toggleChecklist(checkFillerWords, true);
+        }
+
+        if (passivePatterns.length > 0) {
+          issuesCount++;
+          styleHtml += createListItemHtml(
+            "Passive constructions",
+            passivePatterns.join(" · "),
+            true
+          );
+          toggleChecklist(checkPassives, false);
+        } else {
+          styleHtml += createListItemHtml(
+            "Passive constructions",
+            "No clear passive patterns detected.",
+            false
+          );
+          toggleChecklist(checkPassives, true);
+        }
+
+        styleListEl.innerHTML = styleHtml;
+
+        const toneProfile = getToneProfile(text);
+        project.pages[currentPageIndex].toneProfile = toneProfile;
+        dominantToneLabelEl.textContent = toneProfile.dominant;
+
+        const toneOrder = ["melancholy","despair","aggression","contempt","numb","hope","neutral"];
+        toneBarsEl.innerHTML = "";
+        toneOrder.forEach(key => {
+          const pct = toneProfile.percentages[key] || 0;
+          const row = document.createElement("div");
+          row.className = "tone-row";
+          const label = document.createElement("div");
+          label.className = "tone-label";
+          label.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+          const track = document.createElement("div");
+          track.className = "tone-bar-track";
+          const fill = document.createElement("div");
+          fill.className = "tone-bar-fill";
+          fill.style.width = pct.toFixed(1) + "%";
+          track.appendChild(fill);
+          const value = document.createElement("div");
+          value.className = "tone-value";
+          value.textContent = pct.toFixed(1) + "%";
+          row.appendChild(label);
+          row.appendChild(track);
+          row.appendChild(value);
+          toneBarsEl.appendChild(row);
+        });
+
+        toneSummaryEl.textContent = "Dominant on this page: " + toneProfile.dominant +
+          " · Emotional signal across the page visualised below.";
+
+        if (currentPageIndex > 0) {
+          const prevTone = project.pages[currentPageIndex - 1].toneProfile;
+          if (prevTone && prevTone.percentages) {
+            const deltas = [];
+            toneOrder.forEach(key => {
+              const prevVal = prevTone.percentages[key] || 0;
+              const currVal = toneProfile.percentages[key] || 0;
+              const diff = currVal - prevVal;
+              if (Math.abs(diff) >= 4) {
+                deltas.push({ key, diff });
+              }
+            });
+
+            if (deltas.length) {
+              toneDeltaListEl.innerHTML = deltas.map(d => {
+                const label = d.key.charAt(0).toUpperCase() + d.key.slice(1);
+                const cls = d.diff > 0 ? "delta-up" : "delta-down";
+                const sign = d.diff > 0 ? "+" : "";
+                return "<li class='" + cls + "'>" + label + ": " + sign + d.diff.toFixed(1) + " pts vs previous page</li>";
+              }).join("");
+              toneNoteEl.textContent = "Tone shifts marked above can be either intentional or leaks. Decide which to keep.";
+            } else {
+              toneDeltaListEl.innerHTML = "";
+              toneNoteEl.textContent = "No major tone swings detected vs previous page (±4 pts threshold).";
+            }
+          } else {
+            toneNoteEl.textContent = "No stored tone profile for the previous page yet.";
+          }
+        } else {
+          toneNoteEl.textContent = "First page defines your baseline tone; later pages will show shifts vs this one.";
+        }
+
+        lastIssuesCount = issuesCount;
+        updateIssuesStatus();
+        lastToneProfile = toneProfile;
+        lastRunLabel.textContent = "Checks: " + new Date().toLocaleTimeString();
+
+        saveProject();
+      }
+
+      function createListItemHtml(label, value, isIssue) {
+        const badgeClass = isIssue ? "badge badge-danger" : "badge badge-ok";
+        const badgeText = isIssue ? "Review" : "Fine";
+        return "<li><span class='list-label'>" + escapeHtml(label) + "</span>" +
+          "<span><span class='" + badgeClass + "'>" + badgeText + "</span> " +
+          "<span>" + escapeHtml(value) + "</span></span></li>";
+      }
+
+      function toggleChecklist(el, on) {
+        if (!el) return;
+        el.classList.toggle("on", !!on);
+      }
+
+      function updateIssuesStatus() {
+        if (lastIssuesCount > 0) {
+          issuesStatusPill.classList.add("has-issues");
+          issuesStatusText.textContent = lastIssuesCount + " potential issues flagged · see Inspector";
+        } else {
+          issuesStatusPill.classList.remove("has-issues");
+          issuesStatusText.textContent = "No major issues flagged on last run";
+        }
+      }
+
+      function escapeHtml(str) {
+        if (typeof str !== "string") return str;
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function toggleFocusMode() {
+        const on = !appShell.classList.contains("focus-mode");
+        appShell.classList.toggle("focus-mode", on);
+        focusModeLabel.textContent = on ? "Focus" : "Full View";
+      }
+
+      function exportMarkdown() {
+        let lines = [];
+        lines.push("# " + (project.title || "Untitled Draft"));
+        lines.push("");
+        project.pages.forEach(page => {
+          lines.push("---");
+          lines.push("");
+          lines.push("### Page " + page.index);
+          lines.push("");
+          lines.push(page.text || "");
+          lines.push("");
+        });
+        const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
+        triggerDownload(blob, "page-editor-draft.md");
+      }
+
+      function exportJson() {
+        const data = {
+          title: project.title,
+          pages: project.pages
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        triggerDownload(blob, "page-editor-project.json");
+      }
+
+      function triggerDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      editorEl.addEventListener("input", () => {
+        updateCounts();
+        project.pages[currentPageIndex].text = editorEl.value;
+        saveProject();
+      });
+
+      prevPageBtn.addEventListener("click", () => {
+        prevPage();
+      });
+
+      nextPageBtn.addEventListener("click", () => {
+        nextPage();
+      });
+
+      newPageBtn.addEventListener("click", () => {
+        newPage();
+      });
+
+      runChecksBtn.addEventListener("click", () => {
+        runChecks();
+      });
+
+      exportMdBtn.addEventListener("click", () => {
+        exportMarkdown();
+      });
+
+      exportJsonBtn.addEventListener("click", () => {
+        exportJson();
+      });
+
+      focusToggleBtn.addEventListener("click", () => {
+        toggleFocusMode();
+      });
+
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const tabId = btn.getAttribute("data-tab");
+          tabs.forEach(b => b.classList.toggle("active", b === btn));
+          tabPanels.forEach(panel => {
+            panel.classList.toggle("active", panel.id === tabId);
+          });
+        });
+      });
+
+      document.addEventListener("keydown", (evt) => {
+        const key = evt.key;
+        const ctrl = evt.ctrlKey || evt.metaKey;
+
+        if (ctrl && key === "Enter") {
+          evt.preventDefault();
+          runChecks();
+          return;
+        }
+        if (ctrl && key === "ArrowLeft") {
+          evt.preventDefault();
+          prevPage();
+          return;
+        }
+        if (ctrl && key === "ArrowRight") {
+          evt.preventDefault();
+          nextPage();
+          return;
+        }
+        if ((key === "f" || key === "F") && !evt.ctrlKey && !evt.metaKey && !evt.altKey) {
+          evt.preventDefault();
+          toggleFocusMode();
+          return;
+        }
+      });
+
+      loadProject();
+      setCurrentPage(currentPageIndex);
+      updatePrevPagePanel();
+      updateIssuesStatus();
+      dominantToneLabelEl.textContent = "Neutral";
+    })();
+  </script>
+</body>
+</html>

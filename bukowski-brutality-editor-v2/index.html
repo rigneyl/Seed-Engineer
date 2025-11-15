@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bukowski Brutality Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-main">
+      <h1>Bukowski Brutality Editor</h1>
+      <p class="tagline">A hostile environment for pretentious prose. Write dirty. Write blunt. No cloud. No accounts.</p>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="editor-panel">
+      <div class="panel-header">
+        <h2>Your Text</h2>
+        <span class="hint">Type or paste. The right side will judge you.</span>
+      </div>
+      <textarea id="editor" spellcheck="false" placeholder="Start typing like you mean it..."></textarea>
+      <div class="editor-footer">
+        <span id="wordCount">0 words</span>
+        <span id="charCount">0 characters</span>
+      </div>
+    </section>
+
+    <section class="analysis-panel">
+      <div class="panel-header">
+        <h2>Brutality Dashboard</h2>
+        <span class="hint">Updated live as you write.</span>
+      </div>
+
+      <div class="meters">
+        <div class="meter">
+          <div class="meter-header">
+            <span>Grit Level</span>
+            <span id="gritValue" class="meter-value">0%</span>
+          </div>
+          <div class="meter-bar">
+            <div id="gritBar" class="meter-fill"></div>
+          </div>
+          <p class="meter-caption">Concrete detail, curses, monosyllables.</p>
+        </div>
+
+        <div class="meter">
+          <div class="meter-header">
+            <span>Pretension Warning</span>
+            <span id="pretensionValue" class="meter-value">0%</span>
+          </div>
+          <div class="meter-bar">
+            <div id="pretensionBar" class="meter-fill"></div>
+          </div>
+          <p class="meter-caption">Academic fluff, abstractions, lyrical nonsense.</p>
+        </div>
+
+        <div class="meter">
+          <div class="meter-header">
+            <span>Rawness Score</span>
+            <span id="rawnessValue" class="meter-value">0</span>
+          </div>
+          <div class="meter-bar">
+            <div id="rawnessBar" class="meter-fill"></div>
+          </div>
+          <p class="meter-caption">Short, blunt, direct, unsentimental.</p>
+        </div>
+
+        <div class="meter">
+          <div class="meter-header">
+            <span>Whiskey-to-Weakness</span>
+            <span id="whiskeyValue" class="meter-value">0 : 1</span>
+          </div>
+          <div class="meter-bar">
+            <div id="whiskeyBar" class="meter-fill"></div>
+          </div>
+          <p class="meter-caption">Strong words vs hedges and softeners.</p>
+        </div>
+      </div>
+
+      <div class="violations-grid">
+        <div class="violations-card">
+          <h3>Poetic &amp; Metaphor Offenses</h3>
+          <ul id="poeticList" class="violations-list"></ul>
+        </div>
+
+        <div class="violations-card">
+          <h3>Academic &amp; Fancy Crap</h3>
+          <ul id="academicList" class="violations-list"></ul>
+        </div>
+
+        <div class="violations-card">
+          <h3>Hedges &amp; Dishonesty</h3>
+          <ul id="hedgeList" class="violations-list"></ul>
+        </div>
+
+        <div class="violations-card">
+          <h3>Long Sentences</h3>
+          <ul id="sentenceList" class="violations-list"></ul>
+        </div>
+      </div>
+
+      <div class="notes-card">
+        <h3>Brutality Notes</h3>
+        <p id="notes" class="notes-text">
+          Start typing on the left. This panel will call you out for:
+          metaphors, academic phrasing, hedging, softness, and sentences
+          that drag on like a bad workshop comment.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>Bukowski Brutality Editor · HTML-first · Local-only · Seed tool</span>
+    <span class="credit">Seed engineered for misanthropic writers.</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

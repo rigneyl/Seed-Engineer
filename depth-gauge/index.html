@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Depth Gauge — Philosophical Density Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="title-block">
+      <h1>Depth Gauge</h1>
+      <p class="subtitle">Local-first scanner for misanthropic &amp; existential writing — no AI, just handcrafted signals.</p>
+    </div>
+
+<div class="controls">
+  <select id="modeSelect" class="ghost-select" title="Choose depth mode">
+    <option value="writerly">Mode A — Writerly Depth</option>
+    <option value="existential">Mode B — Existential/Bleak</option>
+    <option value="hybrid">Mode C — Hybrid</option>
+  </select>
+  <button id="themeToggle" type="button" class="ghost-button">Toggle Theme</button>
+</div>
+  </header>
+
+  <main class="app-main">
+    <section class="input-panel">
+      <label for="inputText" class="section-title">Text to Analyze</label>
+      <textarea id="inputText" placeholder="Paste your bleak manifesto, failed apology, or existential rant here..."></textarea>
+      <div class="input-footer">
+        <button id="analyzeBtn" type="button" class="primary-button">Analyze Depth</button>
+        <span id="wordCount" class="meta-text">0 words</span>
+      </div>
+    </section>
+
+    <section class="results-panel">
+      <div class="depth-meter-card">
+        <div class="depth-meter-header">
+          <h2>Depth Meter</h2>
+          <span id="depthZone" class="badge">—</span>
+        </div>
+        <div class="depth-score-row">
+          <span class="depth-score-label">Score</span>
+          <span id="depthScoreValue" class="depth-score-value">0</span>
+        </div>
+        <div class="depth-bar-wrapper">
+          <div class="depth-bar-bg">
+            <div id="depthBarFill" class="depth-bar-fill" style="width: 0%;"></div>
+          </div>
+          <div class="depth-scale">
+            <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+          </div>
+        </div>
+        <p id="depthSummary" class="depth-summary">Paste some text and click “Analyze Depth”.</p>
+      </div>
+
+      <div class="grid-two">
+        <div class="card">
+          <h3>Signal Counts</h3>
+          <div class="stat-grid">
+            <div class="stat">
+              <span class="stat-label">Abstractions</span>
+              <span id="abstractionsCount" class="stat-value">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Negations</span>
+              <span id="negationsCount" class="stat-value">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Paradoxes</span>
+              <span id="paradoxCount" class="stat-value">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Existential Keywords</span>
+              <span id="existentialCount" class="stat-value">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Bleak Metaphors</span>
+              <span id="bleakMetaphorCount" class="stat-value">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Contrast Pairs</span>
+              <span id="contrastCount" class="stat-value">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Warnings</h3>
+          <ul id="warningsList" class="warnings-list">
+            <li class="meta-text">No warnings yet.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid-two">
+        <div class="card">
+          <h3>Ratios &amp; Mood</h3>
+          <ul class="ratio-list">
+            <li><span>Abstraction ratio:</span> <span id="abstractionRatio">0.00</span></li>
+            <li><span>Negation ratio:</span> <span id="negationRatio">0.00</span></li>
+            <li><span>Existential density:</span> <span id="existentialRatio">0.00</span></li>
+            <li><span>Bleak cluster density:</span> <span id="metaphorDensity">0.00</span></li>
+            <li><span>Contrast density:</span> <span id="contrastDensity">0.00</span></li>
+            <li><span>Coldness ratio:</span> <span id="coldnessRatio">0.00</span></li>
+            <li><span>Emotion ratio:</span> <span id="emotionRatio">0.00</span></li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Depth Leaks</h3>
+          <p class="meta-text">Colloquialisms, clichés, and casual leaks that puncture the mood.</p>
+          <ul id="leaksList" class="leaks-list"></ul>
+        </div>
+      </div>
+
+      <div class="card sentence-card">
+        <div class="sentence-header">
+          <h3>Sentence Breakdown</h3>
+          <span id="sentenceCount" class="meta-text">0 sentences</span>
+        </div>
+        <p class="meta-text">Each sentence is tagged with detected signals (up to first 40 sentences shown).</p>
+        <div id="sentenceList" class="sentence-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>HTML-first · Local-only · No tracking</span>
+    <span class="footer-right">Seed tool: Depth Gauge</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

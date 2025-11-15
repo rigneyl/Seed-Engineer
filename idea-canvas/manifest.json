@@ -1,0 +1,42 @@
+{
+  "name": "Idea → Launch Manuscript Studio",
+  "short_name": "Idea→Launch",
+  "description": "Lightweight offline book-writing workspace. Turn scattered ideas into structured, export-ready manuscripts.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050608",
+  "theme_color": "#f5b85c",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "writing", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "New Idea",
+      "short_name": "Idea",
+      "description": "Capture a new book idea",
+      "url": "/?action=new-idea",
+      "icons": []
+    },
+    {
+      "name": "Draft",
+      "short_name": "Draft",
+      "description": "Continue drafting",
+      "url": "/?action=draft",
+      "icons": []
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Silence Test — Strip adjectives/adverbs</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="wrap">
+    <h1>🕯️ The Silence Test</h1>
+    <p class="subtitle">Paste a paragraph; it strips adjectives/adverbs and reflows punctuation — hear your prose in <em>silence</em>.</p>
+  </header>
+
+  <main class="wrap grid">
+    <section class="panel">
+      <label for="input" class="label">Your text</label>
+      <textarea id="input" placeholder="Paste a paragraph here…"></textarea>
+      <div class="controls">
+        <div class="control">
+          <label><input type="checkbox" id="aggressive"/> Aggressive mode <span class="hint">(remove -ous, -ive, -al, -ic, -able/-ible, -y, etc.)</span></label>
+        </div>
+        <div class="control">
+          <label><input type="checkbox" id="keepColor" checked/> Show struck-out preview before silence</label>
+        </div>
+        <div class="control">
+          <label><input type="checkbox" id="smartComma" checked/> Smart comma cleanup</label>
+        </div>
+        <div class="buttons">
+          <button id="btnRun">Strip to Silence</button>
+          <button id="btnCopy">Copy Silent Text</button>
+          <button id="btnDownload">Download .txt</button>
+          <button id="btnSample">Try sample</button>
+          <button id="btnReset" class="ghost">Reset</button>
+        </div>
+      </div>
+      <div class="metrics" id="metrics"></div>
+    </section>
+
+    <section class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="preview">Preview (strike‑outs)</button>
+        <button class="tab" data-tab="silence">Silent output</button>
+      </div>
+      <div class="tabpanes">
+        <div id="preview" class="tabpane active"></div>
+        <div id="silence" class="tabpane monospace"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap tiny">
+    <p>Heuristic MVP • Client‑side only • No data leaves your browser.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plot Machine — Beat Expander (Non‑AI)</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>Plot Machine</h1>
+      <p class="tag">Non‑AI Beat Expander • v0.1</p>
+    </header>
+
+    <section class="controls card">
+      <div class="row">
+        <label for="idea">One‑line idea / logline</label>
+        <input id="idea" type="text" placeholder="e.g., A cowardly courier must cross a monster‑infested city to deliver a cure before sunrise."/>
+      </div>
+
+      <div class="row responsive">
+        <div class="col">
+          <label for="template">Template</label>
+          <select id="template">
+            <option value="twelve">12‑Beat Skeleton</option>
+            <option value="stc">Save the Cat (15 Beats)</option>
+            <option value="hero">Hero’s Journey (Campbell/Vogler)</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="tone">Tone (optional)</label>
+          <select id="tone">
+            <option value="">Neutral</option>
+            <option>Literary</option>
+            <option>Thriller</option>
+            <option>Fantasy</option>
+            <option>Romance</option>
+            <option>Horror</option>
+            <option>Comedy</option>
+          </select>
+        </div>
+        <div class="col buttons">
+          <button id="generate" class="primary">Generate</button>
+          <button id="addBeat" class="ghost">+ Beat</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <small class="muted">
+          Tip: Everything below is editable. Use ▲/▼ to reorder. Save locally, or export to Markdown / OPML (for Scrivener).
+        </small>
+      </div>
+    </section>
+
+    <section class="beats card">
+      <div class="beats-head">
+        <div>#</div>
+        <div>Beat</div>
+        <div>Summary</div>
+        <div class="center">▲▼</div>
+        <div class="center">✖</div>
+      </div>
+      <div id="beatList" class="beats-body"></div>
+    </section>
+
+    <section class="exports card">
+      <div class="row responsive">
+        <div class="col">
+          <button id="exportMD" class="primary">Export Markdown</button>
+        </div>
+        <div class="col">
+          <button id="exportOPML" class="primary">Export OPML (Scrivener)</button>
+        </div>
+        <div class="col">
+          <button id="saveLocal" class="ghost">Save to Browser</button>
+        </div>
+        <div class="col">
+          <button id="loadLocal" class="ghost">Load Saved</button>
+        </div>
+        <div class="col">
+          <button id="exportJSON" class="ghost">Export JSON</button>
+        </div>
+        <div class="col">
+          <label class="linklike" for="importJSON">Import JSON</label>
+          <input id="importJSON" type="file" accept="application/json" hidden />
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>© Plot Machine. Local‑only. No AI, no servers.</span>
+      <a href="#" id="printView">Print</a>
+    </footer>
+  </div>
+
+  <template id="beatRowTmpl">
+    <div class="beat-row">
+      <div class="index"></div>
+      <div class="beat-title" contenteditable="plaintext-only"></div>
+      <div class="beat-desc" contenteditable="plaintext-only"></div>
+      <div class="center">
+        <button class="icon up" title="Move up">▲</button>
+        <button class="icon down" title="Move down">▼</button>
+      </div>
+      <div class="center">
+        <button class="icon del" title="Delete">✖</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>

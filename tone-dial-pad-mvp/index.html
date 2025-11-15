@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tone Dial Pad – Manual Tone Console</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: #0b0b10;
+      --bg-alt: #14141c;
+      --card-bg: #181822;
+      --card-border: #2a2a36;
+      --accent: #e3b341;
+      --accent-soft: rgba(227, 179, 65, 0.12);
+      --text: #f5f5f8;
+      --text-muted: #9a9ab0;
+      --pill-bg: #1f1f2b;
+      --pill-active-bg: #e3b341;
+      --pill-active-text: #111118;
+      --btn-bg: transparent;
+      --btn-hover-bg: #232333;
+      --btn-border: #3a3a4a;
+      --danger: #ff6b6b;
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.5);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Inter", "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top, #1a1a24 0, #05050a 50%, #020206 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .app-shell {
+      max-width: 1200px;
+      width: 100%;
+      margin: 24px;
+      background: radial-gradient(circle at top left, #202030 0, #10101a 55%, #05050a 100%);
+      border-radius: 24px;
+      border: 1px solid #2c2c3a;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 22px 18px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 12px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    h1 {
+      font-size: 1.15rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .chip {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(227, 179, 65, 0.6);
+      background: rgba(227, 179, 65, 0.08);
+      color: var(--accent);
+    }
+
+    .subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .mood-select {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    select {
+      background: #181822;
+      color: var(--text);
+      border-radius: 999px;
+      border: 1px solid var(--btn-border);
+      padding: 4px 14px;
+      font-size: 0.78rem;
+      outline: none;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.1fr 0.95fr 1.1fr;
+      gap: 12px;
+    }
+
+    .panel {
+      background: linear-gradient(145deg, #171724, #10101b);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      padding: 12px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #eaeaf7;
+    }
+
+    .panel-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    textarea {
+      width: 100%;
+      flex: 1;
+      resize: vertical;
+      min-height: 210px;
+      max-height: 380px;
+      background: #111119;
+      color: var(--text);
+      border-radius: 12px;
+      border: 1px solid #272736;
+      padding: 10px 11px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.4;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(227, 179, 65, 0.4);
+    }
+
+    .metrics-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      gap: 8px;
+    }
+
+    .metrics-row span {
+      opacity: 0.9;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    button {
+      font-family: var(--font-sans);
+      font-size: 0.74rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--btn-hover-bg);
+      border-color: rgba(227, 179, 65, 0.8);
+      box-shadow: 0 0 0 1px rgba(227, 179, 65, 0.35);
+      transform: translateY(-0.5px);
+    }
+
+    button.small {
+      font-size: 0.68rem;
+      padding: 3px 9px;
+    }
+
+    button.preset-btn {
+      border-radius: var(--radius-pill);
+    }
+
+    button.preset-btn.active {
+      background: rgba(227, 179, 65, 0.2);
+      border-color: var(--accent);
+    }
+
+    button.danger {
+      border-color: rgba(255, 107, 107, 0.7);
+      color: #ffb3b3;
+    }
+
+    button.danger:hover {
+      background: rgba(255, 107, 107, 0.08);
+      box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.4);
+    }
+
+    .radio-toggle {
+      display: inline-flex;
+      border-radius: 999px;
+      border: 1px solid var(--btn-border);
+      overflow: hidden;
+      font-size: 0.7rem;
+    }
+
+    .radio-toggle button {
+      border-radius: 0;
+      border: none;
+      padding: 3px 10px;
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .radio-toggle button.active {
+      background: rgba(227, 179, 65, 0.18);
+      color: var(--accent);
+    }
+
+    .controls-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .preset-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .slider-block {
+      padding: 7px 8px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #151522, #11111b);
+      border: 1px solid #2a2a3a;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.74rem;
+    }
+
+    .slider-label {
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-size: 0.72rem;
+      color: #e9e9f4;
+    }
+
+    .slider-value {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .slider-range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      opacity: 0.9;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 999px;
+      background: #26263a;
+      outline: none;
+      margin: 4px 0 3px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #111111;
+      box-shadow: 0 0 0 3px rgba(227, 179, 65, 0.25);
+      cursor: pointer;
+      margin-top: -5px;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #111111;
+      box-shadow: 0 0 0 3px rgba(227, 179, 65, 0.25);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      border-radius: 999px;
+      background: #26263a;
+    }
+
+    .hint-text {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .checklist {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #29293a;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .checklist-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      width: 100%;
+      margin-bottom: 2px;
+    }
+
+    .check-item {
+      font-size: 0.7rem;
+      padding: 2px 9px;
+      border-radius: var(--radius-pill);
+      background: var(--pill-bg);
+      color: var(--text-muted);
+      border: 1px solid rgba(80, 80, 110, 0.7);
+      opacity: 0.7;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+        opacity 0.15s ease, transform 0.15s ease;
+      cursor: default;
+    }
+
+    .check-item.active {
+      background: var(--pill-active-bg);
+      color: var(--pill-active-text);
+      border-color: transparent;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+      opacity: 1;
+      transform: translateY(-0.5px);
+    }
+
+    .orientation-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .orientation-label span {
+      color: var(--accent);
+    }
+
+    .tips-block {
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px dashed #29293a;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .tips-block ul {
+      margin: 4px 0 0;
+      padding-left: 16px;
+    }
+
+    .tips-block li {
+      margin: 2px 0;
+    }
+
+    .mood-vocab {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .mood-vocab span {
+      padding: 1px 8px;
+      border-radius: 999px;
+      border: 1px solid #313144;
+      background: #161621;
+    }
+
+    .snapshot-badge {
+      font-size: 0.7rem;
+      color: var(--accent);
+      display: none;
+    }
+
+    .snapshot-badge.visible {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .footnote {
+      margin-top: 6px;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
+
+    @media (max-width: 980px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-shell {
+        margin: 10px;
+        padding: 14px 12px;
+        border-radius: 16px;
+      }
+
+      textarea {
+        min-height: 160px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="title-block">
+        <div class="title-row">
+          <h1>Tone Dial Pad</h1>
+          <div class="chip">Local-Only · Manual</div>
+        </div>
+        <div class="subtitle">A small console for steering misanthropic, elegiac, or clinical tone by hand.</div>
+      </div>
+      <div class="mood-select">
+        Mood context:
+        <select id="moodSelect">
+          <option value="misanthropic">Misanthropic</option>
+          <option value="elegiac">Elegiac</option>
+          <option value="clinical">Clinical</option>
+          <option value="cynical">Cynical Humor</option>
+        </select>
+      </div>
+    </header>
+
+    <main>
+      <!-- Left: Original Text -->
+      <section class="panel" id="originalPanel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Original Text</div>
+            <div class="panel-subtitle">Paste or type the passage you’re shaping.</div>
+          </div>
+          <span class="snapshot-badge" id="snapshotBadge">
+            &#9679; Snapshot saved
+          </span>
+        </div>
+
+        <textarea id="originalText" placeholder="Paste a paragraph you want to push toward a harsher, softer, more detached, or more ornate tone."></textarea>
+
+        <div class="metrics-row">
+          <span id="wordCount">Words: 0</span>
+          <span id="sentenceCount">Sentences: 0</span>
+        </div>
+
+        <div class="btn-row">
+          <button id="clearOriginal" class="small danger">Clear</button>
+          <button id="duplicateToNotes" class="small">Duplicate to Notes</button>
+          <button id="saveSnapshot" class="small">Save Snapshot</button>
+        </div>
+
+        <div class="footnote">
+          This page doesn’t send anything anywhere. It’s just HTML and JavaScript
+          in your browser.
+        </div>
+      </section>
+
+      <!-- Middle: Tone Controls -->
+      <section class="panel" id="controlsPanel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Tone Controls</div>
+            <div class="panel-subtitle">Dial direction; the checklist below tells you what to actually change.</div>
+          </div>
+        </div>
+
+        <div class="controls-inner">
+          <div class="preset-row">
+            <span class="preset-label">Presets:</span>
+            <button class="preset-btn small" data-preset="clinical">Clinical</button>
+            <button class="preset-btn small" data-preset="misanthropic">Misanthropic</button>
+            <button class="preset-btn small" data-preset="elegiac">Elegiac</button>
+            <button class="preset-btn small" data-preset="observer">Detached Observer</button>
+          </div>
+
+          <div class="slider-block">
+            <div class="slider-header">
+              <span class="slider-label">Harsh ↔ Soft</span>
+              <span class="slider-value" id="harshSoftValue">Neutral (50)</span>
+            </div>
+            <input type="range" min="0" max="100" value="50" id="harshSoftSlider" />
+            <div class="slider-range-labels">
+              <span>Harsher</span>
+              <span>Softer</span>
+            </div>
+            <div class="hint-text" id="harshSoftHint">
+              Neutral: balance judgment with clear description. Don’t soften too
+              much; don’t moralize every line.
+            </div>
+          </div>
+
+          <div class="slider-block">
+            <div class="slider-header">
+              <span class="slider-label">Detached ↔ Emotional</span>
+              <span class="slider-value" id="detachEmoteValue">Neutral (50)</span>
+            </div>
+            <input type="range" min="0" max="100" value="50" id="detachEmoteSlider" />
+            <div class="slider-range-labels">
+              <span>Detached</span>
+              <span>Emotional</span>
+            </div>
+            <div class="hint-text" id="detachEmoteHint">
+              Neutral: keep some feeling on the surface but let structure and
+              observation carry most of the weight.
+            </div>
+          </div>
+
+          <div class="slider-block">
+            <div class="slider-header">
+              <span class="slider-label">Minimal ↔ Ornate</span>
+              <span class="slider-value" id="minOrnateValue">Neutral (50)</span>
+            </div>
+            <input type="range" min="0" max="100" value="50" id="minOrnateSlider" />
+            <div class="slider-range-labels">
+              <span>Minimal</span>
+              <span>Ornate</span>
+            </div>
+            <div class="hint-text" id="minOrnateHint">
+              Neutral: mix short and longer sentences, using imagery sparingly
+              where it will actually sting.
+            </div>
+          </div>
+
+          <div class="orientation-label" id="orientationLabel">
+            Current orientation:
+            <span>Balanced – judgment, distance, and texture in equal measure.</span>
+          </div>
+
+          <div class="checklist">
+            <div class="checklist-label">Checklist triggered by your dials:</div>
+            <div class="check-item" data-check="cutHedging">Cut hedging words</div>
+            <div class="check-item" data-check="swapNouns">
+              Swap neutral nouns for harsher ones
+            </div>
+            <div class="check-item" data-check="removePronouns">
+              Remove I/you pronouns
+            </div>
+            <div class="check-item" data-check="thirdPerson">
+              Switch to third person / impersonal
+            </div>
+            <div class="check-item" data-check="shortSentences">
+              Shorten long sentences
+            </div>
+            <div class="check-item" data-check="stripAdverbs">
+              Strip adverbs and fillers
+            </div>
+            <div class="check-item" data-check="coldImage">Add one cold image</div>
+            <div class="check-item" data-check="sensoryDetail">
+              Add one bodily / sensory detail
+            </div>
+          </div>
+
+          <div class="mood-vocab" id="moodVocab">
+            <!-- Mood vocabulary chips injected here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Rewrite Notes -->
+      <section class="panel" id="notesPanel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Rewrite Notes</div>
+            <div class="panel-subtitle">
+              Use this side for instructions or a rough new version. The real edit
+              happens in your manuscript.
+            </div>
+          </div>
+          <div class="radio-toggle" id="modeToggle">
+            <button type="button" data-mode="notes" class="active">Notes</button>
+            <button type="button" data-mode="draft">Draft</button>
+          </div>
+        </div>
+
+        <textarea id="rewriteNotes" placeholder="Example tactics:
+– Remove all ‘maybe / sort of / kind of’ from lines 1–3.
+– Replace ‘people’ with ‘the crowd’ or ‘the herd’.
+– Collapse 3 short sentences into one long, bitter sentence."></textarea>
+
+        <div class="tips-block">
+          <div>Mini-guidelines:</div>
+          <ul>
+            <li>Don’t rewrite the whole passage at once. Start with a single sentence.</li>
+            <li>Apply only 2–3 checklist items per pass so you can actually feel the change.</li>
+            <li>Compare with your snapshot if you saved one: harsher? colder? more detached?</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // --- DOM references ---
+    const originalText = document.getElementById("originalText");
+    const wordCountEl = document.getElementById("wordCount");
+    const sentenceCountEl = document.getElementById("sentenceCount");
+    const clearOriginalBtn = document.getElementById("clearOriginal");
+    const duplicateToNotesBtn = document.getElementById("duplicateToNotes");
+    const saveSnapshotBtn = document.getElementById("saveSnapshot");
+    const snapshotBadge = document.getElementById("snapshotBadge");
+    const rewriteNotes = document.getElementById("rewriteNotes");
+
+    const harshSoftSlider = document.getElementById("harshSoftSlider");
+    const detachEmoteSlider = document.getElementById("detachEmoteSlider");
+    const minOrnateSlider = document.getElementById("minOrnateSlider");
+
+    const harshSoftValueEl = document.getElementById("harshSoftValue");
+    const detachEmoteValueEl = document.getElementById("detachEmoteValue");
+    const minOrnateValueEl = document.getElementById("minOrnateValue");
+
+    const harshSoftHint = document.getElementById("harshSoftHint");
+    const detachEmoteHint = document.getElementById("detachEmoteHint");
+    const minOrnateHint = document.getElementById("minOrnateHint");
+
+    const orientationLabel = document.getElementById("orientationLabel");
+
+    const checklistItems = document.querySelectorAll(".check-item");
+    const presetButtons = document.querySelectorAll(".preset-btn");
+
+    const moodSelect = document.getElementById("moodSelect");
+    const moodVocab = document.getElementById("moodVocab");
+
+    const modeToggle = document.getElementById("modeToggle");
+    const modeButtons = modeToggle.querySelectorAll("button");
+
+    let snapshots = [];
+
+    // --- Helpers ---
+    function updateMetrics() {
+      const text = originalText.value.trim();
+      const words = text.length
+        ? text.split(/\s+/).filter((w) => w.length > 0).length
+        : 0;
+      const sentences = text.length
+        ? (text.match(/[.!?]+(?:\s|$)/g) || []).length || (text ? 1 : 0)
+        : 0;
+
+      wordCountEl.textContent = `Words: ${words}`;
+      sentenceCountEl.textContent = `Sentences: ${sentences}`;
+    }
+
+    function sliderState(value) {
+      if (value < 40) return "low";
+      if (value > 60) return "high";
+      return "mid";
+    }
+
+    function updateToneUI() {
+      const h = Number(harshSoftSlider.value);
+      const d = Number(detachEmoteSlider.value);
+      const m = Number(minOrnateSlider.value);
+
+      // Labels
+      function labelFromState(prefix, value) {
+        const state = sliderState(value);
+        if (state === "low") return `${prefix} (Low · ${value})`;
+        if (state === "high") return `${prefix} (High · ${value})`;
+        return `${prefix} (Neutral · ${value})`;
+      }
+
+      harshSoftValueEl.textContent = labelFromState("Intensity", h);
+      detachEmoteValueEl.textContent = labelFromState("Distance", d);
+      minOrnateValueEl.textContent = labelFromState("Texture", m);
+
+      // Hints: Harsh ↔ Soft
+      const hState = sliderState(h);
+      if (hState === "low") {
+        // Harsh side
+        harshSoftHint.textContent =
+          "To sharpen tone: strip hedging (maybe, kind of, seems); prefer active verbs (‘they wreck things’); use harsher collective nouns (herd, crowd, swarm).";
+      } else if (hState === "high") {
+        // Soft side
+        harshSoftHint.textContent =
+          "To soften tone: reintroduce qualifiers (often, tends to); use ‘some people’ instead of direct ‘you’; replace absolute judgments with more tentative phrasing.";
+      } else {
+        harshSoftHint.textContent =
+          "Neutral: let description carry the judgment. Keep verbs clear, but avoid obvious moral labels in every sentence.";
+      }
+
+      // Hints: Detached ↔ Emotional
+      const dState = sliderState(d);
+      if (dState === "low") {
+        // Detached
+        detachEmoteHint.textContent =
+          "To detach: remove I/you; use third-person or impersonal phrases (‘it was observed that…’). Focus on patterns and behaviour, not confession.";
+      } else if (dState === "high") {
+        // Emotional
+        detachEmoteHint.textContent =
+          "To intensify emotion: bring back I/you; show internal states (‘I hated it, it hollowed me out’); add small sensory jolts (the tremor in the hands, the stale air).";
+      } else {
+        detachEmoteHint.textContent =
+          "Semi-detached: let emotion seep through a mostly calm surface. Use one or two loaded words in an otherwise measured sentence.";
+      }
+
+      // Hints: Minimal ↔ Ornate
+      const mState = sliderState(m);
+      if (mState === "low") {
+        // Minimal
+        minOrnateHint.textContent =
+          "To go minimal: shorten sentences; cut adjectives and adverbs; keep concrete nouns and verbs; let implication do the work instead of explanation.";
+      } else if (mState === "high") {
+        // Ornate
+        minOrnateHint.textContent =
+          "To go ornate: lengthen sentences with clauses and rhythm; invite metaphors and unusual images; layer abstraction on top of something specific.";
+      } else {
+        minOrnateHint.textContent =
+          "Balanced style: mix short and long sentences; use one image per paragraph as a spike instead of a constant haze.";
+      }
+
+      // Checklist logic
+      const activeChecks = new Set();
+
+      if (hState === "low") {
+        // Harsh
+        activeChecks.add("cutHedging");
+        activeChecks.add("swapNouns");
+      } else if (hState === "high") {
+        // Soft
+        activeChecks.add("cutHedging"); // softening often means noticing you over-softened earlier
+      }
+
+      if (dState === "low") {
+        // Detached
+        activeChecks.add("removePronouns");
+        activeChecks.add("thirdPerson");
+      } else if (dState === "high") {
+        // Emotional
+        activeChecks.add("sensoryDetail");
+      }
+
+      if (mState === "low") {
+        // Minimal
+        activeChecks.add("shortSentences");
+        activeChecks.add("stripAdverbs");
+      } else if (mState === "high") {
+        // Ornate
+        activeChecks.add("coldImage");
+        activeChecks.add("sensoryDetail");
+      }
+
+      // Combination: clinical misanthropy (harsh + detached + minimal)
+      if (hState === "low" && dState === "low" && mState === "low") {
+        activeChecks.add("cutHedging");
+        activeChecks.add("removePronouns");
+        activeChecks.add("thirdPerson");
+        activeChecks.add("shortSentences");
+      }
+
+      checklistItems.forEach((item) => {
+        const id = item.getAttribute("data-check");
+        if (activeChecks.has(id)) {
+          item.classList.add("active");
+        } else {
+          item.classList.remove("active");
+        }
+      });
+
+      // Orientation label
+      let orientationText = "Balanced – judgment, distance, and texture in equal measure.";
+      if (hState === "low" && dState === "low" && mState === "low") {
+        orientationText = "Clinical, cold, and pared back. Ideal for autopsy-style misanthropy.";
+      } else if (hState === "low" && dState === "mid" && mState === "high") {
+        orientationText = "Bitter and ornate – wounded, lyrical, and quietly furious.";
+      } else if (hState === "mid" && dState === "low" && mState === "mid") {
+        orientationText = "Detached observer – watching the scene like a bored god.";
+      } else if (hState === "mid" && dState === "high" && mState === "high") {
+        orientationText = "Elegiac and saturated – grief with texture and long sentences.";
+      }
+
+      orientationLabel.innerHTML = `Current orientation: <span>${orientationText}</span>`;
+    }
+
+    function applyPreset(preset) {
+      let h = 50,
+        d = 50,
+        m = 50;
+
+      switch (preset) {
+        case "clinical":
+          h = 65;
+          d = 85;
+          m = 60;
+          break;
+        case "misanthropic":
+          h = 80;
+          d = 60;
+          m = 50;
+          break;
+        case "elegiac":
+          h = 35;
+          d = 40;
+          m = 70;
+          break;
+        case "observer":
+          h = 50;
+          d = 90;
+          m = 55;
+          break;
+      }
+
+      harshSoftSlider.value = h;
+      detachEmoteSlider.value = d;
+      minOrnateSlider.value = m;
+      updateToneUI();
+    }
+
+    function updatePresetButtons(activePreset) {
+      presetButtons.forEach((btn) => {
+        if (btn.dataset.preset === activePreset) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+    }
+
+    function updateMoodVocab() {
+      const mood = moodSelect.value;
+      moodVocab.innerHTML = "";
+      let words = [];
+
+      if (mood === "misanthropic") {
+        words = ["crowd", "herd", "noise", "habit", "decay", "stagnant", "ruin"];
+      } else if (mood === "elegiac") {
+        words = ["remnant", "afterimage", "echo", "ruin", "last light", "residue"];
+      } else if (mood === "clinical") {
+        words = ["specimen", "case", "subject", "pattern", "response", "anomaly"];
+      } else if (mood === "cynical") {
+        words = ["punchline", "farce", "circus", "gag", "running joke", "bit"];
+      }
+
+      words.forEach((w) => {
+        const span = document.createElement("span");
+        span.textContent = w;
+        moodVocab.appendChild(span);
+      });
+    }
+
+    // --- Event bindings ---
+    originalText.addEventListener("input", updateMetrics);
+
+    clearOriginalBtn.addEventListener("click", () => {
+      if (!originalText.value.trim()) return;
+      originalText.value = "";
+      updateMetrics();
+    });
+
+    duplicateToNotesBtn.addEventListener("click", () => {
+      rewriteNotes.value = originalText.value;
+    });
+
+    saveSnapshotBtn.addEventListener("click", () => {
+      const text = originalText.value;
+      if (!text.trim()) return;
+      snapshots.push({
+        text,
+        ts: new Date().toISOString(),
+      });
+      snapshotBadge.classList.add("visible");
+      setTimeout(() => {
+        snapshotBadge.classList.remove("visible");
+      }, 1500);
+    });
+
+    [harshSoftSlider, detachEmoteSlider, minOrnateSlider].forEach((slider) => {
+      slider.addEventListener("input", () => {
+        updateToneUI();
+        updatePresetButtons(null); // clear preset highlight when manually moved
+      });
+    });
+
+    presetButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const preset = btn.dataset.preset;
+        applyPreset(preset);
+        updatePresetButtons(preset);
+      });
+    });
+
+    moodSelect.addEventListener("change", updateMoodVocab);
+
+    modeButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.mode;
+        modeButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        if (mode === "notes") {
+          rewriteNotes.placeholder =
+            "Example tactics:\n– Remove all ‘maybe / sort of / kind of’ from lines 1–3.\n– Replace ‘people’ with ‘the crowd’ or ‘the herd’.\n– Collapse 3 short sentences into one long, bitter sentence.";
+        } else {
+          rewriteNotes.placeholder =
+            "Draft a new version here, applying only 2–3 checklist items:\n\nOriginal: …\nNew: …";
+        }
+      });
+    });
+
+    // --- Initial setup ---
+    updateMetrics();
+    updateToneUI();
+    updateMoodVocab();
+  </script>
+</body>
+</html>

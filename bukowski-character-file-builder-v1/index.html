@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bukowski’s Character File Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Bukowski’s Character File Builder</h1>
+      <p class="subtitle">Build your own grimy, flawed “Chinaski” – offline, local-only.</p>
+    </div>
+    <div class="header-meta">
+      <label class="inline-field">
+        Name:
+        <input id="charName" type="text" placeholder="Henry, Rita, whoever..." />
+      </label>
+      <label class="inline-field">
+        Tagline:
+        <input id="charTagline" type="text" placeholder="One brutal line that sums them up." />
+      </label>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="sidebar">
+      <nav class="tabs">
+        <button class="tab-button active" data-tab="sketch">Sketch & Face</button>
+        <button class="tab-button" data-tab="grit">Grit Ledger</button>
+        <button class="tab-button" data-tab="room">Room & Bar</button>
+        <button class="tab-button" data-tab="work">Job & Neighborhood</button>
+        <button class="tab-button" data-tab="extras">Extras</button>
+      </nav>
+
+      <section class="tab-panel active" id="tab-sketch">
+        <h2>Character Sketch</h2>
+        <p class="hint">Click elements to drop them into the sketch. Each one unlocks a prompt.</p>
+        <div class="chip-row" id="sketchElements">
+          <!-- Filled from JS -->
+        </div>
+        <div class="sketch-area" id="sketchCanvas">
+          <p class="empty-hint">Their outline appears here as rough symbols.</p>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-grit">
+        <h2>Grit Ledger</h2>
+        <p class="hint">Short, sharp entries. One ugly truth per line.</p>
+
+        <div class="ledger-group" data-type="flaws">
+          <div class="ledger-header">
+            <h3>Flaws</h3>
+            <button class="tiny-button" data-add="flaws">+ Add</button>
+          </div>
+          <ul class="ledger-list" id="ledger-flaws"></ul>
+        </div>
+
+        <div class="ledger-group" data-type="addictions">
+          <div class="ledger-header">
+            <h3>Addictions</h3>
+            <button class="tiny-button" data-add="addictions">+ Add</button>
+          </div>
+          <ul class="ledger-list" id="ledger-addictions"></ul>
+        </div>
+
+        <div class="ledger-group" data-type="freedoms">
+          <div class="ledger-header">
+            <h3>Freedoms</h3>
+            <button class="tiny-button" data-add="freedoms">+ Add</button>
+          </div>
+          <ul class="ledger-list" id="ledger-freedoms"></ul>
+        </div>
+
+        <div class="ledger-group" data-type="debts">
+          <div class="ledger-header">
+            <h3>Debts</h3>
+            <button class="tiny-button" data-add="debts">+ Add</button>
+          </div>
+          <ul class="ledger-list" id="ledger-debts"></ul>
+        </div>
+
+        <div class="ledger-group" data-type="vices">
+          <div class="ledger-header">
+            <h3>Vices</h3>
+            <button class="tiny-button" data-add="vices">+ Add</button>
+          </div>
+          <ul class="ledger-list" id="ledger-vices"></ul>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-room">
+        <h2>Room & Bar Builder</h2>
+        <p class="hint">Drop a few sad objects into their life.</p>
+
+        <h3>Room</h3>
+        <div class="chip-row" id="roomPalette"></div>
+        <div class="grid room-grid" id="roomGrid"></div>
+
+        <h3>Bar</h3>
+        <div class="chip-row" id="barPalette"></div>
+        <div class="grid bar-grid" id="barGrid"></div>
+      </section>
+
+      <section class="tab-panel" id="tab-work">
+        <h2>Job & Neighborhood</h2>
+        <p class="hint">Work, noise, and geography do half the character work.</p>
+
+        <label class="block-field">
+          Job
+          <select id="jobSelect"></select>
+        </label>
+        <textarea id="jobNotes" class="textarea" rows="3" placeholder="Smells, co-workers, routines, small thefts..."></textarea>
+
+        <label class="block-field">
+          Neighborhood
+          <select id="hoodSelect"></select>
+        </label>
+        <textarea id="hoodNotes" class="textarea" rows="3" placeholder="Sirens, dogs, neighbors, alleyways, ghosts..."></textarea>
+      </section>
+
+      <section class="tab-panel" id="tab-extras">
+        <h2>Extras</h2>
+
+        <div class="extras-block">
+          <h3>Bukowski Line Generator</h3>
+          <p class="hint">Click for one crooked line at a time.</p>
+          <button id="generateLine" class="primary-button">Generate Line</button>
+          <p id="lineOutput" class="quote-output"></p>
+        </div>
+
+        <div class="extras-block">
+          <h3>Vice Progression Timeline</h3>
+          <p class="hint">Rough in the fall.</p>
+          <textarea id="timeline-childhood" class="textarea" rows="2" placeholder="Childhood wound / first crack..."></textarea>
+          <textarea id="timeline-escape" class="textarea" rows="2" placeholder="First escape: book, bottle, fist, screen..."></textarea>
+          <textarea id="timeline-addiction" class="textarea" rows="2" placeholder="When habit became chain..."></textarea>
+          <textarea id="timeline-now" class="textarea" rows="2" placeholder="The current state of the mess..."></textarea>
+        </div>
+
+        <div class="extras-block">
+          <h3>What They Deserve vs What They Get</h3>
+          <p class="hint">A cruel little comparison table.</p>
+          <div class="deserve-get-controls">
+            <input id="deserveInput" type="text" placeholder="What they deserve..." />
+            <input id="getInput" type="text" placeholder="What they actually get..." />
+            <button id="addDeserveGet" class="tiny-button">+ Add Row</button>
+          </div>
+          <table class="deserve-get-table">
+            <thead>
+              <tr><th>Deserve</th><th>Get</th><th></th></tr>
+            </thead>
+            <tbody id="deserveGetBody"></tbody>
+          </table>
+        </div>
+
+        <div class="extras-block">
+          <h3>Self-Insertion Slider</h3>
+          <p class="hint">Be honest. How much of this character is you?</p>
+          <input id="selfInsertRange" type="range" min="0" max="100" value="40" />
+          <div class="range-labels">
+            <span>0% – pure invention</span>
+            <span>100% – just you with a fake name</span>
+          </div>
+          <p id="selfInsertLabel" class="range-output"></p>
+        </div>
+      </section>
+    </section>
+
+    <section class="main">
+      <section class="panel">
+        <h2>Unlocked Writing Prompts</h2>
+        <p class="hint">Everything below is generated from the dirt you add.</p>
+        <div id="promptsList" class="prompts-list"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Analysis</h2>
+        <p class="hint">Rough metrics, not therapy.</p>
+        <div class="analysis-grid">
+          <div class="metric">
+            <h3>Character Dirt Score</h3>
+            <p class="metric-value" id="metric-dirt">0</p>
+            <p class="metric-note" id="metric-dirt-note"></p>
+          </div>
+          <div class="metric">
+            <h3>Human Mess Index</h3>
+            <p class="metric-value" id="metric-mess">0</p>
+            <p class="metric-note" id="metric-mess-note"></p>
+          </div>
+          <div class="metric">
+            <h3>Realism vs Romance</h3>
+            <p class="metric-value" id="metric-realism">0 / 0</p>
+            <p class="metric-note" id="metric-realism-note"></p>
+          </div>
+          <div class="metric">
+            <h3>Self-insertion Fingerprint</h3>
+            <p class="metric-value" id="metric-self">0%</p>
+            <p class="metric-note" id="metric-self-note"></p>
+          </div>
+        </div>
+        <button id="recalcButton" class="primary-button">Recalculate Metrics</button>
+      </section>
+
+      <section class="panel">
+        <h2>Export & Save</h2>
+        <p class="hint">Everything stays on your machine. No servers, no accounts.</p>
+        <div class="export-row">
+          <button id="exportMarkdown" class="secondary-button">Download Character (Markdown)</button>
+          <button id="exportJson" class="secondary-button">Download Character (JSON)</button>
+        </div>
+        <div class="export-row">
+          <label class="block-field">
+            Load from JSON
+            <input id="loadJsonFile" type="file" accept="application/json" />
+          </label>
+        </div>
+        <textarea id="summaryPreview" class="textarea preview" rows="6" placeholder="A brief summary will appear here when you export. You can also edit it by hand."></textarea>
+      </section>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>HTML-first · Local-only · No tracking</span>
+    <span class="footer-right">Seed-style tool – meant to be remixed.</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiet Editor — Minimal Writing Mode</title>
+  <meta name="description" content="Fullscreen writing mode with fading cursor, minimalist typography, and optional ambient audio. Auto-saves locally in Markdown." />
+  <style>
+    :root{
+      --bg:#0e0f10;
+      --paper:#111214;
+      --ink:#e8e6e3;
+      --muted:#9a9996;
+      --accent:#6f9df6;
+      --caret: rgba(232,230,227,1); /* dynamic opacity via JS */
+      --line: #1b1d21;
+      --maxw: 72ch;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family: ui-serif, "Georgia", "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+      line-height:1.6;
+      letter-spacing:.01em;
+    }
+    .chrome{
+      position:fixed; inset:0; display:flex; flex-direction:column;
+    }
+    header{
+      display:flex; align-items:center; gap:.75rem;
+      padding:.75rem 1rem;
+      color:var(--muted);
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+      -webkit-user-select:none; user-select:none;
+    }
+    header .title{font-variant: small-caps; letter-spacing:.08em}
+    header .spacer{flex:1}
+    header button, header .btn{
+      background:#14161a; color:var(--ink);
+      border:1px solid var(--line);
+      padding:.45rem .7rem; border-radius:.6rem;
+      font:inherit; cursor:pointer;
+    }
+    header button:hover{border-color:#2a2d33}
+    header .seg{
+      display:flex; border:1px solid var(--line); border-radius:.6rem; overflow:hidden;
+    }
+    header .seg button{
+      background:transparent; border:0; border-right:1px solid var(--line);
+      padding:.45rem .7rem;
+    }
+    header .seg button:last-child{border-right:0}
+    header .small{font-size:.9rem}
+    .meter{opacity:.8}
+    .wrap{
+      flex:1; display:flex; justify-content:center; overflow:auto;
+    }
+    .page{
+      width:100%; max-width:var(--maxw);
+      padding:8vh 1.25rem 10vh;
+      caret-color: var(--caret);
+    }
+    .page:focus{outline:none}
+    .page h1,.page h2,.page h3{line-height:1.25; margin:1.4em 0 .4em}
+    .page p{margin:0 0 1em}
+    .page hr{border:0; border-top:1px dashed #2a2a2a; margin:2rem 0}
+    .page blockquote{border-left:3px solid #2d2f35; margin:1rem 0; padding:.5rem 1rem; color:#c9c8c4; font-style:italic}
+    .statusbar{
+      position:fixed; right:1rem; bottom:1rem; left:1rem;
+      display:flex; gap:.75rem; align-items:center; justify-content:space-between;
+      color:#c9c8c4; font-size:.9rem; opacity:.7;
+      pointer-events:none;
+    }
+    .statusbar .chip{
+      pointer-events:auto;
+      border:1px solid var(--line); border-radius:999px; padding:.25rem .6rem;
+      background:#14161a;
+    }
+    .hidden{display:none !important}
+    /* Minimal scrollbar */
+    ::-webkit-scrollbar{width:10px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:#22252b; border-radius:8px}
+    /* Prompt modal */
+    dialog{
+      background:#0f1114; color:var(--ink); border:1px solid var(--line);
+      border-radius:12px; padding:1rem; width:min(560px, 92vw);
+    }
+    dialog::backdrop{background:rgba(0,0,0,.5)}
+    .row{display:flex; gap:.75rem; align-items:center}
+    .row input[type="text"]{flex:1; background:#0b0d10; border:1px solid #23262c; color:var(--ink); border-radius:.5rem; padding:.5rem .7rem}
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:.9em; padding:.1rem .4rem; border:1px solid #2a2d33; border-radius:.4rem; background:#111318}
+    .note{color:#b6b5b1; font-size:.95rem}
+    /* Markdown feel */
+    .page pre, .page code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background:#0b0d10; border:1px solid #23262c; border-radius:.5rem; padding:.15rem .4rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="chrome">
+    <header>
+      <div class="title">Quiet&nbsp;Editor</div>
+      <div class="spacer"></div>
+      <div class="seg" role="group" aria-label="audio toggles">
+        <button id="rainBtn" title="Rain (R)">🌧️ Rain</button>
+        <button id="trainBtn" title="Train (T)">🚆 Train</button>
+        <button id="humBtn" title="Hum (H)">🌀 Hum</button>
+      </div>
+      <label class="small meter" style="display:flex;align-items:center;gap:.5rem;">
+        Volume
+        <input id="vol" type="range" min="0" max="1" step="0.01" value="0.25" />
+      </label>
+      <button id="fsBtn" title="Fullscreen (F)">⛶ Fullscreen</button>
+      <div class="seg">
+        <button id="newBtn" title="New (Ctrl/Cmd+N)">New</button>
+        <button id="impBtn" title="Import .md">Import</button>
+        <button id="expBtn" title="Export .md (Ctrl/Cmd+S)">Export</button>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <article id="page" class="page" contenteditable spellcheck="false" aria-label="Markdown editor">
+# Title
+
+Begin. Write in peace.
+
+- Minimalist typography
+- Fading cursor when you pause
+- Optional ambient rain / train / hum
+- Auto-saves to your browser (localStorage)
+- Export / Import Markdown
+
+      </article>
+    </main>
+
+    <footer class="statusbar">
+      <div id="stats" class="chip">0 words • 0:00</div>
+      <div class="chip">Tips: <span class="kbd">Ctrl/Cmd+S</span> export • <span class="kbd">Ctrl/Cmd+N</span> new • <span class="kbd">F</span> fullscreen • <span class="kbd">R/T/H</span> audio</div>
+      <div id="saved" class="chip">saved</div>
+    </footer>
+  </div>
+
+  <dialog id="confirmNew">
+    <h3>Start a new document?</h3>
+    <p class="note">Your current text is already auto-saved. This will replace the editor contents with a blank page.</p>
+    <div style="display:flex; gap:.5rem; justify-content:flex-end; margin-top:1rem;">
+      <button id="cancelNew">Cancel</button>
+      <button id="okNew">New</button>
+    </div>
+  </dialog>
+
+  <input id="fileInput" type="file" accept=".md,.markdown,text/markdown,text/plain" class="hidden" />
+
+  <script>
+  // -------------------- Autosave & Stats --------------------
+  const page = document.getElementById('page');
+  const saved = document.getElementById('saved');
+  const stats = document.getElementById('stats');
+  const STORAGE_KEY = 'quietEditorContent.v1';
+  let saveTimer = null;
+  let dirty = false;
+
+  function loadSaved(){
+    try{
+      const v = localStorage.getItem(STORAGE_KEY);
+      if(v !== null){ page.innerText = v; }
+    }catch{}
+    updateStats();
+  }
+
+  function autosave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{
+      try{
+        const md = page.innerText;
+        localStorage.setItem(STORAGE_KEY, md);
+        saved.textContent = 'saved';
+        dirty = false;
+      }catch(e){
+        saved.textContent = 'save error';
+      }
+    }, 400);
+  }
+
+  function updateStats(){
+    const text = page.innerText.trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    const minutes = Math.ceil(words/200);
+    const m = String(Math.floor(minutes)).padStart(1,'0');
+    const s = '00';
+    stats.textContent = `${words} words • ${m}:${s}`;
+  }
+
+  // -------------------- Caret Fade --------------------
+  let caretOpacity = 1;         // 1 -> 0
+  let lastInputTime = performance.now();
+  const CARET_DECAY_AFTER = 900; // ms before fade begins
+  const CARET_FADE_MS = 1800;    // ms duration to fade to 0
+
+  function setCaret(op){
+    caretOpacity = Math.max(0, Math.min(1, op));
+    document.documentElement.style.setProperty('--caret', `rgba(232,230,227,${caretOpacity.toFixed(3)})`);
+  }
+  setCaret(1);
+
+  function caretTicker(now){
+    const idle = now - lastInputTime;
+    if(idle > CARET_DECAY_AFTER){
+      const t = Math.min(1, (idle-CARET_DECAY_AFTER)/CARET_FADE_MS);
+      setCaret(1 - t);
+    }
+    requestAnimationFrame(caretTicker);
+  }
+  requestAnimationFrame(caretTicker);
+
+  function nudgeCaret(){
+    lastInputTime = performance.now();
+    setCaret(1);
+  }
+
+  page.addEventListener('keydown', nudgeCaret);
+  page.addEventListener('keyup', ()=>{ dirty = true; autosave(); updateStats(); });
+  page.addEventListener('input', nudgeCaret);
+  page.addEventListener('click', nudgeCaret);
+  page.addEventListener('pointerdown', nudgeCaret);
+  page.addEventListener('paste', ()=>{ nudgeCaret(); dirty = true; autosave(); updateStats(); });
+
+  // -------------------- Export / Import --------------------
+  const expBtn = document.getElementById('expBtn');
+  const impBtn = document.getElementById('impBtn');
+  const fileInput = document.getElementById('fileInput');
+
+  function download(filename, text){
+    const blob = new Blob([text], {type:'text/markdown'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    a.remove(); URL.revokeObjectURL(url);
+  }
+
+  expBtn.addEventListener('click', ()=>{
+    const titleLine = (page.innerText.trim().split(/\n/)[0] || 'Untitled').replace(/[^\w\-\s]/g,'');
+    download(`${titleLine || 'Untitled'}.md`, page.innerText);
+  });
+
+  fileInput.addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const text = await file.text();
+    page.innerText = text;
+    autosave();
+    updateStats();
+    fileInput.value = '';
+  });
+
+  impBtn.addEventListener('click', ()=> fileInput.click());
+
+  // -------------------- New Document --------------------
+  const newBtn = document.getElementById('newBtn');
+  const confirmNew = document.getElementById('confirmNew');
+  const cancelNew = document.getElementById('cancelNew');
+  const okNew = document.getElementById('okNew');
+
+  newBtn.addEventListener('click', ()=> confirmNew.showModal());
+  cancelNew.addEventListener('click', ()=> confirmNew.close());
+  okNew.addEventListener('click', ()=>{
+    page.innerText = '# Title\n\nBegin.';
+    confirmNew.close();
+    autosave();
+    updateStats();
+    nudgeCaret();
+  });
+
+  // -------------------- Fullscreen --------------------
+  const fsBtn = document.getElementById('fsBtn');
+  fsBtn.addEventListener('click', ()=>{
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen().catch(()=>{});
+    }else{
+      document.exitFullscreen();
+    }
+  });
+
+  // Hotkeys
+  document.addEventListener('keydown', (e)=>{
+    const key = e.key.toLowerCase();
+    const isCtrlCmd = e.ctrlKey || e.metaKey;
+    const isShift = e.shiftKey;
+    const isAlt = e.altKey;
+
+    // Always allow typing; only act when modifiers are present
+    // Export
+    if(isCtrlCmd && key === 's'){ e.preventDefault(); expBtn.click(); return; }
+    // New
+    if(isCtrlCmd && key === 'n'){ e.preventDefault(); newBtn.click(); return; }
+    // Fullscreen (Ctrl/Cmd+Shift+F)
+    if(isCtrlCmd && isShift && key === 'f'){ e.preventDefault(); fsBtn.click(); return; }
+    // Audio toggles via Alt+R/T/H
+    if(isAlt && (key === 'r')){ e.preventDefault(); rainBtn.click(); return; }
+    if(isAlt && (key === 't')){ e.preventDefault(); trainBtn.click(); return; }
+    if(isAlt && (key === 'h')){ e.preventDefault(); humBtn.click(); return; }
+  }, {passive:false});
+
+  // Show updated shortcut hints in the footer dynamically
+  document.querySelector('.statusbar .chip:nth-child(2)').innerHTML =
+    'Tips: <span class="kbd">Ctrl/Cmd+S</span> export • <span class="kbd">Ctrl/Cmd+N</span> new • <span class="kbd">Ctrl/Cmd+Shift+F</span> fullscreen • <span class="kbd">Alt+R/T/H</span> audio';
+
+// -------------------- Ambient Audio (WebAudio, no files) --------------------
+  let audioCtx = null;
+  let masterGain = null;
+  const vol = document.getElementById('vol');
+  const rainBtn = document.getElementById('rainBtn');
+  const trainBtn = document.getElementById('trainBtn');
+  const humBtn = document.getElementById('humBtn');
+
+  const buses = {
+    rain: { on:false, node:null },
+    train: { on:false, node:null },
+    hum: { on:false, node:null },
+  };
+
+  function ensureAudio(){
+    if(audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = parseFloat(vol.value);
+    masterGain.connect(audioCtx.destination);
+  }
+
+  vol.addEventListener('input', ()=>{
+    if(!masterGain) return;
+    masterGain.gain.setTargetAtTime(parseFloat(vol.value), audioCtx.currentTime, .05);
+  });
+
+  function toggle(busName){
+    ensureAudio();
+    const bus = buses[busName];
+    if(bus.on){
+      if(bus.node && bus.node.stop) bus.node.stop();
+      bus.on = false;
+    }else{
+      bus.node = generators[busName]();
+      bus.on = true;
+    }
+    updateButtons();
+  }
+
+  function updateButtons(){
+    rainBtn.style.opacity = buses.rain.on ? 1 : .6;
+    trainBtn.style.opacity = buses.train.on ? 1 : .6;
+    humBtn.style.opacity = buses.hum.on ? 1 : .6;
+  }
+
+  rainBtn.addEventListener('click', ()=>toggle('rain'));
+  trainBtn.addEventListener('click', ()=>toggle('train'));
+  humBtn.addEventListener('click', ()=>toggle('hum'));
+
+  const generators = {
+    rain: ()=>{
+      // Pinkish noise + gentle lowpass + slow volume flutter = rain
+      const length = 2 * audioCtx.sampleRate;
+      const buffer = audioCtx.createBuffer(1, length, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      // Voss-McCartney pink-ish by integrating white w/ gentle filter
+      let white = 0;
+      for(let i=0;i<length;i++){
+        white = Math.random()*2-1;
+        data[i] = data[i] + 0.02*white + (data[i-1]||0)*0.98;
+      }
+      const src = audioCtx.createBufferSource();
+      src.buffer = buffer;
+      src.loop = true;
+      const lp = audioCtx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 1800; lp.Q.value = 0.0001;
+      const gain = audioCtx.createGain(); gain.gain.value = 0.8;
+      // Subtle tremolo
+      const lfo = audioCtx.createOscillator(); lfo.frequency.value = 0.18;
+      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.12;
+      lfo.connect(lfoGain).connect(gain.gain);
+      src.connect(lp).connect(gain).connect(masterGain);
+      src.start();
+      lfo.start();
+      src.stop = ((origStop)=> (when=0)=>{ lfo.stop(); origStop.call(src, when); })(src.stop);
+      return src;
+    },
+    train: ()=>{
+      // Rhythmic clack + low rumble
+      const out = audioCtx.createGain(); out.gain.value = 0.7; out.connect(masterGain);
+
+      // Rumble
+      const osc = audioCtx.createOscillator(); osc.type='sawtooth'; osc.frequency.value = 32;
+      const rumbleGain = audioCtx.createGain(); rumbleGain.gain.value = 0.05;
+      const lp = audioCtx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 120;
+      osc.connect(lp).connect(rumbleGain).connect(out); osc.start();
+
+      // Clacks via noise bursts
+      const burstGain = audioCtx.createGain(); burstGain.gain.value = 0.0; burstGain.connect(out);
+      function noiseBurst(){
+        const b = audioCtx.createBuffer(1, audioCtx.sampleRate*0.03, audioCtx.sampleRate);
+        const d = b.getChannelData(0);
+        for(let i=0;i<d.length;i++){ d[i] = (Math.random()*2-1)*Math.exp(-i/1200); }
+        const s = audioCtx.createBufferSource(); s.buffer = b;
+        const bp = audioCtx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 2500; bp.Q.value = 1.2;
+        s.connect(bp).connect(burstGain);
+        s.start();
+      }
+      let alive = true;
+      function pattern(){
+        if(!alive) return;
+        // ta-tak .. ta-tak ..
+        noiseBurst();
+        setTimeout(()=>noiseBurst(), 120);
+        setTimeout(pattern, 760);
+      }
+      pattern();
+
+      const node = {
+        stop(){
+          alive = false;
+          osc.stop();
+          out.disconnect();
+        }
+      };
+      return node;
+    },
+    hum: ()=>{
+      // Gentle multi-sine hum (mains + harmonics) with slight detune
+      const freqs = [55, 110, 220];
+      const g = audioCtx.createGain(); g.gain.value = 0.12; g.connect(masterGain);
+      const oscs = freqs.map(f=>{
+        const o = audioCtx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = f + (Math.random()*0.2-0.1);
+        o.connect(g); o.start();
+        return o;
+      });
+      const node = {
+        stop(){
+          oscs.forEach(o=>o.stop());
+          g.disconnect();
+        }
+      };
+      return node;
+    }
+  };
+
+  // -------------------- Init --------------------
+  loadSaved();
+  page.focus();
+  // Keep content editable focused on click anywhere
+  document.addEventListener('click', (e)=>{
+    const inHeader = e.target.closest('header') || e.target.closest('dialog');
+    if(!inHeader){ page.focus(); }
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Harsh Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>The Harsh Editor</h1>
+        <p class="tagline">A discipline tool for ruthless, declarative prose.</p>
+      </div>
+      
+      <div class="header-controls">
+        <label class="toggle">
+          <input type="checkbox" id="punishToggle" />
+          <span class="toggle-label">Punishment mode</span>
+        </label>
+        <label class="mode-select-label">
+          Mode:
+          <select id="modeSelect">
+            <option value="military">Military</option>
+            <option value="monastic">Monastic</option>
+            <option value="misanthrope">Misanthrope</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="pane pane-left">
+        <div class="pane-header">
+          <h2>Your Draft</h2>
+          <button id="analyzeBtn" class="btn primary">Analyze</button>
+        </div>
+        <textarea id="draftInput" spellcheck="false" placeholder="Write something. The Harsh Editor will judge it."></textarea>
+        <p class="hint">
+          This tool punishes: hedging, softeners, emotional qualifiers, passive voice, clichés, and modifier bloat.
+        </p>
+      </section>
+
+      <section class="pane pane-right">
+        <div class="metrics-bar">
+          <div class="metric">
+            <span class="metric-label">Harshness Score</span>
+            <span class="metric-value" id="scoreValue">–</span>
+            <div class="score-bar">
+              <div class="score-fill" id="scoreFill"></div>
+            </div>
+          </div>
+          <div class="metric metric-compact">
+            <span class="metric-label">Sentences</span>
+            <span class="metric-value" id="sentenceCount">0</span>
+          </div>
+          <div class="metric metric-compact">
+            <span class="metric-label">Words</span>
+            <span class="metric-value" id="wordCount">0</span>
+          </div>
+        </div>
+
+        <div class="violations-grid">
+          <div class="viol-card">
+            <h3>Weakness Overview</h3>
+            <ul class="viol-summary" id="violSummary">
+              <li>No text yet. Start writing.</li>
+            </ul>
+          </div>
+
+          <div class="viol-card">
+            <h3>Violations</h3>
+            <div class="viol-list" id="violList">
+              <p class="empty">No violations detected. Unlikely.</p>
+            </div>
+          </div>
+
+          <div class="viol-card">
+            <h3>Flagged Phrases</h3>
+            <div class="pill-area" id="pillArea">
+              <p class="empty">Weak phrases will appear here.</p>
+            </div>
+          </div>
+
+
+          <div class="viol-card">
+            <h3>Rewrite Hints</h3>
+            <ul class="rewrite-hints">
+              <li><strong>Remove modifiers</strong> → choose exact nouns and verbs instead of padding.</li>
+              <li><strong>Replace passive</strong> → make a clear subject perform a clear action.</li>
+              <li><strong>Strip emotional words</strong> → rewrite as neutral, factual statements.</li>
+              <li><strong>Cut hedges</strong> → choose a stance and state it directly.</li>
+              <li><strong>Shorten long sentences</strong> → break them into two clean thoughts.</li>
+              <li><strong>Delete clichés</strong> → use specific imagery or say nothing.</li>
+            </ul>
+          </div>
+
+          <div class="viol-card">
+            <h3>Coach</h3>
+            <p id="coachMessage" class="coach-message">
+              Write a paragraph, then hit <strong>Analyze</strong>. The Harsh Editor does not offer comfort.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>The Harsh Editor · HTML-first, local-first discipline seed.</span>
+      <span class="footer-right">No AI. Just deterministic scorn.</span>
+    </footer>
+  </div>
+
+
+  <div class="rewrite-overlay hidden" id="rewriteOverlay">
+    <div class="rewrite-dialog">
+      <div class="rewrite-dialog-header">
+        <span id="rewriteTitle">Rewrite prompt</span>
+        <button class="rewrite-close-btn" id="rewriteCloseBtn" aria-label="Close">×</button>
+      </div>
+      <div class="rewrite-dialog-body">
+        <p id="rewriteDescription"></p>
+        <div class="rewrite-guidance" id="rewriteGuidance"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="script.js"></script>
+</body>
+</html>

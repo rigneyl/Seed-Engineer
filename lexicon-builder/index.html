@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lexicon Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="base.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-group">
+        <h1>Lexicon Builder</h1>
+        <p class="app-tagline">Build a misanthropic, precision-tuned lexicon for your writing.</p>
+      </div>
+      <div class="app-controls">
+        <button id="mode-edit" class="btn btn-pill btn-active" type="button">Edit Mode</button>
+        <button id="mode-preview" class="btn btn-pill" type="button">Preview Mode</button>
+        <span class="divider"></span>
+        <button id="export-md" class="btn" type="button">Export Markdown</button>
+        <button id="export-json" class="btn btn-ghost" type="button">Export JSON</button>
+        <label class="file-label">
+          <span class="btn btn-ghost">Import JSON</span>
+          <input id="import-json" type="file" accept="application/json" />
+        </label>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="left-panel">
+        <div class="panel-card">
+          <h2 class="panel-title">Filters</h2>
+          <div class="field-group">
+            <label for="search-input">Search terms &amp; definitions</label>
+            <input id="search-input" type="text" placeholder="Type to filter..." />
+          </div>
+          <div class="field-group">
+            <label for="tone-filter">Filter by tone</label>
+            <select id="tone-filter">
+              <option value="all">All tones</option>
+              <option value="caustic">Caustic</option>
+              <option value="melancholic">Melancholic</option>
+              <option value="clinical">Clinical</option>
+              <option value="absurd">Absurd</option>
+              <option value="apathetic">Apathetic</option>
+              <option value="volatile">Volatile</option>
+              <option value="funereal">Funereal</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="panel-card tone-summary">
+          <h2 class="panel-title">Tone Heatmap</h2>
+          <div id="tone-stats" class="tone-stats">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h2 class="panel-title">Quick Help</h2>
+          <ul class="help-list">
+            <li><strong>Click</strong> any cell to edit.</li>
+            <li><strong>Tab</strong> to move between columns.</li>
+            <li><strong>Enter</strong> in last cell to add a new row.</li>
+            <li>Use tones to calibrate the emotional flavour of your lexicon.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="right-panel">
+        <div id="editor-view" class="editor-view">
+          <div class="table-header-row">
+            <div class="table-title-group">
+              <h2 class="panel-title">Lexicon Entries</h2>
+              <p class="panel-subtitle">Each row is a term in your personal universe.</p>
+            </div>
+            <button id="add-row" class="btn" type="button">+ Add Row</button>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="lexicon-table">
+              <thead>
+                <tr>
+                  <th class="col-term">Term</th>
+                  <th class="col-definition">Definition</th>
+                  <th class="col-tone">Tone</th>
+                  <th class="col-usage">Usage example</th>
+                </tr>
+              </thead>
+              <tbody id="lexicon-body">
+                <!-- Rows rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="preview-view" class="preview-view" aria-hidden="true">
+          <div class="preview-card">
+            <h2 class="panel-title">Lexicon Preview</h2>
+            <p class="panel-subtitle">A print‑style view of your lexicon in Markdown form.</p>
+            <pre id="preview-content" class="preview-content"></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>Misanthropic Lexicon Builder · HTML‑first, local‑first seed tool.</span>
+      <span class="footer-right">Built for writers who distrust humanity but still care about words.</span>
+    </footer>
+  </div>
+
+  <script src="lexicon.js"></script>
+</body>
+</html>

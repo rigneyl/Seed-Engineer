@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minimalist Editor · Constraint Modes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #111111;
+      --bg-elevated: #18181f;
+      --border-subtle: #2a2a35;
+      --accent: #e3b341;
+      --accent-soft: rgba(227, 179, 65, 0.16);
+      --text-main: #f5f5f5;
+      --text-muted: #a3a3b2;
+      --danger: #ff4b4b;
+      --danger-soft: rgba(255, 75, 75, 0.1);
+      --good: #5fd18a;
+      --good-soft: rgba(95, 209, 138, 0.1);
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.55);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #202020 0, #090909 55%, #050505 100%);
+      color: var(--text-main);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1200px;
+      background: linear-gradient(145deg, #121218, #0b0b0f);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .app-header {
+      padding: 14px 20px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at left top, #1c1c26 0, #090910 52%);
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .title-row span.label {
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(227, 179, 65, 0.5);
+      background: radial-gradient(circle at top, var(--accent-soft), transparent 70%);
+      color: var(--accent);
+      font-size: 11px;
+    }
+
+    .title-main {
+      font-size: 18px;
+      font-weight: 560;
+      color: var(--text-main);
+    }
+
+    .title-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 520px;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(227, 179, 65, 0.8);
+    }
+
+    .chip strong {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .tiny-help {
+      opacity: 0.8;
+    }
+
+    .mode-pill {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      padding: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(0, 0, 0, 0.35);
+      font-size: 11px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .mode-pill span {
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      opacity: 0.45;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mode-pill span.active {
+      background: rgba(227, 179, 65, 0.16);
+      color: var(--accent);
+      opacity: 1;
+      cursor: default;
+    }
+
+    .app-main {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 0;
+      flex: 1;
+      min-height: 420px;
+    }
+
+    .pane {
+      padding: 16px 18px 18px;
+    }
+
+    .pane + .pane {
+      border-left: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at top, #161620 0, #09090d 65%);
+    }
+
+    .pane-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .pane-heading strong {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 11px;
+      color: var(--text-main);
+    }
+
+    .hint-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
+
+    textarea {
+      width: 100%;
+      height: calc(100% - 8px);
+      min-height: 340px;
+      resize: none;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at top, #181820 0, #101014 60%);
+      padding: 14px 14px 16px;
+      font: 13px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: var(--text-main);
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+    }
+
+    textarea::placeholder {
+      color: rgba(163, 163, 178, 0.85);
+      font-size: 12px;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(227, 179, 65, 0.4),
+        0 14px 35px rgba(0, 0, 0, 0.7);
+    }
+
+    .stats-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      gap: 10px;
+    }
+
+    .stats-row span {
+      white-space: nowrap;
+    }
+
+    .stats-row strong {
+      color: var(--text-main);
+    }
+
+    .violations-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+
+    .violation-card {
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      padding: 8px 9px;
+      background: rgba(7, 7, 10, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 54px;
+    }
+
+    .violation-card.danger {
+      border-color: rgba(255, 75, 75, 0.65);
+      background: radial-gradient(circle at top, var(--danger-soft), #09090c);
+    }
+
+    .violation-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .violation-value {
+      font-size: 13px;
+      font-weight: 520;
+      color: var(--text-main);
+    }
+
+    .violation-detail {
+      font-size: 10px;
+      color: var(--text-muted);
+      opacity: 0.9;
+      min-height: 12px;
+    }
+
+    .purity-block {
+      margin-top: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: radial-gradient(circle at left, rgba(35, 35, 55, 0.9), #050507);
+    }
+
+    .purity-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .purity-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .purity-score {
+      font-size: 18px;
+      font-weight: 560;
+      color: var(--accent);
+    }
+
+    .purity-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .purity-meter {
+      width: 100%;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .purity-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 30%;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        rgba(95, 209, 138, 1),
+        rgba(227, 179, 65, 1)
+      );
+      transform-origin: left center;
+      transition: transform 0.18s ease-out;
+    }
+
+    .purity-note {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .export-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      min-width: 170px;
+    }
+
+    .btn {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(227, 179, 65, 0.8);
+      background: radial-gradient(circle at top left, #3d2b10, #251a08);
+      padding: 7px 14px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+      transition: transform 0.08s ease-out, box-shadow 0.1s ease-out,
+        background 0.12s ease-out;
+    }
+
+    .btn span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(227, 179, 65, 0.8);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.85);
+      background: radial-gradient(circle at top left, #4a3411, #2b1d08);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.8);
+    }
+
+    .btn[disabled] {
+      opacity: 0.35;
+      cursor: default;
+      box-shadow: none;
+      background: rgba(40, 40, 40, 0.6);
+      border-color: rgba(80, 80, 80, 0.9);
+      color: var(--text-muted);
+    }
+
+    .export-caption {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .panel-footer {
+      padding: 8px 18px 12px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: radial-gradient(circle at bottom, #15151f 0, #050508 70%);
+    }
+
+    .footer-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      align-items: center;
+    }
+
+    .constraint-pill {
+      border-radius: var(--radius-pill);
+      border: 1px dashed rgba(163, 163, 178, 0.5);
+      padding: 3px 8px;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+    }
+
+    .kbd {
+      border-radius: 4px;
+      border: 1px solid rgba(163, 163, 178, 0.7);
+      padding: 1px 4px;
+      font-size: 9px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      background: rgba(10, 10, 12, 0.8);
+      color: var(--text-main);
+    }
+
+    @media (max-width: 860px) {
+      body {
+        padding: 12px;
+      }
+      .app-shell {
+        border-radius: 18px;
+      }
+      .app-main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .pane + .pane {
+        border-left: none;
+        border-top: 1px solid var(--border-subtle);
+      }
+      .export-block {
+        align-items: stretch;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .controls-row {
+        align-self: stretch;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="title-block">
+        <div class="title-row">
+          <span class="label">Constraint Lab</span>
+          <span id="mode-tagline">McCarthy-mode purity index</span>
+        </div>
+        <div class="title-main" id="mode-title">Minimalist Editor</div>
+        <div class="title-sub" id="mode-subtitle">
+          A brutalist writing sandbox that punishes adverbs, abstractions, and ornament.
+          Type lean, concrete prose. Watch the purity score climb.
+        </div>
+      </div>
+      <div class="controls-row">
+        <div class="chip">
+          <span class="chip-dot"></span>
+          <span><strong>Live Check</strong> <span class="tiny-help">every keystroke scored</span></span>
+        </div>
+        <div class="mode-pill" aria-label="Modes">
+          <span class="active" data-mode="mccarthy">McCarthy</span>
+          <span data-mode="hemingway">Hemingway</span>
+          <span data-mode="bukowski">Bukowski</span>
+          <span data-mode="ligotti">Ligotti</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="pane">
+        <div class="pane-heading">
+          <strong>Draft</strong>
+          <span class="hint-text" id="draft-hint">
+            Write clean, concrete sentences. No theory. No decoration.
+          </span>
+        </div>
+        <textarea id="editor" placeholder="Start with something small and hard. Dirt. A road. The light on a fence post. &#10;&#10;The tool will count every adverb, abstraction, extra comma, and metaphor. When the purity score is high enough, you can export a clean draft."></textarea>
+        <div class="stats-row">
+          <span>Words: <strong id="stat-words">0</strong></span>
+          <span>Sentences: <strong id="stat-sentences">0</strong></span>
+          <span>Paragraphs: <strong id="stat-paragraphs">0</strong></span>
+        </div>
+      </section>
+
+      <aside class="pane">
+        <div class="pane-heading">
+          <strong>Violations</strong>
+          <span class="hint-text" id="violations-hint">McCarthy purity index</span>
+        </div>
+
+        <div class="violations-list">
+          <div class="violation-card danger" id="card-adverbs">
+            <div class="violation-label">Adverbs</div>
+            <div class="violation-value" id="count-adverbs">0</div>
+            <div class="violation-detail" id="detail-adverbs">No -ly crutches detected.</div>
+          </div>
+
+          <div class="violation-card danger" id="card-adjectives">
+            <div class="violation-label" id="label-adjectives">Adjectives / paragraph</div>
+            <div class="violation-value" id="count-adjectives">0</div>
+            <div class="violation-detail" id="detail-adjectives">Limit: 1 per paragraph.</div>
+          </div>
+
+          <div class="violation-card danger" id="card-commas">
+            <div class="violation-label">Extra commas</div>
+            <div class="violation-value" id="count-commas">0</div>
+            <div class="violation-detail" id="detail-commas">Max 2 commas per sentence.</div>
+          </div>
+
+          <div class="violation-card danger" id="card-metaphors">
+            <div class="violation-label">Metaphors</div>
+            <div class="violation-value" id="count-metaphors">0</div>
+            <div class="violation-detail" id="detail-metaphors">No “like”, “as if”, “as though”.</div>
+          </div>
+
+          <div class="violation-card danger" id="card-abstracts">
+            <div class="violation-label">Abstractions</div>
+            <div class="violation-value" id="count-abstracts">0</div>
+            <div class="violation-detail" id="detail-abstracts">truth, society, humanity, meaning…</div>
+          </div>
+
+          <div class="violation-card danger" id="card-latinate">
+            <div class="violation-label">Latinate Drift</div>
+            <div class="violation-value" id="count-latinate">0</div>
+            <div class="violation-detail" id="detail-latinate">civilization, structure, appearance…</div>
+          </div>
+        </div>
+
+        <div class="purity-block">
+          <div class="purity-main">
+            <div class="purity-row">
+              <span class="purity-score" id="purity-score">100</span>
+              <span class="purity-label">Purity</span>
+            </div>
+            <div class="purity-meter" aria-hidden="true">
+              <div class="purity-fill" id="purity-fill"></div>
+            </div>
+            <div class="purity-note" id="purity-note">Empty pages are perfectly pure.</div>
+          </div>
+          <div class="export-block">
+            <button id="export-btn" class="btn" disabled>
+              <span class="dot"></span>
+              <span>Export Clean Draft</span>
+            </button>
+            <div class="export-caption" id="export-caption">
+              Purity must reach at least 90 and key violations must be zero.
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="panel-footer">
+      <div class="footer-left" id="constraints-footer">
+        <span class="constraint-pill">No adverbs</span>
+        <span class="constraint-pill">Adjectives ≤ 1 / ¶</span>
+        <span class="constraint-pill">≤ 2 commas / sentence</span>
+        <span class="constraint-pill">No metaphors</span>
+        <span class="constraint-pill">No abstractions</span>
+      </div>
+      <div>
+        <span>Shortcuts: <span class="kbd">Ctrl+E</span> export &middot; <span class="kbd">Esc</span> clear all</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const editor = document.getElementById("editor");
+      const statsWords = document.getElementById("stat-words");
+      const statsSentences = document.getElementById("stat-sentences");
+      const statsParagraphs = document.getElementById("stat-paragraphs");
+
+      const countAdverbs = document.getElementById("count-adverbs");
+      const detailAdverbs = document.getElementById("detail-adverbs");
+
+      const countAdjectives = document.getElementById("count-adjectives");
+      const detailAdjectives = document.getElementById("detail-adjectives");
+      const labelAdjectives = document.getElementById("label-adjectives");
+
+      const countCommas = document.getElementById("count-commas");
+      const detailCommas = document.getElementById("detail-commas");
+
+      const countMetaphors = document.getElementById("count-metaphors");
+      const detailMetaphors = document.getElementById("detail-metaphors");
+
+      const countAbstracts = document.getElementById("count-abstracts");
+      const detailAbstracts = document.getElementById("detail-abstracts");
+
+      const countLatinate = document.getElementById("count-latinate");
+      const detailLatinate = document.getElementById("detail-latinate");
+
+      const purityScoreEl = document.getElementById("purity-score");
+      const purityFill = document.getElementById("purity-fill");
+      const purityNote = document.getElementById("purity-note");
+
+      const exportBtn = document.getElementById("export-btn");
+      const exportCaption = document.getElementById("export-caption");
+
+      const modeSpans = document.querySelectorAll(".mode-pill span");
+      const modeTitle = document.getElementById("mode-title");
+      const modeTagline = document.getElementById("mode-tagline");
+      const modeSubtitle = document.getElementById("mode-subtitle");
+      const draftHint = document.getElementById("draft-hint");
+      const violationsHint = document.getElementById("violations-hint");
+      const constraintsFooter = document.getElementById("constraints-footer");
+
+      let currentMode = "mccarthy";
+
+      const MODE_CONFIG = {
+        mccarthy: {
+          adjectiveLimit: 1,
+          purityThreshold: 90,
+          tagline: "McCarthy-mode purity index",
+          title: "Minimalist Editor",
+          subtitle:
+            "A brutalist writing sandbox that punishes adverbs, abstractions, and ornament. Type lean, concrete prose. Watch the purity score climb.",
+          draftHint:
+            "Write clean, concrete sentences. No theory. No decoration.",
+          violationsHint: "McCarthy purity index",
+          footerPills: [
+            "No adverbs",
+            "Adjectives ≤ 1 / ¶",
+            "≤ 2 commas / sentence",
+            "No metaphors",
+            "No abstractions"
+          ]
+        },
+        hemingway: {
+          adjectiveLimit: 3,
+          purityThreshold: 85,
+          tagline: "Hemingway-mode clarity index",
+          title: "Hemingway Stripdown",
+          subtitle:
+            "Short, clear sentences. Few commas, fewer frills. Favour action over explanation.",
+          draftHint:
+            "Keep sentences short. Prefer concrete verbs. Cut anything you can live without.",
+          violationsHint: "Hemingway clarity index",
+          footerPills: [
+            "Few adverbs",
+            "Adjectives ≤ 3 / ¶",
+            "≤ 2 commas / sentence",
+            "Plain metaphors only",
+            "Concrete detail first"
+          ]
+        },
+        bukowski: {
+          adjectiveLimit: 4,
+          purityThreshold: 80,
+          tagline: "Bukowski-mode grime index",
+          title: "Bukowski Barstool",
+          subtitle:
+            "Loose, spoken, unpretentious. Let the line breathe, but kill the fancy words and big ideas.",
+          draftHint:
+            "Write like you’re talking to one person at a bar. Short lines. Plain words. No sermon.",
+          violationsHint: "Bukowski grime index",
+          footerPills: [
+            "Plain speech",
+            "Adjectives ≤ 4 / ¶",
+            "Not too many commas",
+            "Metaphors cheap and sharp",
+            "No grand abstractions"
+          ]
+        },
+        ligotti: {
+          adjectiveLimit: 999,
+          purityThreshold: 80,
+          tagline: "Ligotti-mode dread index",
+          title: "Ligotti Drift",
+          subtitle:
+            "Let the prose curdle a little. Abstraction, dread, and odd metaphor are allowed to seep in.",
+          draftHint:
+            "Let unease in. Ordinary details should feel slightly wrong. Do not over-explain.",
+          violationsHint: "Ligotti dread index",
+          footerPills: [
+            "Adverbs with restraint",
+            "Adjectives as corrosion",
+            "Commas as creeping delay",
+            "Metaphors as rot",
+            "Abstractions as fog"
+          ]
+        }
+      };
+
+      const abstractWords = [
+        "truth",
+        "society",
+        "humanity",
+        "meaning",
+        "morality",
+        "justice",
+        "identity",
+        "culture",
+        "freedom",
+        "progress",
+        "consciousness",
+        "purpose",
+        "hope",
+        "faith",
+        "spirit",
+        "ethics",
+        "values",
+        "ideology",
+        "system",
+        "order",
+        "chaos",
+        "beauty"
+      ];
+
+      const latinateWords = [
+        "civilization",
+        "civilisation",
+        "memory",
+        "silence",
+        "audience",
+        "function",
+        "purpose",
+        "structure",
+        "appearance",
+        "concept",
+        "abstract",
+        "perception",
+        "emotion",
+        "experience",
+        "nature",
+        "society",
+        "humanity",
+        "reality",
+        "morality"
+      ];
+
+      const adjectiveSuffixes = [
+        "ous",
+        "ive",
+        "ful",
+        "less",
+        "able",
+        "ible",
+        "al",
+        "ic",
+        "ish",
+        "ary",
+        "ory",
+        "ant",
+        "ent",
+        "y"
+      ];
+
+      const cleanText = (str) => (str || "").trim();
+
+      function tokenizeWords(text) {
+        const lower = text.toLowerCase();
+        const words = lower.match(/[a-z']+/g) || [];
+        return words;
+      }
+
+      function splitSentences(text) {
+        const raw = text
+          .replace(/([.!?])+/g, "$1|")
+          .split("|")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        return raw;
+      }
+
+      function splitParagraphs(text) {
+        return text
+          .split(/\n{2,}/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
+      function countAdverbsInWords(words) {
+        const offenders = [];
+        const ignored = new Set(["family", "belly", "silly", "jelly", "lily"]);
+        words.forEach((w) => {
+          if (w.length <= 3) return;
+          if (w.endsWith("ly") && !ignored.has(w)) {
+            offenders.push(w);
+          }
+        });
+        return offenders;
+      }
+
+      function detectAbstracts(words) {
+        const offenders = [];
+        const set = new Set(abstractWords);
+        words.forEach((w) => {
+          if (set.has(w)) offenders.push(w);
+        });
+        return offenders;
+      }
+
+      function detectLatinate(words) {
+        const offenders = [];
+        const set = new Set(latinateWords);
+        words.forEach((w) => {
+          if (set.has(w)) offenders.push(w);
+        });
+        return offenders;
+      }
+
+      function countExtraCommas(sentences) {
+        let extra = 0;
+        const perSentence = [];
+        sentences.forEach((s) => {
+          const count = (s.match(/,/g) || []).length;
+          const over = Math.max(0, count - 2);
+          if (over > 0) {
+            extra += over;
+          }
+          perSentence.push({ raw: s, commas: count, extra: over });
+        });
+        return { extra, perSentence };
+      }
+
+      function countLongSentences(sentences) {
+        let longCount = 0;
+        sentences.forEach((s) => {
+          const wc = tokenizeWords(s).length;
+          if (wc > 25) longCount++;
+        });
+        return longCount;
+      }
+
+      function countAdjectivesPerParagraph(paragraphs, limit) {
+        let violations = 0;
+        const perParagraph = [];
+        paragraphs.forEach((p) => {
+          const words = tokenizeWords(p);
+          let guess = 0;
+          words.forEach((w) => {
+            adjectiveSuffixes.forEach((suf) => {
+              if (w.length > suf.length + 2 && w.endsWith(suf)) {
+                guess++;
+              }
+            });
+          });
+          const over = Math.max(0, guess - limit);
+          violations += over;
+          perParagraph.push({ raw: p, adjectives: guess, over });
+        });
+        return { violations, perParagraph, limit };
+      }
+
+      function detectMetaphors(text) {
+        const lower = text.toLowerCase();
+        let count = 0;
+        const patterns = [
+          " like a ",
+          " like an ",
+          " like the ",
+          " as if ",
+          " as though ",
+          " as when ",
+          " similar to "
+        ];
+        patterns.forEach((p) => {
+          const matches = lower.split(p).length - 1;
+          if (matches > 0) count += matches;
+        });
+        return count;
+      }
+
+      function computePurity(stats, mode) {
+        let score = 100;
+        if (mode === "mccarthy") {
+          score -= stats.adverbs * 5;
+          score -= stats.adjectiveViolations * 5;
+          score -= stats.extraCommas * 3;
+          score -= stats.metaphors * 10;
+          score -= stats.abstracts * 8;
+          score -= stats.latinate * 4;
+        } else if (mode === "hemingway") {
+          score -= stats.adverbs * 4;
+          score -= stats.adjectiveViolations * 2;
+          score -= stats.extraCommas * 6;
+          score -= stats.metaphors * 2;
+          score -= stats.abstracts * 4;
+          score -= stats.latinate * 2;
+        } else if (mode === "bukowski") {
+          // Bukowski: relaxed on commas & adverbs, brutal on abstractions / fancy talk & long speeches.
+          score -= stats.adverbs * 1.5;
+          score -= stats.adjectiveViolations * 0.5;
+          score -= stats.extraCommas * 0.5;
+          score -= stats.metaphors * 0.5;
+          score -= stats.abstracts * 12;
+          score -= stats.latinate * 10;
+          score -= stats.longSentences * 6; // long, sermon-like sentences are hit hard
+        } else if (mode === "ligotti") {
+          const minDesiredMetaphors = 2;
+          const minDesiredAbstracts = 2;
+          const lackMetaphor = Math.max(0, minDesiredMetaphors - stats.metaphors);
+          const lackAbstracts = Math.max(0, minDesiredAbstracts - stats.abstracts);
+          score -= stats.adverbs * 2;
+          score -= stats.extraCommas * 2;
+          score -= lackMetaphor * 10;
+          score -= lackAbstracts * 10;
+        }
+
+        if (!isFinite(score) || isNaN(score)) score = 0;
+        if (score < 0) score = 0;
+        if (score > 100) score = 100;
+        return Math.round(score);
+      }
+
+      function summarizeOffenders(list, limit = 4) {
+        if (!list.length) return "";
+        const uniq = Array.from(new Set(list));
+        if (uniq.length <= limit) {
+          return uniq.join(", ");
+        }
+        const head = uniq.slice(0, limit).join(", ");
+        const rest = uniq.length - limit;
+        return head + " +" + rest + " more";
+      }
+
+      function applyModeUI() {
+        const cfg = MODE_CONFIG[currentMode];
+        modeTitle.textContent = cfg.title;
+        modeTagline.textContent = cfg.tagline;
+        modeSubtitle.textContent = cfg.subtitle;
+        draftHint.textContent = cfg.draftHint;
+        violationsHint.textContent = cfg.violationsHint;
+
+        constraintsFooter.innerHTML = "";
+        cfg.footerPills.forEach((txt) => {
+          const span = document.createElement("span");
+          span.className = "constraint-pill";
+          span.textContent = txt;
+          constraintsFooter.appendChild(span);
+        });
+
+        labelAdjectives.textContent =
+          currentMode === "hemingway"
+            ? "Adjectives / paragraph"
+            : currentMode === "ligotti"
+            ? "Adjectives (soft limit)"
+            : "Adjectives / paragraph";
+      }
+
+      function updateUI() {
+        const text = editor.value || "";
+        const cfg = MODE_CONFIG[currentMode];
+
+        const words = tokenizeWords(text);
+        const sentences = splitSentences(text);
+        const paragraphs = splitParagraphs(text);
+
+        statsWords.textContent = words.length;
+        statsSentences.textContent = sentences.length;
+        statsParagraphs.textContent = paragraphs.length;
+
+        const adverbOffenders = countAdverbsInWords(words);
+        countAdverbs.textContent = adverbOffenders.length;
+        detailAdverbs.textContent =
+          adverbOffenders.length === 0
+            ? "No -ly crutches detected."
+            : summarizeOffenders(adverbOffenders);
+
+        const abstractOffenders = detectAbstracts(words);
+        countAbstracts.textContent = abstractOffenders.length;
+        detailAbstracts.textContent =
+          abstractOffenders.length === 0
+            ? "No abstractions in sight."
+            : summarizeOffenders(abstractOffenders);
+
+        const latinateOffenders = detectLatinate(words);
+        countLatinate.textContent = latinateOffenders.length;
+        detailLatinate.textContent =
+          latinateOffenders.length === 0
+            ? "Prose leans nicely Anglo-Saxon."
+            : summarizeOffenders(latinateOffenders);
+
+        const commaInfo = countExtraCommas(sentences);
+        countCommas.textContent = commaInfo.extra;
+        if (commaInfo.extra === 0) {
+          detailCommas.textContent = "No sentence exceeds 2 commas.";
+        } else {
+          const offenders = commaInfo.perSentence
+            .filter((s) => s.extra > 0)
+            .slice(0, 2)
+            .map((s) => {
+              const trimmed = s.raw.trim();
+              const sample =
+                trimmed.length > 40 ? trimmed.slice(0, 37) + "…" : trimmed;
+              return '"' + sample + '"';
+            });
+          detailCommas.textContent =
+            offenders.length > 0
+              ? offenders.join(" · ")
+              : "Some sentences use too many commas.";
+        }
+
+        const longSentenceCount = countLongSentences(sentences);
+
+        const adjInfo = countAdjectivesPerParagraph(
+          paragraphs,
+          cfg.adjectiveLimit
+        );
+        countAdjectives.textContent = adjInfo.violations;
+        if (!paragraphs.length) {
+          detailAdjectives.textContent =
+            "Limit: " + cfg.adjectiveLimit + " adjective(s) per paragraph.";
+        } else if (adjInfo.violations === 0) {
+          detailAdjectives.textContent = "All paragraphs within the limit.";
+        } else {
+          detailAdjectives.textContent =
+            "Limit " +
+            cfg.adjectiveLimit +
+            " / ¶. " +
+            adjInfo.perParagraph.length +
+            " paragraphs checked.";
+        }
+
+        const metaphorCount = detectMetaphors(text);
+        countMetaphors.textContent = metaphorCount;
+        detailMetaphors.textContent =
+          metaphorCount === 0
+            ? currentMode === "ligotti"
+              ? "No obvious metaphor signatures. Dread may be too clean."
+              : "No metaphor signatures detected."
+            : "Obvious metaphor phrasing found.";
+
+        const stats = {
+          adverbs: adverbOffenders.length,
+          adjectiveViolations: adjInfo.violations,
+          extraCommas: commaInfo.extra,
+          metaphors: metaphorCount,
+          abstracts: abstractOffenders.length,
+          latinate: latinateOffenders.length,
+          longSentences: longSentenceCount
+        };
+
+        const purity = text.trim() ? computePurity(stats, currentMode) : 100;
+        purityScoreEl.textContent = purity;
+        const scale = purity / 100;
+        purityFill.style.transform = "scaleX(" + scale.toFixed(3) + ")";
+
+        if (!text.trim()) {
+          purityNote.textContent =
+            currentMode === "ligotti"
+              ? "Empty pages are calm, not yet uncanny."
+              : currentMode === "bukowski"
+              ? "Nothing on the page. Go live a little, then come back."
+              : "Empty pages are perfectly pure.";
+        } else if (purity >= cfg.purityThreshold) {
+          if (currentMode === "mccarthy") {
+            purityNote.textContent =
+              "Lean sentences. Hard detail. Almost clean.";
+          } else if (currentMode === "hemingway") {
+            purityNote.textContent =
+              "Tight, clear. Most excess has been carved away.";
+          } else if (currentMode === "bukowski") {
+            purityNote.textContent =
+              "Loose but honest. It sounds like someone actually talking.";
+          } else {
+            purityNote.textContent =
+              "The dread reads steady. You can probably live with this.";
+          }
+        } else if (purity >= 70) {
+          if (currentMode === "mccarthy") {
+            purityNote.textContent =
+              "Still too much air. Cut decoration and abstractions.";
+          } else if (currentMode === "hemingway") {
+            purityNote.textContent =
+              "Sentences still carry clutter. Shorten and simplify.";
+          } else if (currentMode === "bukowski") {
+            purityNote.textContent =
+              longSentenceCount > 0
+                ? "You’re drifting into speeches. Shorten the long ones, kill the sermon."
+                : "You might be getting a bit pretty. Cut the sermon, keep the story.";
+          } else {
+            purityNote.textContent =
+              "The tone is not yet unsettled enough. Let the rot in slowly.";
+          }
+        } else {
+          if (currentMode === "mccarthy") {
+            purityNote.textContent =
+              "The prose is heavy. Strip adverbs and theory.";
+          } else if (currentMode === "hemingway") {
+            purityNote.textContent =
+              "You are explaining instead of showing. Carve most of it away.";
+          } else if (currentMode === "bukowski") {
+            purityNote.textContent =
+              longSentenceCount > 0
+                ? "Sounds like you’re on a stage, not a barstool. Break the long rants into real sentences."
+                : "You’re still trying to impress the room. Aim for one tired person at a bar.";
+          } else {
+            purityNote.textContent =
+              "Either too flat or too messy. Re-focus the dread.";
+          }
+        }
+
+        const hardViolations =
+          stats.adverbs +
+          stats.metaphors +
+          stats.abstracts +
+          stats.latinate +
+          stats.adjectiveViolations +
+          stats.extraCommas;
+
+        const threshold = cfg.purityThreshold;
+
+        if (text.trim() && purity >= threshold && hardViolations === 0) {
+          exportBtn.disabled = false;
+          exportCaption.textContent =
+            currentMode === "ligotti"
+              ? "Dreadful enough to keep. Download as plain text."
+              : currentMode === "bukowski"
+              ? "Rough but honest. Download as plain text."
+              : "Clean enough to leave the desert. Download as plain text.";
+        } else {
+          exportBtn.disabled = true;
+          exportCaption.textContent =
+            "Purity must reach at least " +
+            threshold +
+            " and all violation counters must read zero.";
+        }
+      }
+
+      function exportDraft() {
+        const text = cleanText(editor.value);
+        if (!text) return;
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+        link.href = url;
+        link.download = currentMode + "-draft-" + ts + ".txt";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      editor.addEventListener("input", () => {
+        window.requestAnimationFrame(updateUI);
+      });
+
+      exportBtn.addEventListener("click", () => {
+        if (exportBtn.disabled) return;
+        exportDraft();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "e") {
+          e.preventDefault();
+          if (!exportBtn.disabled) {
+            exportDraft();
+          }
+        }
+        if (e.key === "Escape") {
+          if (editor.value.trim().length && confirm("Clear the draft?")) {
+            editor.value = "";
+            updateUI();
+          }
+        }
+      });
+
+      modeSpans.forEach((span) => {
+        span.addEventListener("click", () => {
+          const mode = span.getAttribute("data-mode");
+          if (!mode || mode === currentMode) return;
+          currentMode = mode;
+          modeSpans.forEach((s) => {
+            s.classList.toggle("active", s === span);
+          });
+          applyModeUI();
+          updateUI();
+        });
+      });
+
+      applyModeUI();
+      updateUI();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mirror Editor – Writing Debug View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f7f7f7;
+      --bg-elevated: #ffffff;
+      --bg-subtle: #eeeeee;
+      --text: #111111;
+      --muted: #666666;
+      --accent: #111111;
+      --accent-soft: #333333;
+      --border: #dddddd;
+      --border-strong: #111111;
+      --highlight-filler: #fff4d9;
+      --highlight-passive: #ffe1e1;
+      --highlight-repeat: #e3f0ff;
+      --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    body.dark {
+      --bg: #050509;
+      --bg-elevated: #101018;
+      --bg-subtle: #181820;
+      --text: #f7f7f7;
+      --muted: #a0a0b5;
+      --accent: #f7f7f7;
+      --accent-soft: #eaeaea;
+      --border: #2b2b3a;
+      --border-strong: #f7f7f7;
+      --highlight-filler: rgba(255, 215, 140, 0.15);
+      --highlight-passive: rgba(255, 160, 160, 0.2);
+      --highlight-repeat: rgba(150, 200, 255, 0.18);
+      --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.55);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      line-height: 1.5;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 640px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: linear-gradient(
+        135deg,
+        var(--bg-elevated),
+        var(--bg-subtle)
+      );
+      box-shadow: var(--shadow-soft);
+    }
+
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .toolbar-label {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.8rem;
+    }
+
+    .toggle input {
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .pill-button {
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.08s
+          ease,
+        color 0.15s ease;
+    }
+
+    .pill-button span.icon {
+      font-size: 0.9em;
+    }
+
+    .pill-button:hover {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: var(--shadow-soft);
+      transform: translateY(-1px);
+    }
+
+    .pill-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .pill-button.secondary {
+      border-style: dashed;
+      opacity: 0.9;
+    }
+
+    .panes {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 1rem;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .pane {
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      box-shadow: var(--shadow-soft);
+      padding: 0.9rem 0.9rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .pane h2 {
+      font-size: 0.9rem;
+      margin: 0 0 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+    }
+
+    .pane-subtitle {
+      font-size: 0.78rem;
+      margin: 0 0 0.6rem;
+      color: var(--muted);
+    }
+
+    .textarea-wrapper {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      border-radius: 0.8rem;
+      border: 1px solid var(--border-strong);
+      overflow: hidden;
+      background: var(--bg-subtle);
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 220px;
+      border: none;
+      outline: none;
+      resize: none;
+      padding: 0.85rem 0.9rem;
+      background: transparent;
+      color: var(--text);
+      font: 0.9rem/1.6 ui-monospace, Menlo, Monaco, "SF Mono", Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      tab-size: 2;
+      white-space: pre-wrap;
+    }
+
+    textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .mirror {
+      flex: 1;
+      min-height: 180px;
+      max-height: 52vh;
+      border-radius: 0.8rem;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-subtle);
+      padding: 0.85rem 0.9rem;
+      font: 0.9rem/1.6 ui-monospace, Menlo, Monaco, "SF Mono", Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .mirror-empty {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.7rem;
+      font-size: 0.8rem;
+    }
+
+    .analysis-panel {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      padding: 0.55rem 0.65rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-height: 0;
+      max-height: 160px;
+      overflow: hidden;
+    }
+
+    .analysis-panel h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin: 0 0 0.15rem;
+      color: var(--muted);
+    }
+
+    .analysis-body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .empty {
+      margin: 0;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .freq-list,
+    .rep-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .freq-list li,
+    .rep-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.1rem 0;
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+    }
+
+    body.dark .freq-list li,
+    body.dark .rep-list li {
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+    .freq-word,
+    .rep-word {
+      font-family: ui-monospace, Menlo, Monaco, "SF Mono", Consolas,
+        "Liberation Mono", "Courier New", monospace;
+    }
+
+    .freq-count,
+    .rep-count {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+    }
+
+    .tone-summary p {
+      margin: 0 0 0.2rem;
+    }
+
+    .tone-summary ul {
+      margin: 0.15rem 0 0;
+      padding-left: 1.1rem;
+    }
+
+    .tone-summary li {
+      padding: 0.05rem 0;
+    }
+
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.08rem 0.4rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    /* Highlights */
+
+    .filler {
+      background: var(--highlight-filler);
+      text-decoration: line-through;
+    }
+
+    .passive {
+      background: var(--highlight-passive);
+      border-bottom: 1px solid rgba(180, 60, 60, 0.7);
+    }
+
+    .repeat {
+      background: var(--highlight-repeat);
+      border-bottom: 1px dashed rgba(60, 90, 180, 0.8);
+    }
+
+    footer {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      border-top: 1px dashed var(--border);
+      padding-top: 0.5rem;
+    }
+
+    footer span {
+      opacity: 0.9;
+    }
+
+    @media (max-width: 900px) {
+      .panes {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .analysis-grid {
+        grid-template-columns: minmax(0, 1fr);
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .toolbar {
+        border-radius: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>MIRROR EDITOR</h1>
+      <p>
+        Left: your raw text. Right: a live “debug view” that marks filler
+        words, passive voice, repetitions, and tone shifts, plus word
+        frequencies.
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Modules</span>
+        <label class="toggle">
+          <input type="checkbox" id="optFiller" checked />
+          <span>Filler words</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="optPassive" checked />
+          <span>Passive voice</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="optRepetition" checked />
+          <span>Repetitions</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="optTone" checked />
+          <span>Tone analysis</span>
+        </label>
+      </div>
+
+      <div class="toolbar-group">
+        <button class="pill-button secondary" id="clearBtn" type="button">
+          <span class="icon">✕</span>
+          Clear
+        </button>
+        <button class="pill-button" id="themeToggle" type="button">
+          <span class="icon">☾</span>
+          Theme
+        </button>
+      </div>
+    </div>
+
+    <div class="panes">
+      <section class="pane">
+        <h2>Draft</h2>
+        <p class="pane-subtitle">
+          Paste or type your text. The mirror will update as you write.
+        </p>
+        <div class="textarea-wrapper">
+          <textarea
+            id="inputText"
+            spellcheck="false"
+            placeholder="Start typing, or leave the sample text to see how the mirror behaves…"
+          >Maybe the world is actually getting better, people say, but I don't really see it. The report was written by the committee and then it was quietly forgotten. I kind of think the human animal is built for noise, not for clarity or kindness.
+
+This is the sort of paragraph where you can watch the mirror mark filler, passive constructions, and repetitions as you tweak the sentences.</textarea>
+        </div>
+      </section>
+
+      <section class="pane">
+        <h2>Mirror</h2>
+        <p class="pane-subtitle">
+          Highlighted view of your text + compact diagnostics underneath.
+        </p>
+        <div id="mirrorText" class="mirror"></div>
+
+        <div class="analysis-grid">
+          <div class="analysis-panel">
+            <h3>Word Frequency</h3>
+            <div class="analysis-body" id="frequencyList"></div>
+          </div>
+          <div class="analysis-panel">
+            <h3>Repetitions</h3>
+            <div class="analysis-body" id="repetitionList"></div>
+          </div>
+          <div class="analysis-panel">
+            <h3>Tone &amp; Shifts</h3>
+            <div class="analysis-body" id="toneList"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <span
+        >Mirror Editor – local, HTML-only “debug view” for your
+        writing.</span
+      >
+      <span>Tip: try exaggerating filler to watch it vanish in the mirror.</span>
+    </footer>
+  </div>
+
+  <script>
+    // --- Lexicons & helpers ----------------------------------------
+
+    const fillerWords = new Set([
+      "actually",
+      "really",
+      "very",
+      "quite",
+      "pretty",
+      "just",
+      "kind",
+      "kind of",
+      "sort",
+      "sort of",
+      "maybe",
+      "perhaps",
+      "basically",
+      "literally",
+      "somewhat",
+      "kinda",
+      "sorta",
+      "like"
+    ]);
+
+    const stopwords = new Set([
+      "a",
+      "an",
+      "the",
+      "and",
+      "or",
+      "but",
+      "if",
+      "in",
+      "on",
+      "at",
+      "for",
+      "to",
+      "of",
+      "is",
+      "it",
+      "this",
+      "that",
+      "with",
+      "as",
+      "by",
+      "from",
+      "was",
+      "were",
+      "be",
+      "been",
+      "being",
+      "are",
+      "am",
+      "i",
+      "you",
+      "he",
+      "she",
+      "they",
+      "we",
+      "not",
+      "no",
+      "so",
+      "do",
+      "did",
+      "does",
+      "can",
+      "could",
+      "would",
+      "should",
+      "have",
+      "has",
+      "had",
+      "will"
+    ]);
+
+    const harshWords = new Set([
+      "ruin",
+      "ruined",
+      "rot",
+      "rotten",
+      "decay",
+      "decayed",
+      "failure",
+      "failed",
+      "violent",
+      "violence",
+      "cruel",
+      "cruelty",
+      "hate",
+      "hated",
+      "hates",
+      "noise",
+      "noisy",
+      "void",
+      "broken",
+      "empty",
+      "worthless",
+      "useless",
+      "disease",
+      "sick",
+      "sickness",
+      "suffering",
+      "hopeless",
+      "meaningless",
+      "corrupt",
+      "corruption"
+    ]);
+
+    const softWords = new Set([
+      "hope",
+      "hopes",
+      "hopeful",
+      "love",
+      "loved",
+      "kind",
+      "kindness",
+      "gentle",
+      "gentleness",
+      "light",
+      "bright",
+      "brighten",
+      "soft",
+      "softness",
+      "joy",
+      "joyful",
+      "care",
+      "caring",
+      "tender",
+      "tenderness",
+      "peace",
+      "peaceful",
+      "calm",
+      "calmness",
+      "beautiful",
+      "beauty"
+    ]);
+
+    const passiveIrregulars = new Set([
+      "done",
+      "made",
+      "seen",
+      "known",
+      "taken",
+      "given",
+      "found",
+      "kept",
+      "left",
+      "felt",
+      "heard",
+      "held",
+      "told",
+      "sold",
+      "bought",
+      "caught",
+      "built",
+      "broken",
+      "chosen",
+      "driven",
+      "eaten",
+      "fallen",
+      "forgiven",
+      "forgotten",
+      "forbidden",
+      "gone",
+      "grown",
+      "hidden",
+      "hurt",
+      "laid",
+      "lost",
+      "paid",
+      "read",
+      "said",
+      "sent",
+      "shown",
+      "sat",
+      "slept",
+      "spoken",
+      "spent",
+      "stood",
+      "taught",
+      "thought",
+      "understood",
+      "written"
+    ]);
+
+    const beForms = new Set([
+      "is",
+      "are",
+      "was",
+      "were",
+      "be",
+      "been",
+      "being",
+      "am"
+    ]);
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, (c) => {
+        switch (c) {
+          case "&":
+            return "&amp;";
+          case "<":
+            return "&lt;";
+          case ">":
+            return "&gt;";
+          case '"':
+            return "&quot;";
+          case "'":
+            return "&#39;";
+          default:
+            return c;
+        }
+      });
+    }
+
+    // --- Core analysis ---------------------------------------------
+
+    function getWordFrequencies(text) {
+      const freq = {};
+      const words = text.toLowerCase().match(/\b[\w']+\b/g);
+      if (!words) return freq;
+      for (const w of words) {
+        freq[w] = (freq[w] || 0) + 1;
+      }
+      return freq;
+    }
+
+    function analyzeTone(text) {
+      const rawSentences = text.split(/[.!?]\s+/);
+      const sentenceLabels = [];
+      const toneInversions = [];
+
+      let indexCounter = 1;
+      for (const s of rawSentences) {
+        const trimmed = s.trim();
+        if (!trimmed) continue;
+        const words = trimmed.toLowerCase().match(/\b[\w']+\b/g) || [];
+        let harshCount = 0;
+        let softCount = 0;
+        for (const w of words) {
+          if (harshWords.has(w)) harshCount++;
+          if (softWords.has(w)) softCount++;
+        }
+        let label = "neutral";
+        if (harshCount > softCount && harshCount > 0) label = "harsh";
+        else if (softCount > harshCount && softCount > 0) label = "soft";
+
+        sentenceLabels.push({
+          index: indexCounter++,
+          label,
+          harshCount,
+          softCount,
+          text: trimmed
+        });
+      }
+
+      for (let i = 1; i < sentenceLabels.length; i++) {
+        const prev = sentenceLabels[i - 1];
+        const curr = sentenceLabels[i];
+        if (
+          (prev.label === "harsh" && curr.label === "soft") ||
+          (prev.label === "soft" && curr.label === "harsh")
+        ) {
+          toneInversions.push({ from: prev, to: curr });
+        }
+      }
+
+      return { sentenceLabels, toneInversions };
+    }
+
+    function tokenize(text) {
+      const rawTokens = text.split(/(\b[\w']+\b)/);
+      const tokens = [];
+      for (const tok of rawTokens) {
+        if (tok === null || tok === undefined || tok === "") continue;
+        const isWord = /\b[\w']+\b/.test(tok);
+        tokens.push({
+          text: tok,
+          lower: isWord ? tok.toLowerCase() : tok,
+          isWord,
+          classes: new Set()
+        });
+      }
+      return tokens;
+    }
+
+    function markPassives(tokens) {
+      for (let i = 0; i < tokens.length - 1; i++) {
+        const t = tokens[i];
+        if (!t.isWord) continue;
+        if (!beForms.has(t.lower)) continue;
+
+        // look ahead for the next word token
+        for (let j = i + 1; j < tokens.length; j++) {
+          const next = tokens[j];
+          if (!next.isWord) continue;
+          if (next.lower.endsWith("ed") || passiveIrregulars.has(next.lower)) {
+            t.classes.add("passive");
+            next.classes.add("passive");
+          }
+          break;
+        }
+      }
+    }
+
+    function tokensToHtml(tokens) {
+      if (!tokens.length) {
+        return '<span class="mirror-empty">Nothing yet. Start typing on the left.</span>';
+      }
+      const parts = tokens.map((tok) => {
+        const safe = escapeHtml(tok.text);
+        if (!tok.isWord || tok.classes.size === 0) return safe;
+        const classStr = Array.from(tok.classes).join(" ");
+        return `<span class="${classStr}">${safe}</span>`;
+      });
+      return parts.join("").replace(/\n/g, "<br>");
+    }
+
+    function analyzeText(text, opts) {
+      const freq = getWordFrequencies(text);
+      const repetitionEntries = Object.entries(freq)
+        .filter(([w, c]) => c >= 3 && !stopwords.has(w))
+        .sort((a, b) => b[1] - a[1]);
+
+      const { sentenceLabels, toneInversions } = analyzeTone(text);
+
+      const tokens = tokenize(text);
+
+      if (opts.passive) {
+        markPassives(tokens);
+      }
+
+      const repWords = new Set(repetitionEntries.map(([w]) => w));
+
+      for (const tok of tokens) {
+        if (!tok.isWord) continue;
+        if (opts.filler) {
+          if (fillerWords.has(tok.lower) || fillerWords.has(tok.lower + " of")) {
+            tok.classes.add("filler");
+          }
+        }
+        if (opts.repetition && repWords.has(tok.lower)) {
+          tok.classes.add("repeat");
+        }
+      }
+
+      const html = tokensToHtml(tokens);
+      return { html, freq, repetitions: repetitionEntries, sentenceLabels, toneInversions };
+    }
+
+    // --- Rendering panels ------------------------------------------
+
+    function renderFrequencies(freq) {
+      const container = document.getElementById("frequencyList");
+      const entries = Object.entries(freq)
+        .filter(([w]) => !stopwords.has(w))
+        .sort((a, b) => b[1] - a[1]);
+      const top = entries.slice(0, 15);
+
+      if (top.length === 0) {
+        container.innerHTML = '<p class="empty">No words yet.</p>';
+        return;
+      }
+
+      let html = '<ol class="freq-list">';
+      for (const [w, c] of top) {
+        html += `<li><span class="freq-word">${escapeHtml(
+          w
+        )}</span><span class="freq-count">${c}</span></li>`;
+      }
+      html += "</ol>";
+      container.innerHTML = html;
+    }
+
+    function renderRepetitions(repetitions) {
+      const container = document.getElementById("repetitionList");
+      if (!repetitions.length) {
+        container.innerHTML =
+          '<p class="empty">No heavy repetitions detected (3+ uses).</p>';
+        return;
+      }
+
+      let html = '<ul class="rep-list">';
+      for (const [w, c] of repetitions.slice(0, 20)) {
+        html += `<li><span class="rep-word">${escapeHtml(
+          w
+        )}</span><span class="rep-count">${c}</span></li>`;
+      }
+      html += "</ul>";
+      container.innerHTML = html;
+    }
+
+    function renderTone(toneInversions, sentenceLabels) {
+      const container = document.getElementById("toneList");
+
+      if (!sentenceLabels.length) {
+        container.innerHTML = '<p class="empty">No sentences yet.</p>';
+        return;
+      }
+
+      const counts = { harsh: 0, soft: 0, neutral: 0 };
+      for (const s of sentenceLabels) {
+        counts[s.label]++;
+      }
+
+      let html = '<div class="tone-summary">';
+      html += `<p><span class="tag-pill">Tone mix</span></p>`;
+      html += `<p>Harsh: ${counts.harsh} · Soft: ${counts.soft} · Neutral: ${counts.neutral}</p>`;
+
+      if (!toneInversions.length) {
+        html += '<p class="empty">No harsh ↔ soft inversions yet.</p>';
+      } else {
+        html += "<ul>";
+        for (const inv of toneInversions) {
+          html += `<li>Sentence ${inv.from.index} (${inv.from.label}) → ${inv.to.index} (${inv.to.label})</li>`;
+        }
+        html += "</ul>";
+      }
+
+      html += "</div>";
+      container.innerHTML = html;
+    }
+
+    // --- Wiring it together ----------------------------------------
+
+    const inputEl = document.getElementById("inputText");
+    const mirrorEl = document.getElementById("mirrorText");
+
+    const optFiller = document.getElementById("optFiller");
+    const optPassive = document.getElementById("optPassive");
+    const optRepetition = document.getElementById("optRepetition");
+    const optTone = document.getElementById("optTone");
+
+    function getOptions() {
+      return {
+        filler: optFiller.checked,
+        passive: optPassive.checked,
+        repetition: optRepetition.checked,
+        tone: optTone.checked
+      };
+    }
+
+    function updateAnalysis() {
+      const text = inputEl.value || "";
+      const opts = getOptions();
+
+      const result = analyzeText(text, opts);
+      mirrorEl.innerHTML = result.html;
+      renderFrequencies(result.freq);
+      renderRepetitions(result.repetitions);
+      if (opts.tone) {
+        renderTone(result.toneInversions, result.sentenceLabels);
+      } else {
+        document.getElementById("toneList").innerHTML =
+          '<p class="empty">Tone module disabled.</p>';
+      }
+    }
+
+    inputEl.addEventListener("input", updateAnalysis);
+    optFiller.addEventListener("change", updateAnalysis);
+    optPassive.addEventListener("change", updateAnalysis);
+    optRepetition.addEventListener("change", updateAnalysis);
+    optTone.addEventListener("change", updateAnalysis);
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      inputEl.value = "";
+      updateAnalysis();
+      inputEl.focus();
+    });
+
+    document.getElementById("themeToggle").addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    });
+
+    // Initial render
+    updateAnalysis();
+  </script>
+</body>
+</html>

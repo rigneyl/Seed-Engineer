@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Black Lantern Writer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/base.css" />
+</head>
+<body class="theme-dark">
+  <header class="bl-header">
+    <div>
+      <h1 class="bl-title">🜁 The Black Lantern Writer</h1>
+      <p class="bl-subtitle">A complete dark writing studio · HTML-first · Local-only · Zero-backend</p>
+    </div>
+    <div class="bl-header-controls">
+      <button id="themeToggle" class="btn btn-ghost" type="button">Toggle Theme</button>
+    </div>
+  </header>
+
+  <nav class="bl-nav">
+    <button class="tab-button active" data-target="panel-embers">1 · Embers</button>
+    <button class="tab-button" data-target="panel-shape">2 · Shape</button>
+    <button class="tab-button" data-target="panel-pit">3 · The Pit</button>
+    <button class="tab-button" data-target="panel-knife">4 · The Knife</button>
+    <button class="tab-button" data-target="panel-manuscript">5 · Black Manuscript</button>
+  </nav>
+
+  <main class="bl-main">
+    <section class="workflow-strip">
+      <span class="workflow-step active">Embers</span>
+      <span class="workflow-arrow">→</span>
+      <span class="workflow-step">Shape</span>
+      <span class="workflow-arrow">→</span>
+      <span class="workflow-step">Pit</span>
+      <span class="workflow-arrow">→</span>
+      <span class="workflow-step">Knife</span>
+      <span class="workflow-arrow">→</span>
+      <span class="workflow-step">Manuscript</span>
+    </section>
+
+    <!-- Panel 1: Embers -->
+    <section id="panel-embers" class="panel active">
+      <div class="panel-header">
+        <h2>🌑 Embers · Ideation</h2>
+        <p class="panel-tagline">Where the fragment begins to smoulder.</p>
+      </div>
+      <div class="panel-body two-column">
+        <div class="column column-main">
+          <label for="embersInput" class="field-label">Idea seed / fragment</label>
+          <textarea id="embersInput" class="bl-textarea" rows="14" placeholder="Free-write your dark fragment, stray thought, or contemptuous observation here..."></textarea>
+          <div class="panel-actions">
+            <button id="analyzeEmbersBtn" class="btn" type="button">Analyze Idea</button>
+            <button id="clearEmbersBtn" class="btn btn-ghost" type="button">Clear</button>
+          </div>
+        </div>
+        <aside class="column column-side">
+          <h3 class="side-title">Idea Diagnostics</h3>
+          <div class="meter-group">
+            <div class="meter">
+              <div class="meter-label">
+                <span>Darkness Meter</span>
+                <span id="darknessValue" class="meter-value">0%</span>
+              </div>
+              <div class="meter-bar"><span id="darknessBar"></span></div>
+            </div>
+            <div class="meter">
+              <div class="meter-label">
+                <span>Existential Energy</span>
+                <span id="existentialValue" class="meter-value">0%</span>
+              </div>
+              <div class="meter-bar"><span id="existentialBar"></span></div>
+            </div>
+            <div class="meter">
+              <div class="meter-label">
+                <span>Humanity Decay</span>
+                <span id="decayValue" class="meter-value">0%</span>
+              </div>
+              <div class="meter-bar"><span id="decayBar"></span></div>
+            </div>
+          </div>
+
+          <div class="archetype-block">
+            <h4>Archetype Blend</h4>
+            <p id="archetypeBlend" class="small-text">Awaiting input...</p>
+          </div>
+
+          <div class="idea-path-block">
+            <h4>What this idea wants to become</h4>
+            <p id="ideaType" class="highlight-text">—</p>
+            <p id="ideaPath" class="small-text">Write, then analyze to see a recommended path.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Panel 2: Shape -->
+    <section id="panel-shape" class="panel">
+      <div class="panel-header">
+        <h2>🕯 Shape · Structure</h2>
+        <p class="panel-tagline">Give the darkness a spine.</p>
+      </div>
+      <div class="panel-body two-column">
+        <div class="column column-main">
+          <div class="field-group">
+            <label for="modeSelect" class="field-label">Mode / Skeleton</label>
+            <select id="modeSelect" class="bl-select">
+              <option value="essay">Argumentative Dark Essay</option>
+              <option value="aphorisms">Cioran Aphoristic Sequence</option>
+              <option value="dread">Ligotti Dread Fragment</option>
+              <option value="narrative">McCarthy Minimal Narrative</option>
+              <option value="rant">Bukowski Confessional Rant</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="thesisInput" class="field-label">Core thesis / wound</label>
+            <textarea id="thesisInput" class="bl-textarea" rows="4" placeholder="One sentence that everything else will orbit..."></textarea>
+          </div>
+          <div class="panel-actions">
+            <button id="generateSkeletonBtn" class="btn" type="button">Generate Skeleton</button>
+            <button id="loadFromEmbersBtn" class="btn btn-ghost" type="button">Use Ember idea</button>
+          </div>
+          <div id="skeletonOutput" class="skeleton-output">
+            <p class="hint">Structure will appear here after you generate it.</p>
+          </div>
+        </div>
+        <aside class="column column-side">
+          <h3 class="side-title">Shape Visualizer</h3>
+          <div class="viz-block">
+            <p><strong>Darkness Trajectory:</strong> <span id="vizDarkness">—</span></p>
+            <p><strong>Detachment Consistency:</strong> <span id="vizDetachment">—</span></p>
+            <p><strong>Dread Shape:</strong> <span id="vizDread">—</span></p>
+            <p><strong>Logical Flow:</strong> <span id="vizFlow">—</span></p>
+          </div>
+          <p class="small-text">These are descriptive only — simple prompts to keep your structure honest.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Panel 3: The Pit -->
+    <section id="panel-pit" class="panel">
+      <div class="panel-header">
+        <h2>🪓 The Pit · Drafting</h2>
+        <p class="panel-tagline">Write with the lantern on.</p>
+      </div>
+      <div class="panel-body two-column">
+        <div class="column column-main">
+          <label for="pitDraft" class="field-label">Main draft</label>
+          <textarea id="pitDraft" class="bl-textarea" rows="16" placeholder="Draft the piece here. The right panel will keep score of your darkness, coldness, noise, and leaks..."></textarea>
+          <div class="panel-actions">
+            <button id="analyzePitBtn" class="btn" type="button">Run Live Analysis</button>
+            <button id="sendToManuscriptBtn" class="btn btn-ghost" type="button">Send to Manuscript</button>
+          </div>
+        </div>
+        <aside class="column column-side">
+          <h3 class="side-title">Live Meters</h3>
+          <div class="meter-grid">
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Bleakness</span>
+                <span id="bleaknessValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="bleaknessBar"></span></div>
+            </div>
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Coldness</span>
+                <span id="coldnessValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="coldnessBar"></span></div>
+            </div>
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Minimalist Purity</span>
+                <span id="minimalValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="minimalBar"></span></div>
+            </div>
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Raw Brutality</span>
+                <span id="rawValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="rawBar"></span></div>
+            </div>
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Uncanny Index</span>
+                <span id="uncannyValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="uncannyBar"></span></div>
+            </div>
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Human Loathing</span>
+                <span id="loathingValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="loathingBar"></span></div>
+            </div>
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Quietness</span>
+                <span id="quietValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="quietBar"></span></div>
+            </div>
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Noise Ratio</span>
+                <span id="noiseValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="noiseBar"></span></div>
+            </div>
+            <div class="meter meter-compact">
+              <div class="meter-label">
+                <span>Pretension Index</span>
+                <span id="pretensionValue" class="meter-value">0</span>
+              </div>
+              <div class="meter-bar small"><span id="pretensionBar"></span></div>
+            </div>
+          </div>
+
+          <div class="highlight-toggles">
+            <h4>Leak & Fog Detectors</h4>
+            <p class="small-text">The counts below show how much warmth, hope, cliché, and fog is leaking into the draft.</p>
+            <ul class="leak-list" id="leakList">
+              <!-- Populated via JS -->
+            </ul>
+          </div>
+
+          <div class="style-modes">
+            <h4>Style Lean</h4>
+            <p id="styleLean" class="small-text">Run analysis to see which author-mode you are drifting toward.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Panel 4: The Knife -->
+    <section id="panel-knife" class="panel">
+      <div class="panel-header">
+        <h2>🧊 The Knife · Refinement</h2>
+        <p class="panel-tagline">Cut, pare back, and harden.</p>
+      </div>
+      <div class="panel-body two-column">
+        <div class="column column-main">
+          <label for="knifeInput" class="field-label">Paragraph / section to refine</label>
+          <textarea id="knifeInput" class="bl-textarea" rows="10" placeholder="Paste a paragraph or section to refine with the sliders..."></textarea>
+          <div class="slider-row">
+            <div class="slider-block">
+              <label for="rawSlider">Rawness</label>
+              <input type="range" id="rawSlider" min="0" max="100" value="60" />
+            </div>
+            <div class="slider-block">
+              <label for="coldSlider">Coldness</label>
+              <input type="range" id="coldSlider" min="0" max="100" value="70" />
+            </div>
+          </div>
+          <div class="slider-row">
+            <div class="slider-block">
+              <label for="minimalSlider">Minimalism</label>
+              <input type="range" id="minimalSlider" min="0" max="100" value="65" />
+            </div>
+            <div class="slider-block">
+              <label for="dreadSlider">Dread</label>
+              <input type="range" id="dreadSlider" min="0" max="100" value="55" />
+            </div>
+          </div>
+          <div class="panel-actions">
+            <button id="runKnifeBtn" class="btn" type="button">Generate Suggestions</button>
+            <button id="loadFromPitBtn" class="btn btn-ghost" type="button">Load from Pit selection</button>
+          </div>
+        </div>
+        <aside class="column column-side">
+          <h3 class="side-title">Refinement Suggestions</h3>
+          <div id="knifeSuggestions" class="suggestions-output">
+            <p class="hint">Move the sliders and run suggestions to get rule-based prompts for cutting and sharpening.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Panel 5: Black Manuscript -->
+    <section id="panel-manuscript" class="panel">
+      <div class="panel-header">
+        <h2>🜓 The Black Manuscript · Completion</h2>
+        <p class="panel-tagline">Stabilise the voice. Close the wound.</p>
+      </div>
+      <div class="panel-body two-column">
+        <div class="column column-main">
+          <label for="manuscriptText" class="field-label">Final manuscript</label>
+          <textarea id="manuscriptText" class="bl-textarea" rows="16" placeholder="Review and polish your final manuscript here."></textarea>
+          <div class="panel-actions">
+            <button id="runFinalChecksBtn" class="btn" type="button">Run Final Checks</button>
+          </div>
+          <div class="export-row">
+            <button id="exportMdBtn" class="btn" type="button">Download as Markdown</button>
+            <button id="exportHtmlBtn" class="btn" type="button">Download as HTML</button>
+          </div>
+        </div>
+        <aside class="column column-side">
+          <h3 class="side-title">Final Reports</h3>
+          <div class="report-block">
+            <p><strong>Cohesion:</strong> <span id="reportCohesion">—</span></p>
+            <p><strong>Voice Consistency:</strong> <span id="reportVoice">—</span></p>
+            <p><strong>Tone Drift:</strong> <span id="reportTone">—</span></p>
+            <p><strong>Darkness Stability:</strong> <span id="reportDark">—</span></p>
+            <p><strong>Noise vs Quiet:</strong> <span id="reportNoiseQuiet">—</span></p>
+          </div>
+          <p class="small-text">Exports are all local. Nothing leaves this file unless you choose to send it somewhere.</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bl-footer">
+    <p>🜁 The Black Lantern Writer · Local-first · HTML-only · No tracking.</p>
+  </footer>
+
+  <script src="js/lantern.js"></script>
+</body>
+</html>

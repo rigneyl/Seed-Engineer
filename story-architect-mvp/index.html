@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Story Architect — Timeline Builder</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <h1>Story Architect</h1>
+    <span class="sub">Interactive Timeline Builder</span>
+  </div>
+
+  <div class="controls">
+    <label class="select-wrap">
+      <span>Template</span>
+      <select id="templateSelect">
+        <option value="threeAct">3‑Act</option>
+        <option value="fourAct">4‑Act</option>
+        <option value="twelveBeat">12‑Beat</option>
+      </select>
+    </label>
+
+    <button id="addBeatBtn" title="Add a custom beat">+ Beat</button>
+    <button id="exportMdBtn" title="Export to Markdown">Export .md</button>
+    <button id="exportJsonBtn" title="Export JSON">Export .json</button>
+
+    <label class="file-btn">
+      Import JSON
+      <input type="file" id="importJsonInput" accept="application/json" />
+    </label>
+
+    <button id="saveBtn" title="Save to browser storage">Save</button>
+    <button id="resetBtn" class="danger" title="Start new project">Reset</button>
+  </div>
+</header>
+
+<main>
+  <section class="project-bar">
+    <input id="projectTitle" placeholder="Project title…" />
+    <input id="logline" placeholder="One‑line logline (optional)…" />
+  </section>
+
+  <section id="timeline" class="timeline" aria-label="Act lanes timeline">
+    <!-- columns injected here -->
+  </section>
+</main>
+
+<footer class="statusbar" id="statusbar">Ready.</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

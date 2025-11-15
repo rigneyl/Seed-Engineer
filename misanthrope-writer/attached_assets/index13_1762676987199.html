@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Misanthropic Tone Studio v1.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --panel: #15151b;
+      --panel-soft: #181820;
+      --accent: #e74c3c;
+      --accent-soft: #c0392b;
+      --text-main: #f4f4f2;
+      --text-muted: #9c9ca7;
+      --border-subtle: #2a2a35;
+      --good: #27ae60;
+      --warning: #f1c40f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top left, #1a1a22 0, #050508 55%);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      overflow-y: auto;
+    }
+
+    /* Focus mode: darker, fullscreen shell */
+    body.analysis-hidden {
+      background: radial-gradient(circle at top left, #050507 0, #000 70%);
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      max-width: 1200px;
+      width: 100%;
+      margin: 16px auto 0;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #101018, #08080d);
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(255, 255, 255, 0.02);
+      overflow: hidden;
+      flex: 1;
+    }
+
+    body.analysis-hidden .app-shell {
+      max-width: 100%;
+      width: 100%;
+      margin: 0;
+      border-radius: 0;
+      height: 100vh;
+    }
+
+    header {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    header .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #f5f5f5;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    header .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    header .badge {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-soft);
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      align-self: flex-start;
+      white-space: nowrap;
+    }
+
+    .compact-toggle {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .compact-toggle input {
+      accent-color: var(--accent);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 0;
+      flex: 1;
+      min-height: 0;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* When analysis is hidden, expand editor */
+    body.analysis-hidden main {
+      grid-template-columns: 1fr;
+    }
+
+    body.analysis-hidden .analysis-pane {
+      display: none;
+    }
+
+    body.analysis-hidden .editor-pane {
+      border-right: none;
+    }
+
+    .editor-pane {
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at 0 0, #191924 0, #101018 60%);
+      min-height: 0;
+    }
+
+    .analysis-pane {
+      background: radial-gradient(circle at 100% 0, #202030 0, #101018 60%);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .editor-header {
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .editor-header span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Focus ribbon shown in focus mode */
+    .focus-ribbon {
+      display: none;
+      padding: 4px 16px 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: linear-gradient(90deg, #151520, #101018);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    body.analysis-hidden .focus-ribbon {
+      display: block;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .profile-select {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .profile-select select {
+      background: var(--panel-soft);
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .profile-select select:focus {
+      border-color: var(--accent-soft);
+    }
+
+    .profile-select input[type=range] {
+      width: 70px;
+    }
+
+    button.primary {
+      border: none;
+      outline: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
+    }
+
+    button.primary:hover {
+      filter: brightness(1.08);
+    }
+
+    button.secondary {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: transparent;
+      color: var(--text-muted);
+      padding: 6px 10px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+    }
+
+    button.secondary:hover {
+      border-color: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    textarea#editor {
+      flex: 1;
+      width: 100%;
+      padding: 12px 16px 16px;
+      background: transparent;
+      border: none;
+      resize: vertical;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      font-family: "JetBrains Mono", ui-monospace, Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", monospace;
+      outline: none;
+      caret-color: var(--accent);
+      min-height: 200px;
+    }
+
+    textarea#editor::placeholder {
+      color: #5d5d68;
+    }
+
+    .status-bar {
+      padding: 6px 16px 10px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .status-bar span strong {
+      color: var(--text-main);
+    }
+
+    .analysis-scroll {
+      padding: 10px 14px 14px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #3a3a48 transparent;
+      max-height: 100%;
+    }
+
+    .analysis-scroll::-webkit-scrollbar {
+      width: 7px;
+    }
+
+    .analysis-scroll::-webkit-scrollbar-thumb {
+      background: #3a3a48;
+      border-radius: 999px;
+    }
+
+    .pill {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tone-score {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(231,76,60,0.12), rgba(0,0,0,0.4));
+      border: 1px solid rgba(231,76,60,0.35);
+    }
+
+    .tone-score-main {
+      font-size: 0.8rem;
+    }
+
+    .tone-score-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .tone-level {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+    }
+
+    .tone-meter {
+      width: 90px;
+      height: 5px;
+      border-radius: 999px;
+      background: #22222c;
+      overflow: hidden;
+      margin-left: 10px;
+    }
+
+    .tone-meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f1c40f, #e67e22, #e74c3c);
+      transition: width 0.25s ease;
+    }
+
+    section.block {
+      margin-bottom: 12px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    section.block h2 {
+      margin: 0 0 6px;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #f0f0f0;
+    }
+
+    section.block p {
+      margin: 2px 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      margin-bottom: 2px;
+    }
+
+    .stat-row span.label {
+      color: var(--text-muted);
+    }
+
+    .stat-row span.value {
+      color: #f4f4f4;
+    }
+
+    ul.list {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    ul.list li {
+      margin: 2px 0;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    ul.list li::before {
+      content: "–";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    .sentence-item {
+      cursor: pointer;
+    }
+
+    .sentence-item:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      padding: 2px 7px;
+      font-size: 0.7rem;
+      margin: 2px 4px 2px 0;
+      background: var(--panel-soft);
+      color: var(--text-muted);
+    }
+
+    .tag-badge.negative {
+      border-color: rgba(231,76,60,0.7);
+      color: var(--accent);
+    }
+
+    .tag-badge.positive {
+      border-color: rgba(39,174,96,0.7);
+      color: var(--good);
+    }
+
+    .empty-note {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    code.inline {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      background: #181822;
+      border-radius: 999px;
+      padding: 2px 6px;
+      color: #e0e0ff;
+    }
+
+    /* Preview / focused text boxes */
+    .preview-text {
+      font-family: "JetBrains Mono", ui-monospace, Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      background: #11111a;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 8px 9px;
+      max-height: 180px;
+      overflow-y: auto;
+      white-space: normal;
+      resize: vertical;
+    }
+
+    .preview-legend {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    .legend-soft {
+      background: rgba(231,76,60,0.6);
+    }
+
+    .legend-mis {
+      background: rgba(39,174,96,0.7);
+    }
+
+    .legend-filler {
+      background: rgba(241,196,15,0.9);
+    }
+
+    .hl-soft {
+      background: rgba(231,76,60,0.18);
+      border-bottom: 1px solid rgba(231,76,60,0.75);
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    .hl-mis {
+      background: rgba(39,174,96,0.16);
+      border-bottom: 1px solid rgba(39,174,96,0.7);
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    .hl-filler {
+      border-bottom: 1px dotted var(--warning);
+      padding: 0 1px;
+    }
+
+    /* Sparkline / tone trajectory */
+    .sparkline-group {
+      margin-top: 4px;
+    }
+
+    .sparkline-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .sparkline {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 38px;
+      margin-bottom: 4px;
+    }
+
+    .spark-bar {
+      flex: 1;
+      min-width: 3px;
+      border-radius: 2px 2px 0 0;
+      background: #333344;
+      opacity: 0.8;
+    }
+
+    /* Tense pie */
+    .tense-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .tense-pie {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #22222c;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .tense-legend {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    /* Compact mode tweaks */
+    body.compact .app-shell {
+      margin: 8px auto 0;
+    }
+
+    body.compact header {
+      padding: 8px 10px;
+    }
+
+    body.compact header h1 {
+      font-size: 1rem;
+    }
+
+    body.compact header p {
+      font-size: 0.75rem;
+    }
+
+    body.compact .editor-header {
+      padding: 6px 10px;
+    }
+
+    body.compact textarea#editor {
+      padding: 8px 10px 10px;
+      font-size: 0.85rem;
+    }
+
+    body.compact .analysis-scroll {
+      padding: 6px 8px 8px;
+    }
+
+    body.compact section.block h2 {
+      font-size: 0.78rem;
+    }
+
+    body.compact section.block p,
+    body.compact ul.list,
+    body.compact .stat-row {
+      font-size: 0.72rem;
+    }
+
+    body.compact .preview-text {
+      font-size: 0.75rem;
+    }
+
+    /* Analysis tabs */
+    .analysis-tabs {
+      display: flex;
+      gap: 6px;
+      margin: 8px 0 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .analysis-tab {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .analysis-tab.active {
+      border-color: var(--accent-soft);
+      color: var(--accent);
+      background: rgba(231,76,60,0.06);
+    }
+
+    /* Branding bar */
+    .branding-bar {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px;
+      background: #0d0d12;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <header>
+    <div class="title-block">
+      <h1>Misanthropic Tone Studio</h1>
+      <p>Write. Then dissect the text for misanthropic clarity, weak softness, and structural noise.</p>
+    </div>
+    <div class="header-right">
+      <div class="badge">Field Tool · v1.0</div>
+      <div class="compact-toggle">
+        <input type="checkbox" id="compactToggle">
+        <label for="compactToggle">Compact mode</label>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Editor -->
+    <div class="editor-pane">
+      <div class="editor-header">
+        <span>Draft surface</span>
+        <div class="controls">
+          <div class="profile-select">
+            <span>Profile</span>
+            <select id="profileSelect">
+              <option value="cold">Cold analyst</option>
+              <option value="scorch">Scorched-earth rant</option>
+              <option value="elegiac">Elegiac ruin</option>
+            </select>
+          </div>
+          <div class="profile-select">
+            <span>Archetype</span>
+            <select id="archetypeSelect">
+              <option value="nihilist">The Nihilist</option>
+              <option value="cynic">The Cynic</option>
+              <option value="stoic">The Stoic</option>
+              <option value="hermit">The Hermit</option>
+            </select>
+          </div>
+          <div class="profile-select">
+            <span>Softness</span>
+            <input type="range" id="softTolerance" min="0" max="3" value="1">
+            <span id="softToleranceLabel">1</span>
+          </div>
+          <button class="secondary" type="button" id="btnToggleAnalysis">Hide analysis</button>
+          <button class="secondary" type="button" id="btnLoadFile">Load</button>
+          <button class="secondary" type="button" id="btnSaveFile">Save</button>
+          <button class="secondary" type="button" id="btnExportReport">Report</button>
+          <button class="secondary" type="button" id="btnInsertSample">Seed</button>
+          <button class="primary" type="button" id="btnAnalyze">
+            <span>Analyze</span>
+            <span>⟶</span>
+          </button>
+        </div>
+      </div>
+      <div class="focus-ribbon">Focus mode — press <code class="inline">Ctrl+Enter</code> to analyze.</div>
+      <textarea id="editor" spellcheck="true" placeholder="Write your misanthropic prose here. Browser spellcheck adds the red underlines; the right pane handles structure, softness, tone, and highlights."></textarea>
+      <input type="file" id="fileInput" accept=".txt,.md,.text" style="display:none" />
+      <div class="status-bar">
+        <span><strong id="statWords">0</strong> words · <strong id="statSentences">0</strong> sentences</span>
+        <span>Avg sentence: <strong id="statAvgLen">0</strong> words</span>
+      </div>
+    </div>
+
+    <!-- Analysis -->
+    <div class="analysis-pane">
+      <div class="analysis-scroll">
+
+        <!-- Highlight preview always visible -->
+        <section class="block" id="previewBlock">
+          <h2>Highlight Preview</h2>
+          <p>Soft / hopeful language, misanthropic markers, and filler are highlighted below.</p>
+          <div id="previewText" class="preview-text">
+            <span class="empty-note">Write something on the left and hit <code class="inline">Analyze</code>.</span>
+          </div>
+          <div class="preview-legend">
+            <div class="legend-chip"><span class="legend-swatch legend-soft"></span>soft / hopeful</div>
+            <div class="legend-chip"><span class="legend-swatch legend-mis"></span>misanthropic</div>
+            <div class="legend-chip"><span class="legend-swatch legend-filler"></span>filler / hedge</div>
+          </div>
+        </section>
+
+        <!-- Tabs for modes -->
+        <div class="analysis-tabs">
+          <button class="analysis-tab active" data-tab-target="tone">Tone</button>
+          <button class="analysis-tab" data-tab-target="structure">Structure</button>
+          <button class="analysis-tab" data-tab-target="psych">Psychology</button>
+          <button class="analysis-tab" data-tab-target="rewrite">Rewrite</button>
+          <button class="analysis-tab" data-tab-target="about">About</button>
+        </div>
+
+        <!-- Tone mode elements -->
+        <div class="tone-score" data-tab="tone">
+          <div class="tone-score-main">
+            <div class="tone-score-label">Tone Diagnostic</div>
+            <div class="tone-level" id="toneLabel">Idle</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="pill" id="profilePill">Cold analyst</span>
+            <div class="tone-meter">
+              <div class="tone-meter-fill" id="toneMeter"></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="block" id="summaryBlock" data-tab="tone">
+          <h2>Snapshot</h2>
+          <div class="stat-row">
+            <span class="label">Misanthropic weight:</span>
+            <span class="value" id="statMisanthropeScore">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="label">Soft / hopeful weight:</span>
+            <span class="value" id="statSoftScore">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="label">Net tone score:</span>
+            <span class="value" id="statToneScore">0</span>
+          </div>
+          <p id="summaryComment" class="summary-comment empty-note">
+            Start typing and hit <code class="inline">Analyze</code> to get a first read on your tone.
+          </p>
+        </section>
+
+        <section class="block" id="softBlock" data-tab="tone">
+          <h2>Softness & Contamination</h2>
+          <p>Detected “soft” or hopeful language that may dilute misanthropic tone:</p>
+          <div id="softTags"></div>
+          <ul class="list" id="softSuggestions">
+            <li class="empty-note" style="list-style:none;padding-left:0;">Nothing flagged yet.</li>
+          </ul>
+        </section>
+
+        <section class="block" id="misanthropeBlock" data-tab="tone">
+          <h2>Misanthropic Signal</h2>
+          <p>Words and motifs that reinforce a detached, anti-human tone:</p>
+          <div id="misanthropeTags"></div>
+          <ul class="list" id="misanthropeAdvice">
+            <li class="empty-note" style="list-style:none;padding-left:0;">No strong misanthropic markers detected yet.</li>
+          </ul>
+        </section>
+
+        <section class="block" id="trajectoryBlock" data-tab="tone">
+          <h2>Tone Trajectory</h2>
+          <p>Polarity and drift across sentences.</p>
+          <div class="sparkline-group">
+            <div class="sparkline-label">Polarity (red = misanthropic, blue = soft)</div>
+            <div id="polaritySparkline" class="sparkline"></div>
+          </div>
+          <div class="sparkline-group">
+            <div class="sparkline-label">Sentiment drift (cumulative harshness)</div>
+            <div id="driftSparkline" class="sparkline"></div>
+          </div>
+          <p id="polaritySummary" class="empty-note">No trajectory yet.</p>
+        </section>
+
+        <!-- Structure mode -->
+        <section class="block" id="grammarBlock" data-tab="structure">
+          <h2>Grammar & Structure</h2>
+          <p>Browser spellcheck covers basic spelling. Below: structural warnings and LanguageTool grammar/style hints.</p>
+          <ul class="list" id="grammarList">
+            <li class="empty-note" style="list-style:none;padding-left:0;">No analysis yet.</li>
+          </ul>
+        </section>
+
+        <section class="block" id="pacingBlock" data-tab="structure">
+          <h2>Rhythm & Pacing</h2>
+          <p id="pacingSummary" class="empty-note">No pacing analysis yet.</p>
+        </section>
+
+        <section class="block" id="repetitionBlock" data-tab="structure">
+          <h2>Repetition & Echoes</h2>
+          <p>Most frequent non-stopword stems:</p>
+          <div id="repetitionTags"></div>
+          <ul class="list" id="repetitionNotes">
+            <li class="empty-note" style="list-style:none;padding-left:0;">No lexical echoes detected yet.</li>
+          </ul>
+        </section>
+
+        <!-- Psychology / semantics -->
+        <section class="block" id="semanticBlock" data-tab="psych">
+          <h2>Semantic Texture</h2>
+          <div class="stat-row">
+            <span class="label">Descriptor ratio:</span>
+            <span class="value" id="descriptorRatio">0.00</span>
+          </div>
+          <p id="descriptorComment" class="empty-note">No semantic read yet.</p>
+
+          <div class="stat-row" style="margin-top:4px;">
+            <span class="label">Visual texture:</span>
+            <span class="value" id="imageDensityLabel">0</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+            <div class="tone-meter">
+              <div class="tone-meter-fill" id="imageMeter"></div>
+            </div>
+          </div>
+          <p id="imageComment" class="empty-note">No imagery detected yet.</p>
+
+          <div class="tense-wrapper">
+            <div class="tense-pie" id="tensePie"></div>
+            <div class="tense-legend">
+              <div class="legend-chip"><span class="legend-swatch" style="background:#e67e22;"></span>forward (will/can)</div>
+              <div class="legend-chip"><span class="legend-swatch" style="background:#3498db;"></span>present (is/are/now)</div>
+              <div class="legend-chip"><span class="legend-swatch" style="background:#9b59b6;"></span>past (was/were/-ed)</div>
+            </div>
+          </div>
+          <p id="tenseSummary" class="empty-note">No tense pattern yet.</p>
+        </section>
+
+        <section class="block" id="psychBlock" data-tab="psych">
+          <h2>Psychological Calibration</h2>
+          <div class="stat-row">
+            <span class="label">Pronouns (I / we / you / they):</span>
+            <span class="value" id="pronounCounts">0 / 0 / 0 / 0</span>
+          </div>
+          <p id="empathySummary" class="empty-note">No empathy polarity yet.</p>
+          <div class="stat-row" style="margin-top:4px;">
+            <span class="label">Moral vocabulary count:</span>
+            <span class="value" id="statMoralCount">0</span>
+          </div>
+          <p id="moralSummary" class="empty-note">No moral posture detected yet.</p>
+        </section>
+
+        <!-- Rewrite mode -->
+        <section class="block" id="sentenceToneBlock" data-tab="rewrite">
+          <h2>Sentence Tone Map</h2>
+          <p>Per-sentence softness vs misanthropy. Click a sentence to open focused rewrite mode.</p>
+          <ul class="list" id="sentenceToneList">
+            <li class="empty-note" style="list-style:none;padding-left:0;">No sentences analyzed yet.</li>
+          </ul>
+        </section>
+
+        <section class="block" id="focusBlock" data-tab="rewrite">
+          <h2>Focused Rewrite</h2>
+          <p>Select a sentence in the map above to inspect it with highlights and targeted prompts.</p>
+          <div id="focusedSentenceBox" class="preview-text">
+            <span class="empty-note">No sentence selected.</span>
+          </div>
+          <ul class="list" id="focusedPrompts">
+            <li class="empty-note" style="list-style:none;padding-left:0;">No prompts yet.</li>
+          </ul>
+        </section>
+
+        <section class="block" id="rewriteBlock" data-tab="rewrite">
+          <h2>Rewrite Prompts</h2>
+          <p>Concrete suggestions to sharpen misanthropic clarity:</p>
+          <ul class="list" id="rewriteList">
+            <li class="empty-note" style="list-style:none;padding-left:0;">Write a paragraph, then rerun the analyzer.</li>
+          </ul>
+        </section>
+
+        <!-- About / Help tab -->
+        <section class="block" id="aboutBlock" data-tab="about">
+          <h2>About · Profiles & Archetypes</h2>
+          <p><strong>What this is:</strong> a local, browser-based studio for misanthropic prose. No accounts, no cloud saves; everything runs in your browser tab.</p>
+          <p><strong>How to use it:</strong></p>
+          <ul class="list">
+            <li>Write a paragraph or two in the editor on the left.</li>
+            <li>Pick a <strong>Profile</strong> (Cold / Scorched / Elegiac) and an <strong>Archetype</strong>.</li>
+            <li>Hit <code class="inline">Analyze</code> (or <code class="inline">Ctrl+Enter</code>).</li>
+            <li>Switch between tabs: <em>Tone</em> for overall stance, <em>Structure</em> for rhythm, <em>Psych</em> for perspective, <em>Rewrite</em> for sentence-level surgery.</li>
+          </ul>
+
+          <p><strong>Profiles</strong> define the tonal temperature of the piece:</p>
+          <ul class="list">
+            <li><strong>Cold analyst</strong> – surgical detachment and precision. No warmth. Every line is observation, not emotion.</li>
+            <li><strong>Scorched-earth rant</strong> – venom and rhythm. Sentences hit like blows; exaggeration is a weapon, not a flaw.</li>
+            <li><strong>Elegiac ruin</strong> – mournful decay. Anger slowed into beauty; ruins described with reverence and finality.</li>
+          </ul>
+
+          <p><strong>Archetypes</strong> describe the philosophical stance behind the tone:</p>
+          <ul class="list">
+            <li><strong>The Nihilist</strong> – clarity through futility. Nothing matters, so language must remain precise.</li>
+            <li><strong>The Cynic</strong> – mockery as survival. Finds humour in decay; contempt made playful.</li>
+            <li><strong>The Stoic</strong> – detachment without emotion. Describes the wreckage as inevitable, not tragic.</li>
+            <li><strong>The Hermit</strong> – solitude as clarity. Observes from distance, untempted by the crowd’s noise.</li>
+          </ul>
+
+          <p class="empty-note">
+            Treat the tool as a collaborator that refuses to comfort you. Its job is to push your sentences toward sharper contempt, cleaner structure, and deliberate distance.
+          </p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="branding-bar">
+  Misanthropic Tone Studio · © 2025 Luke Rigney
+</footer>
+
+<script>
+  // Keyword sets for tone analysis
+  const softWords = [
+    "hope","hopeful","healing","heal","together","connection","connected","community",
+    "growth","journey","light","inspire","inspiring","inspiration",
+    "love","believe","believing","trust","compassion","kindness","faith",
+    "gratitude","grateful","abundance","positive","optimistic","optimism",
+    "uplift","uplifting","forgive","forgiveness","safe","safety","comfort",
+    "purpose","meaning","meaningful","wholeness","fulfilled","fulfillment"
+  ];
+
+  const misanthropeWords = [
+    "humanity","humans","the species","herd","herd mentality","crowd","mass","mob",
+    "animal","animals","primates","apes","parasite","parasitic","plague","infestation",
+    "decay","rot","ruins","collapse","contagion","infection","disease","sickness","deranged",
+    "noise","spectacle","delusion","illusion","hypocrisy","facade","simulation",
+    "disgust","contempt","revulsion","reviled","resentment","loathing",
+    "detached","detachment","withdrawal","solitude","isolation","alone",
+    "failed species","failed experiment","self-deception"
+  ];
+
+  const fillerWords = ["very", "really", "just", "maybe", "perhaps", "kind of", "sort of"];
+
+  // Weighted tone scoring maps
+  const softWeightMap = {
+    "hope": 3,
+    "hopeful": 3,
+    "love": 2,
+    "healing": 1,
+    "heal": 1,
+    "community": 2,
+    "together": 2,
+    "growth": 1,
+    "journey": 1,
+    "light": 1,
+    "inspire": 2,
+    "inspiring": 2,
+    "inspiration": 2,
+    "gratitude": 2,
+    "grateful": 2,
+    "positive": 2,
+    "optimistic": 2,
+    "optimism": 2,
+    "comfort": 1,
+    "safe": 1,
+    "safety": 1,
+    "purpose": 2,
+    "meaning": 2,
+    "meaningful": 2
+  };
+
+  const misWeightMap = {
+    "ruin": 2,
+    "ruins": 2,
+    "parasite": 3,
+    "parasitic": 3,
+    "plague": 3,
+    "infestation": 3,
+    "decay": 2,
+    "rot": 2,
+    "collapse": 2,
+    "disease": 2,
+    "sickness": 2,
+    "humanity": 2,
+    "humans": 2,
+    "herd": 2,
+    "mob": 2,
+    "crowd": 2,
+    "failed species": 3,
+    "failed experiment": 3,
+    "contagion": 2,
+    "infection": 2
+  };
+
+  const softSet = new Set(softWords.filter(w => !w.includes(" ")));
+  const misSet = new Set(misanthropeWords.filter(w => !w.includes(" ")));
+  const fillerSet = new Set(fillerWords.map(w => w.toLowerCase().split(" ")[0]));
+
+  const emotionalAdverbs = ["utterly","deeply","wildly","completely","totally","unbelievably","incredibly"];
+  const elegiacImagery = ["ruin","ruins","ash","ashes","dusk","silence","dust","rust","winter","graveyard","abandoned","derelict","fog","mist","empty","empty street","metal"];
+
+  const profileMeta = {
+    cold: {
+      label: "Cold analyst",
+      addendum: " For the cold analyst, favour surgical language and understatement over theatrics."
+    },
+    scorch: {
+      label: "Scorched-earth rant",
+      addendum: " For the scorched-earth rant, allow some venom and repetition, but keep the spine coherent."
+    },
+    elegiac: {
+      label: "Elegiac ruin",
+      addendum: " For the elegiac ruin, pair contempt with imagery, slowness, and a trace of mourning."
+    }
+  };
+
+  const archetypeMeta = {
+    nihilist: {
+      label: "The Nihilist",
+      addendum: " The Nihilist archetype prefers explicit futility. Beware any line that accidentally offers redemption or cosmic purpose."
+    },
+    cynic: {
+      label: "The Cynic",
+      addendum: " The Cynic archetype feeds on sarcasm and petty observation. Let at least one line feel like a throwaway comment that cuts too deep."
+    },
+    stoic: {
+      label: "The Stoic",
+      addendum: " The Stoic archetype favours neutral description over heat. Where you feel anger leaking in, try flattening it into simple fact."
+    },
+    hermit: {
+      label: "The Hermit",
+      addendum: " The Hermit archetype wants distance and solitude. Ensure the speaker is clearly outside the herd, not begging to be let back in."
+    }
+  };
+
+  // Stopwords & parts-of-speech approximations
+  const stopwords = new Set([
+    "the","a","an","and","or","to","of","in","on","for","with","as","is","are","was","were","be","been","being",
+    "at","by","from","it","its","this","that","these","those","i","you","he","she","they","we","them","us","my",
+    "your","his","her","their","our","not","no","nor","but","if","then","so","because","than","just","very",
+    "really","maybe","perhaps","too","also","there","here","out","up","down","over","under","into","about"
+  ]);
+
+  const pronouns = new Set(["i","you","he","she","it","we","they","me","him","her","us","them"]);
+  const auxVerbs = new Set([
+    "be","am","is","are","was","were","been","being",
+    "do","does","did",
+    "have","has","had",
+    "will","shall","can","could","may","might","must","would","should"
+  ]);
+
+  const moralWords = ["should","must","right","wrong","good","evil"];
+
+  // DOM
+  const editorEl = document.getElementById('editor');
+  const btnAnalyze = document.getElementById('btnAnalyze');
+  const btnInsertSample = document.getElementById('btnInsertSample');
+  const profileSelect = document.getElementById('profileSelect');
+  const archetypeSelect = document.getElementById('archetypeSelect');
+  const profilePill = document.getElementById('profilePill');
+  const softToleranceEl = document.getElementById('softTolerance');
+  const softToleranceLabel = document.getElementById('softToleranceLabel');
+  const btnSaveFile = document.getElementById('btnSaveFile');
+  const btnLoadFile = document.getElementById('btnLoadFile');
+  const btnExportReport = document.getElementById('btnExportReport');
+  const fileInput = document.getElementById('fileInput');
+  const btnToggleAnalysis = document.getElementById('btnToggleAnalysis');
+  const compactToggle = document.getElementById('compactToggle');
+
+  const statWords = document.getElementById('statWords');
+  const statSentences = document.getElementById('statSentences');
+  const statAvgLen = document.getElementById('statAvgLen');
+
+  const toneLabel = document.getElementById('toneLabel');
+  const toneMeter = document.getElementById('toneMeter');
+  const statMisanthropeScore = document.getElementById('statMisanthropeScore');
+  const statSoftScore = document.getElementById('statSoftScore');
+  const statToneScore = document.getElementById('statToneScore');
+  const summaryComment = document.getElementById('summaryComment');
+
+  const grammarList = document.getElementById('grammarList');
+  const pacingSummary = document.getElementById('pacingSummary');
+
+  const descriptorRatioEl = document.getElementById('descriptorRatio');
+  const descriptorCommentEl = document.getElementById('descriptorComment');
+  const imageDensityLabel = document.getElementById('imageDensityLabel');
+  const imageMeter = document.getElementById('imageMeter');
+  const imageComment = document.getElementById('imageComment');
+  const tensePie = document.getElementById('tensePie');
+  const tenseSummary = document.getElementById('tenseSummary');
+
+  const pronounCountsEl = document.getElementById('pronounCounts');
+  const empathySummaryEl = document.getElementById('empathySummary');
+  const statMoralCount = document.getElementById('statMoralCount');
+  const moralSummary = document.getElementById('moralSummary');
+
+  const softTags = document.getElementById('softTags');
+  const softSuggestions = document.getElementById('softSuggestions');
+  const misanthropeTags = document.getElementById('misanthropeTags');
+  const misanthropeAdvice = document.getElementById('misanthropeAdvice');
+  const rewriteList = document.getElementById('rewriteList');
+  const previewText = document.getElementById('previewText');
+  const sentenceToneList = document.getElementById('sentenceToneList');
+  const focusedSentenceBox = document.getElementById('focusedSentenceBox');
+  const focusedPrompts = document.getElementById('focusedPrompts');
+
+  const polaritySparkline = document.getElementById('polaritySparkline');
+  const driftSparkline = document.getElementById('driftSparkline');
+  const polaritySummary = document.getElementById('polaritySummary');
+
+  const repetitionTags = document.getElementById('repetitionTags');
+  const repetitionNotes = document.getElementById('repetitionNotes');
+
+  const analysisTabs = document.querySelectorAll('.analysis-tab');
+  const tabbedElements = document.querySelectorAll('.analysis-pane [data-tab]');
+
+  let lastSentences = [];
+  let lastToneData = [];
+
+  function basicStats(text) {
+    const cleaned = text.trim();
+    if (!cleaned) return {words: 0, sentences: 0, avgLen: 0, sentencesArray: []};
+
+    const words = cleaned.split(/\s+/).filter(Boolean);
+    const sentenceSplit = cleaned.split(/(?<=[\.!\?])\s+/).filter(s => s.trim().length > 0);
+    const sentenceLengths = sentenceSplit.map(s => s.split(/\s+/).filter(Boolean).length);
+    const avgLen = sentenceLengths.length
+      ? Math.round(sentenceLengths.reduce((a, b) => a + b, 0) / sentenceLengths.length)
+      : 0;
+
+    return {
+      words: words.length,
+      sentences: sentenceSplit.length,
+      avgLen,
+      sentencesArray: sentenceSplit
+    };
+  }
+
+  function countMatches(text, keywords, weightMap) {
+    const lower = text.toLowerCase();
+    let count = 0;
+    const hits = {};
+    let weighted = 0;
+
+    keywords.forEach(kw => {
+      const pattern = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp("\\b" + pattern + "\\b", "gi");
+      const matches = lower.match(regex);
+      if (matches && matches.length) {
+        count += matches.length;
+        hits[kw] = (hits[kw] || 0) + matches.length;
+        if (weightMap) {
+          const key = kw.toLowerCase();
+          const w = weightMap[key] || 1;
+          weighted += w * matches.length;
+        }
+      }
+    });
+
+    return {count, hits, weighted};
+  }
+
+  function analyzeGrammar(text, stats) {
+    const messages = [];
+    if (!text.trim()) return messages;
+
+    const clauseKeywords = ["because","that","while","although","though","since","when","if"];
+    stats.sentencesArray.forEach((s, idx) => {
+      const len = s.split(/\s+/).filter(Boolean).length;
+      if (len > 30) {
+        messages.push(`Sentence ${idx + 1} is very long (${len} words). Consider cutting it into two or three sharper blows.`);
+      }
+
+      const lower = s.toLowerCase();
+      let clauseMarkers = 0;
+      clauseMarkers += (s.split(",").length - 1);
+      clauseKeywords.forEach(kw => {
+        const re = new RegExp("\\b" + kw + "\\b", "g");
+        const matches = lower.match(re);
+        if (matches) clauseMarkers += matches.length;
+      });
+      if (clauseMarkers >= 3 && len > 20) {
+        messages.push(`Sentence ${idx + 1} carries many clauses (≈${clauseMarkers}). Cut one justification and let the statement stand as accusation.`);
+      }
+    });
+
+    const lowerAll = text.toLowerCase();
+    fillerWords.forEach(fw => {
+      if (lowerAll.includes(fw)) {
+        messages.push(`Filler word “${fw}” detected. Misanthropic tone prefers blunt, unsoftened statements.`);
+      }
+    });
+
+    const passiveHints = ["was", "were", "is", "are", "been", "being"];
+    passiveHints.forEach(h => {
+      if (lowerAll.includes(h + " ") && lowerAll.includes(" by ")) {
+        messages.push(`Possible passive construction with “${h} … by”. Consider a more active, direct phrasing to keep the blade sharp.`);
+      }
+    });
+
+    if (messages.length === 0) {
+      messages.push("Structure looks controlled. Use your browser’s red underlines for spelling, and keep the sentences tight.");
+    }
+
+    return messages;
+  }
+
+  function analyzePacing(stats) {
+    const sentences = stats.sentencesArray;
+    if (!sentences || sentences.length === 0) {
+      pacingSummary.textContent = "No pacing analysis yet.";
+      pacingSummary.classList.add("empty-note");
+      return;
+    }
+    if (sentences.length === 1) {
+      pacingSummary.textContent = "Only one sentence. Pacing needs at least a small sequence to show itself.";
+      pacingSummary.classList.remove("empty-note");
+      return;
+    }
+
+    const lengths = sentences.map(s => s.split(/\s+/).filter(Boolean).length);
+    const avg = lengths.reduce((a,b)=>a+b,0) / lengths.length;
+    const variance = lengths.reduce((a,b)=>a+Math.pow(b-avg,2),0) / lengths.length;
+    const std = Math.sqrt(variance);
+    const minLen = Math.min(...lengths);
+    const maxLen = Math.max(...lengths);
+
+    let label;
+    if (avg <= 12 && std < 4) {
+      label = "Staccato aggression — short, clipped sentences dominate. Good for rants or lab-notes on the species.";
+    } else if (avg >= 25 && std < 6) {
+      label = "Brooding elegy — long, heavy sentences. Suitable for the elegiac ruin profile.";
+    } else {
+      label = "Mixed pacing — human rhythm leaking in. Use it deliberately: alternate very short shocks with slow, dense lines.";
+    }
+
+    pacingSummary.textContent = `Avg length ≈ ${avg.toFixed(1)} words, spread ≈ ${std.toFixed(1)}. Range: ${minLen}–${maxLen} words. ${label}`;
+    pacingSummary.classList.remove("empty-note");
+  }
+
+  async function checkLanguageTool(text) {
+    if (!text.trim()) return [];
+    try {
+      const params = new URLSearchParams();
+      params.append('text', text);
+      params.append('language', 'en-GB');
+
+      const res = await fetch('https://api.languagetool.org/v2/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
+      });
+
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data && data.matches) || [];
+    } catch (e) {
+      console.warn('LanguageTool request failed:', e);
+      return [];
+    }
+  }
+
+  function analyzeSoftness(text) {
+    const lower = text.toLowerCase();
+    const {count, hits, weighted} = countMatches(lower, softWords, softWeightMap);
+    const suggestions = [];
+
+    if (hits["hope"]) {
+      suggestions.push('You used “hope”. Consider replacing it with “illusion”, “habit of optimism”, or “refusal to look at the wreckage.”');
+    }
+    if (hits["love"]) {
+      suggestions.push('You used “love”. In misanthropic tone, narrow it: “attachment”, “chemical favoritism”, or “private addiction disguised as virtue.”');
+    }
+    if (hits["together"] || hits["community"]) {
+      suggestions.push('Words like “together” or “community” soften the stance. Consider emphasizing crowd psychology, herd behavior, or mutual delusion instead.');
+    }
+    if (hits["healing"] || hits["heal"]) {
+      suggestions.push('“Healing” is therapy language. Try “scarring”, “adaptation”, or “getting used to the damage” instead.');
+    }
+
+    return {count, weighted, hits, suggestions};
+  }
+
+  function analyzeMisanthropy(text) {
+    const lower = text.toLowerCase();
+    const {count, hits, weighted} = countMatches(lower, misanthropeWords, misWeightMap);
+    const keys = Object.keys(hits);
+    const advice = [];
+
+    if (count === 0) {
+      advice.push("You haven’t explicitly named humanity, the herd, or decay. A misanthropic passage usually makes the target visible.");
+    } else {
+      if (keys.includes("humanity") || keys.includes("humans") || keys.includes("the species")) {
+        advice.push("You explicitly name humanity as object. Good. Consider adding an image of decay, disease, or failure around it.");
+      }
+      if (keys.includes("herd") || keys.includes("crowd") || keys.includes("mass") || keys.includes("mob")) {
+        advice.push("Herd/crowd language is strong. You can sharpen it with metaphors: contagion, stampede, or ritualized self-harm.");
+      }
+      if (keys.includes("solitude") || keys.includes("isolation") || keys.includes("detached") || keys.includes("withdrawal")) {
+        advice.push("You’re already framing solitude/withdrawal. Consider naming it as strategy, not symptom.");
+      }
+      if (keys.includes("decay") || keys.includes("ruins") || keys.includes("collapse") || keys.includes("rot")) {
+        advice.push("Decay/ruins imagery is present. You can contrast it with the reader’s inner clarity to heighten tone.");
+      }
+    }
+
+    if (advice.length === 0) {
+      advice.push("The misanthropic signal is present but subtle. You might intensify it with one or two explicit references to the species, the herd, or the ruins it has built.");
+    }
+
+    return {count, weighted, hits, keys, advice};
+  }
+
+  function buildTags(container, hits, className) {
+    container.innerHTML = "";
+    const keys = Object.keys(hits);
+    if (!keys.length) {
+      container.innerHTML = '<span class="empty-note">No items detected.</span>';
+      return;
+    }
+    keys.sort((a,b) => hits[b] - hits[a]);
+    keys.forEach(k => {
+      const span = document.createElement('span');
+      span.className = 'tag-badge ' + className;
+      span.textContent = `${k} ×${hits[k]}`;
+      container.appendChild(span);
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function buildPreview(text) {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      previewText.innerHTML = '<span class="empty-note">Write something on the left and hit <code class="inline">Analyze</code>.</span>';
+      return;
+    }
+
+    const parts = text.split(/(\s+)/);
+    let html = "";
+
+    parts.forEach(token => {
+      if (token === "") return;
+
+      if (/^\s+$/.test(token)) {
+        const newlines = (token.match(/\n/g) || []).length;
+        if (newlines > 0) {
+          html += "<br>".repeat(newlines);
+        }
+        const spaces = token.replace(/\n/g, "").length;
+        if (spaces > 0) {
+          html += "&nbsp;".repeat(spaces);
+        }
+        return;
+      }
+
+      const core = token.toLowerCase().replace(/^[^\w]+|[^\w]+$/g, "");
+      let cls = "";
+      if (softSet.has(core)) {
+        cls = "hl-soft";
+      } else if (misSet.has(core)) {
+        cls = "hl-mis";
+      } else if (fillerSet.has(core)) {
+        cls = "hl-filler";
+      }
+
+      const escaped = escapeHtml(token);
+      if (cls) {
+        html += `<span class="${cls}">${escaped}</span>`;
+      } else {
+        html += escaped;
+      }
+    });
+
+    previewText.innerHTML = html;
+  }
+
+  function buildSentenceToneMap(sentences) {
+    sentenceToneList.innerHTML = "";
+    lastToneData = [];
+    if (!sentences || !sentences.length) {
+      const li = document.createElement('li');
+      li.className = 'empty-note';
+      li.style.listStyle = "none";
+      li.style.paddingLeft = "0";
+      li.textContent = "No sentences analyzed yet.";
+      sentenceToneList.appendChild(li);
+      return [];
+    }
+
+    const data = sentences.map((s, idx) => {
+      const softRes = countMatches(s, softWords, softWeightMap);
+      const misRes = countMatches(s, misanthropeWords, misWeightMap);
+      const softWeighted = softRes.weighted;
+      const misWeighted = misRes.weighted;
+      const len = s.split(/\s+/).filter(Boolean).length;
+      return {
+        index: idx + 1,
+        text: s.trim(),
+        softWeighted,
+        misWeighted,
+        len
+      };
+    });
+
+    let softest = null;
+    let maxSoftDelta = -Infinity;
+    data.forEach(d => {
+      const delta = d.softWeighted - d.misWeighted;
+      if (delta > maxSoftDelta && d.softWeighted > 0) {
+        maxSoftDelta = delta;
+        softest = d;
+      }
+    });
+
+    let hardest = null;
+    let maxMisDelta = -Infinity;
+    data.forEach(d => {
+      const delta = d.misWeighted - d.softWeighted;
+      if (delta > maxMisDelta && d.misWeighted > 0) {
+        maxMisDelta = delta;
+        hardest = d;
+      }
+    });
+
+    data.forEach(d => {
+      const li = document.createElement('li');
+      li.className = 'sentence-item';
+      li.dataset.index = d.index;
+      const tags = [];
+      if (softest && d.index === softest.index) {
+        tags.push("candidate for rewriting");
+      }
+      if (hardest && d.index === hardest.index) {
+        tags.push("anchor");
+      }
+      const snippet = d.text.length > 140 ? d.text.slice(0, 140) + "…" : d.text;
+      li.textContent = `Sentence ${d.index} · softW=${d.softWeighted}, misW=${d.misWeighted}, len=${d.len} — ${snippet}`;
+      if (tags.length) {
+        li.textContent += `  [${tags.join(" · ")}]`;
+      }
+      sentenceToneList.appendChild(li);
+    });
+
+    lastToneData = data;
+    return data;
+  }
+
+  function highlightSentenceForFocus(text) {
+    if (!text || !text.trim()) {
+      return '<span class="empty-note">No sentence selected.</span>';
+    }
+
+    const parts = text.split(/(\s+)/);
+    let html = "";
+    parts.forEach(token => {
+      if (token === "") return;
+
+      if (/^\s+$/.test(token)) {
+        const newlines = (token.match(/\n/g) || []).length;
+        if (newlines > 0) {
+          html += "<br>".repeat(newlines);
+        }
+        const spaces = token.replace(/\n/g, "").length;
+        if (spaces > 0) {
+          html += "&nbsp;".repeat(spaces);
+        }
+        return;
+      }
+
+      const core = token.toLowerCase().replace(/^[^\w]+|[^\w]+$/g, "");
+      let cls = "";
+      if (softSet.has(core)) {
+        cls = "hl-soft";
+      } else if (fillerSet.has(core)) {
+        cls = "hl-filler";
+      }
+
+      const escaped = escapeHtml(token);
+      if (cls) {
+        html += `<span class="${cls}">${escaped}</span>`;
+      } else {
+        html += escaped;
+      }
+    });
+
+    return html || '<span class="empty-note">No sentence selected.</span>';
+  }
+
+  function analyzeSentencePrompts(sentence) {
+    const prompts = [];
+    const lower = sentence.toLowerCase();
+
+    fillerWords.forEach(fw => {
+      if (lower.includes(fw)) {
+        prompts.push(`Remove “${fw}”. The sentence will hit harder without hedging.`);
+      }
+    });
+
+    if (/\bhope\b/i.test(sentence)) {
+      prompts.push('Replace “hope” with something colder: “habit of optimism”, “refusal to look at the wreckage”, or “the lie we tell ourselves to keep moving.”');
+    }
+
+    if (/\bpeople\b/i.test(sentence)) {
+      prompts.push('Replace “people” with “the species”, “the herd”, or “the animal in clothes” to sharpen the misanthropic stance.');
+    }
+
+    if (/\bhumans?\b/i.test(sentence)) {
+      prompts.push('Consider specifying “this species” or “this particular animal” instead of generic “human(s)” to keep the contempt focused.');
+    }
+
+    if (/\blove\b/i.test(sentence)) {
+      prompts.push('If “love” appears here, narrow it: “private addiction”, “chemical favoritism”, or “the lie we forgive in ourselves.”');
+    }
+
+    if (/\bcommunity\b/i.test(sentence)) {
+      prompts.push('“Community” leans sentimental. Consider “herd”, “crowd”, or “mutual dependence dressed as virtue.”');
+    }
+
+    if (!prompts.length) {
+      prompts.push("Strip one adjective or adverb from this sentence and see if it becomes cleaner and more merciless.");
+      prompts.push("Ask: can you swap any neutral word for something that implies herd, decay, or self-deception without breaking the sentence?");
+    }
+
+    return prompts;
+  }
+
+  function focusSentence(index) {
+    if (!lastSentences || !lastSentences.length) return;
+    const idx = index - 1;
+    if (idx < 0 || idx >= lastSentences.length) return;
+
+    const sentence = lastSentences[idx].trim();
+    focusedSentenceBox.innerHTML = highlightSentenceForFocus(sentence);
+
+    const prompts = analyzeSentencePrompts(sentence);
+    focusedPrompts.innerHTML = "";
+    prompts.forEach(p => {
+      const li = document.createElement('li');
+      li.textContent = p;
+      focusedPrompts.appendChild(li);
+    });
+  }
+
+  function updateRewritePrompts(stats, softness, misanthropy, profileKey, archetypeKey) {
+    const items = [];
+    const text = editorEl.value;
+    const lower = text.toLowerCase();
+
+    if (stats.words < 60) {
+      items.push("Write at least one full paragraph (3–5 sentences) before worrying about refinement. The tool works best on actual wreckage.");
+    } else {
+      if (softness.count > 0) {
+        items.push("Take one sentence containing a soft word (hope, healing, together) and rewrite it with open contempt or cold description instead of comfort.");
+      }
+      if (misanthropy.count === 0) {
+        items.push("Add one sentence that names the species directly: humanity, the herd, the crowd, or the animal behind the mask.");
+      }
+      if (stats.avgLen > 28) {
+        items.push("Choose your longest sentence and cut it into two or three precise blows. Misanthropy prefers clean strikes over fog.");
+      }
+      if (!/solitude|isolation|alone|withdrawal|detached/.test(lower)) {
+        items.push("Introduce solitude or withdrawal as a strategic choice, not a tragedy. Give the reader a place outside the crowd.");
+      }
+      if (!/ruin|ruins|decay|collapse|rot|wreckage/.test(lower)) {
+        items.push("Anchor the tone in imagery: ruins, decay, collapse, rust, or wasted light. Abstract contempt is weaker than concrete decay.");
+      }
+    }
+
+    if (profileKey === "cold") {
+      if (text.includes("!")) {
+        items.push("You’re using exclamation marks. For the cold analyst profile, rephrase the same line without shouting and see if it feels more ruthless.");
+      }
+      if (/\b[A-Z]{4,}\b/.test(text)) {
+        items.push("All-caps detected. In a clinical voice, let the contempt come from diction and structure, not from volume.");
+      }
+      if (new RegExp("\\b(" + emotionalAdverbs.join("|") + ")\\b", "i").test(lower)) {
+        items.push("Emotional adverbs like “utterly” or “deeply” soften the clinical edge. Cut them and see if the sentence sharpens.");
+      }
+      items.push("Find your most emotional sentence and rewrite it as if it were a lab note about a malfunctioning species.");
+    } else if (profileKey === "scorch") {
+      const cruelWords = ["vermin","plague","filth","worthless","cancer","garbage","disease","infestation"];
+      if (!new RegExp("\\b(" + cruelWords.join("|") + ")\\b", "i").test(lower)) {
+        items.push("For a scorched-earth rant, let at least one line go cruel or hyperbolic: vermin, plague, infestation, or similar imagery.");
+      }
+      const lengths = stats.sentencesArray.map(s => s.split(/\s+/).filter(Boolean).length);
+      const maxLen = lengths.length ? Math.max(...lengths) : 0;
+      if (maxLen < 20) {
+        items.push("Your sentences are quite controlled. Let one of them run long and breathless to match the ranting profile.");
+      }
+      items.push("Identify one line that feels restrained and let it burn—add an image, an insult, or an exaggeration that stays true but sounds unforgiving.");
+    } else if (profileKey === "elegiac") {
+      if (!new RegExp("\\b(" + elegiacImagery.join("|") + ")\\b", "i").test(lower)) {
+        items.push("Elegiac ruin benefits from at least one image: ash, dusk, rust, an empty street, a graveyard of attempts. Add one tangible ruin.");
+      }
+      items.push("Choose a harsh sentence and slow it down: add one image of silence, distance, or ruins so the anger settles into a kind of mourning.");
+    }
+
+    // Archetype-specific tweaks
+    if (archetypeKey === "nihilist") {
+      if (/meaning|purpose|redemption|salvation|destiny/.test(lower)) {
+        items.push("Nihilist check: wherever you offer meaning or redemption, try rewriting it as habit, reflex, or delusion instead.");
+      }
+      items.push("Add one sentence that states, without drama, that nothing essential changes regardless of effort.");
+    } else if (archetypeKey === "cynic") {
+      items.push("Cynic check: pick one earnest sentence and undercut it with a short, sarcastic afterthought.");
+      items.push("Introduce at least one petty, concrete observation (bad lighting, cheap slogans, forced smiles) to ground the disdain.");
+    } else if (archetypeKey === "stoic") {
+      items.push("Stoic check: remove “I feel” or “I think” from one sentence and state the observation as if it were weather.");
+      if (/should|must|right|wrong|good|evil/.test(lower)) {
+        items.push("Stoic misanthropy prefers description over moral judgement. Replace one “should/must” with a simple “is”.");
+      }
+    } else if (archetypeKey === "hermit") {
+      if (!/alone|solitude|isolation|withdrawal|cell|room|apartment|cabin/.test(lower)) {
+        items.push("Hermit check: add one image that clearly places the speaker physically away from the herd (room, cabin, high floor, edge of town).");
+      }
+      items.push("Take one sentence about “them” and follow it with a line that clarifies why you’re no longer in the same room.");
+    }
+
+    rewriteList.innerHTML = "";
+    if (!items.length) {
+      const li = document.createElement('li');
+      li.className = 'empty-note';
+      li.style.listStyle = "none";
+      li.style.paddingLeft = "0";
+      li.textContent = "This passage is structurally solid. Now decide: which sentence can you make more precise, more cruel, or more indifferent?";
+      rewriteList.appendChild(li);
+      return;
+    }
+
+    items.forEach(it => {
+      const li = document.createElement('li');
+      li.textContent = it;
+      rewriteList.appendChild(li);
+    });
+  }
+
+  function updateToneLabel(misanthropy, softness, profileKey, tolerance, archetypeKey) {
+    const mRaw = misanthropy.count;
+    const sRaw = softness.count;
+    const m = misanthropy.weighted || mRaw;
+    const s = softness.weighted || sRaw;
+
+    statMisanthropeScore.textContent = m.toFixed(1);
+    statSoftScore.textContent = s.toFixed(1);
+
+    const netTone = m - s;
+    statToneScore.textContent = netTone.toFixed(1);
+
+    let base = "";
+
+    if (mRaw === 0 && sRaw === 0) {
+      toneLabel.textContent = "Neutral / Uncalibrated";
+      toneMeter.style.width = "10%";
+      base = "No strong misanthropic or soft markers detected yet. Keep writing until the stance becomes obvious.";
+    } else if (m >= 3 && s === 0) {
+      toneLabel.textContent = "Clean Misanthropic Signal";
+      toneMeter.style.width = "95%";
+      base = "The passage is firmly anti-human and largely free of consolation. Ensure the disgust cools into clarity, not melodrama.";
+    } else if (m >= 3 && s <= Math.max(1, Math.floor(m / 3))) {
+      toneLabel.textContent = "Sharply Detached";
+      toneMeter.style.width = "80%";
+      base = "The text reads as observant and hostile toward the species, with only minor softening. You can keep one small human detail if it makes the contempt believable.";
+    } else if (s > m && s >= 2) {
+      if (s > tolerance) {
+        toneLabel.textContent = "Contaminated by Hope";
+        toneMeter.style.width = "40%";
+        base = "Soft or hopeful language outweighs the misanthropic signal beyond your chosen tolerance. Decide whether this is the right passage to be gentle — or whether you want to remove the padding.";
+      } else {
+        toneLabel.textContent = "Controlled Contrast";
+        toneMeter.style.width = "65%";
+        base = "Soft language is present but within your tolerance. If this is intentional contrast, consider making the harsh lines even harsher to frame it.";
+      }
+    } else {
+      toneLabel.textContent = "Mixed / Ambivalent";
+      toneMeter.style.width = "55%";
+      base = "Tone is oscillating between rejection and reassurance. If this is intentional, highlight the tension. If not, choose a side and sharpen.";
+    }
+
+    const meta = profileMeta[profileKey] || profileMeta.cold;
+    const arch = archetypeMeta[archetypeKey] || archetypeMeta.nihilist;
+    summaryComment.textContent = base + meta.addendum + arch.addendum;
+    profilePill.textContent = `${meta.label} · ${arch.label}`;
+  }
+
+  function updateToneTrajectory(data) {
+    polaritySparkline.innerHTML = "";
+    driftSparkline.innerHTML = "";
+    if (!data || !data.length) {
+      polaritySummary.textContent = "No trajectory yet.";
+      return;
+    }
+
+    const diffs = data.map(d => d.misWeighted - d.softWeighted);
+    const ratios = data.map(d => (d.misWeighted + 1) / (d.softWeighted + 1));
+    let maxAbsDiff = Math.max(1, ...diffs.map(v => Math.abs(v)));
+
+    data.forEach((d, idx) => {
+      const diff = diffs[idx];
+      const h = 8 + (Math.abs(diff) / maxAbsDiff) * 24;
+      const bar = document.createElement('div');
+      bar.className = "spark-bar";
+      bar.style.height = h + "px";
+      if (diff > 0.2) {
+        bar.style.background = "#e74c3c";
+      } else if (diff < -0.2) {
+        bar.style.background = "#3498db";
+      } else {
+        bar.style.background = "#555567";
+      }
+      polaritySparkline.appendChild(bar);
+    });
+
+    let cumulative = 0;
+    const driftValues = diffs.map(d => {
+      cumulative += d;
+      return cumulative;
+    });
+    let maxAbsDrift = Math.max(1, ...driftValues.map(v => Math.abs(v)));
+    driftValues.forEach(v => {
+      const h = 8 + (Math.abs(v) / maxAbsDrift) * 24;
+      const bar = document.createElement('div');
+      bar.className = "spark-bar";
+      bar.style.height = h + "px";
+      bar.style.background = "#f1c40f";
+      driftSparkline.appendChild(bar);
+    });
+
+    const meanRatio = ratios.reduce((a,b)=>a+b,0) / ratios.length;
+    const variance = ratios.reduce((a,b)=>a + Math.pow(b - meanRatio,2), 0) / ratios.length;
+
+    let volatilityLabel;
+    if (variance < 0.05) {
+      volatilityLabel = "very low (consistent or numb tone)";
+    } else if (variance < 0.25) {
+      volatilityLabel = "moderate (controlled shifts)";
+    } else {
+      volatilityLabel = "high (unstable / conflicted voice)";
+    }
+
+    const finalDrift = driftValues[driftValues.length - 1];
+    let driftLabel;
+    if (finalDrift > 2) {
+      driftLabel = "drifts toward harsher contempt";
+    } else if (finalDrift < -2) {
+      driftLabel = "drifts toward softness or empathy";
+    } else {
+      driftLabel = "stays roughly balanced (tonal flatline or ambivalence)";
+    }
+
+    polaritySummary.textContent = `Tone volatility: ${volatilityLabel}. Overall drift: ${driftLabel}.`;
+  }
+
+  function stemWord(w) {
+    let s = w.toLowerCase();
+    if (s.endsWith("ing") && s.length > 5) return s.slice(0, -3);
+    if (s.endsWith("ed") && s.length > 4) return s.slice(0, -2);
+    if (s.endsWith("s") && s.length > 3) return s.slice(0, -1);
+    return s;
+  }
+
+  function analyzeRepetition(text) {
+    repetitionTags.innerHTML = "";
+    repetitionNotes.innerHTML = "";
+
+    const words = (text.toLowerCase().match(/\b[a-z']+\b/g) || []);
+    if (words.length === 0) {
+      repetitionTags.innerHTML = '<span class="empty-note">No words to analyse.</span>';
+      const li = document.createElement('li');
+      li.className = 'empty-note';
+      li.style.listStyle = "none";
+      li.style.paddingLeft = "0";
+      li.textContent = "No lexical echoes detected yet.";
+      repetitionNotes.appendChild(li);
+      return;
+    }
+
+    const freq = {};
+    const representative = {};
+    words.forEach(w => {
+      if (stopwords.has(w)) return;
+      const stem = stemWord(w);
+      if (!stem || stem.length <= 2) return;
+      freq[stem] = (freq[stem] || 0) + 1;
+      if (!representative[stem]) representative[stem] = w;
+    });
+
+    const entries = Object.entries(freq).sort((a,b) => b[1] - a[1]);
+    const strong = entries.filter(([stem, count]) => count >= 3).slice(0, 3);
+
+    if (!strong.length) {
+      repetitionTags.innerHTML = '<span class="empty-note">No strong lexical echoes. If you want obsessive repetition, choose one image or insult and repeat it deliberately.</span>';
+      const li = document.createElement('li');
+      li.className = 'empty-note';
+      li.style.listStyle = "none";
+      li.style.paddingLeft = "0";
+      li.textContent = "Current repetition looks incidental, not patterned.";
+      repetitionNotes.appendChild(li);
+      return;
+    }
+
+    strong.forEach(([stem, count]) => {
+      const span = document.createElement('span');
+      span.className = 'tag-badge';
+      span.textContent = `${representative[stem]} ×${count}`;
+      repetitionTags.appendChild(span);
+    });
+
+    strong.forEach(([stem, count]) => {
+      const li = document.createElement('li');
+      li.textContent = `“${representative[stem]}” appears ${count} times. Decide if this is a motif (deliberate obsession) or a tic. If it’s a motif, lean into it; if not, cut one or two instances.`;
+      repetitionNotes.appendChild(li);
+    });
+
+    if (strong.length >= 2) {
+      const li = document.createElement('li');
+      li.textContent = "Multiple repeated stems detected. Make one of them the dominant image/insult and trim the others to avoid mud.";
+      repetitionNotes.appendChild(li);
+    }
+  }
+
+  function analyzeSemantic(text, stats, profileKey) {
+    const lower = text.toLowerCase();
+    const tokens = (lower.match(/\b[a-z']+\b/g) || []);
+
+    // Descriptor vs core ratio (rough heuristic)
+    let contentWords = 0;
+    let descriptors = 0;
+
+    const adjSuffixes = ["ous","ive","able","ible","al","ful","less","ish","ic","ical","ent","ant"];
+
+    tokens.forEach(w => {
+      if (stopwords.has(w) || pronouns.has(w) || auxVerbs.has(w)) return;
+      contentWords++;
+      if (w.endsWith("ly")) {
+        descriptors++;
+      } else if (adjSuffixes.some(s => w.endsWith(s))) {
+        descriptors++;
+      }
+    });
+
+    const ratio = contentWords ? descriptors / contentWords : 0;
+    descriptorRatioEl.textContent = ratio.toFixed(2);
+
+    let descComment;
+    if (!contentWords) {
+      descComment = "Too little material for descriptor analysis. Write a full paragraph first.";
+    } else if (ratio < 0.25) {
+      descComment = "Spare and skeletal: most weight sits on nouns and core terms. Good for cold or clinical passages.";
+    } else if (ratio < 0.55) {
+      descComment = "Balanced: descriptors present but not smothering the nouns. You can still cut one or two adjectives if you want it harsher.";
+    } else {
+      descComment = "Descriptor-heavy: adjectives/adverbs are doing a lot of work. Cut one descriptor per sentence and see if the nouns can carry the contempt alone.";
+    }
+    descriptorCommentEl.textContent = descComment;
+    descriptorCommentEl.classList.remove("empty-note");
+
+    // Image density
+    const imgRes = countMatches(lower, elegiacImagery);
+    const imgCount = imgRes.count;
+    const perSentence = imgCount / Math.max(1, stats.sentences);
+    imageDensityLabel.textContent = `${imgCount} image-words (~${perSentence.toFixed(2)}/sentence)`;
+
+    const meterWidth = Math.max(5, Math.min(100, perSentence * 100));
+    imageMeter.style.width = meterWidth + "%";
+
+    let imgComment;
+    if (imgCount === 0) {
+      imgComment = profileKey === "elegiac"
+        ? "No ruin/imagery detected; for elegiac ruin, add at least one concrete image of decay or silence."
+        : "No strong imagery; tone reads more clinical and abstract. That can suit the cold analyst.";
+    } else if (perSentence < 0.3) {
+      imgComment = "Low visual texture: images are rare. This keeps things dry and analytical.";
+    } else if (perSentence < 0.8) {
+      imgComment = "Moderate visual texture: images punctuate the contempt without drowning it. A good default.";
+    } else {
+      imgComment = "High visual texture: you’re close to prose-poem territory. Ensure the contempt still leads and the images serve it.";
+    }
+    imageComment.textContent = imgComment;
+    imageComment.classList.remove("empty-note");
+
+    // Temporal bias
+    let forward = 0, present = 0, past = 0;
+    tokens.forEach(w => {
+      if (["will","shall","can","could","may","might","soon","eventually","later","tomorrow"].includes(w)) forward++;
+      if (["is","are","am","do","does","has","have","now","today","always"].includes(w)) present++;
+      if (["was","were","had","did","once","ago","yesterday"].includes(w) || w.endsWith("ed")) past++;
+    });
+
+    const total = forward + present + past;
+    if (!total) {
+      tensePie.style.background = "#22222c";
+      tenseSummary.textContent = "No clear tense markers; the passage reads as tenseless or highly abstract.";
+      tenseSummary.classList.remove("empty-note");
+      return;
+    }
+
+    const fPerc = forward / total * 100;
+    const pPerc = present / total * 100;
+    const pastPerc = past / total * 100;
+
+    tensePie.style.background = `conic-gradient(#e67e22 0 ${fPerc}%, #3498db ${fPerc}% ${fPerc + pPerc}%, #9b59b6 ${fPerc + pPerc}% 100%)`;
+
+    let dominant, commentary;
+    if (forward >= present && forward >= past) {
+      dominant = "Forward-looking";
+      commentary = "Forward-looking tense bias (will, can, soon). This often smuggles in hope or at least possibility. Decide if that’s intentional.";
+    } else if (past >= forward && past >= present) {
+      dominant = "Past-leaning";
+      commentary = "Past-tense bias. This tends toward elegiac or reflective tone—looking back at the ruins rather than standing inside them.";
+    } else {
+      dominant = "Present-fixated";
+      commentary = "Present-tense bias. This reads as more clinical, observational, or accusatory—good for the analyst dissecting a live specimen.";
+    }
+
+    tenseSummary.textContent = `${dominant} mix: ≈${fPerc.toFixed(0)}% forward, ${pPerc.toFixed(0)}% present, ${pastPerc.toFixed(0)}% past. ${commentary}`;
+    tenseSummary.classList.remove("empty-note");
+  }
+
+  function analyzePsychological(text) {
+    const lower = text.toLowerCase();
+    const tokens = (lower.match(/\b[a-z']+\b/g) || []);
+
+    let iCount = 0, weCount = 0, youCount = 0, theyCount = 0;
+    tokens.forEach(w => {
+      if (w === "i" || w === "me") iCount++;
+      if (w === "we" || w === "us") weCount++;
+      if (w === "you") youCount++;
+      if (w === "they" || w === "them") theyCount++;
+    });
+
+    pronounCountsEl.textContent = `${iCount} / ${weCount} / ${youCount} / ${theyCount}`;
+
+    let empathyComment;
+    const totalPron = iCount + weCount + youCount + theyCount;
+    if (!totalPron) {
+      empathyComment = "No personal pronouns — tone feels manifesto-like or purely observational.";
+    } else {
+      const maxVal = Math.max(iCount, weCount, youCount, theyCount);
+      if (maxVal === youCount) {
+        empathyComment = "Pronoun alignment: accusatory stance (mostly “you”). The reader is being addressed as part of the problem.";
+      } else if (maxVal === theyCount) {
+        empathyComment = "Pronoun alignment: detached contempt (mostly “they”). The herd is firmly “out there,” away from the speaker.";
+      } else if (maxVal === weCount) {
+        empathyComment = "Pronoun alignment: collective “we”. This can soften misanthropy unless the “we” is clearly ironic or poisoned.";
+      } else {
+        empathyComment = "Pronoun alignment: introspective “I”. This reads as confession or self-indictment more than a species-wide indictment.";
+      }
+    }
+    empathySummaryEl.textContent = empathyComment;
+    empathySummaryEl.classList.remove("empty-note");
+
+    // Moral posture
+    const moralRes = countMatches(lower, moralWords);
+    const mCount = moralRes.count;
+    statMoralCount.textContent = mCount;
+
+    let moralComment;
+    if (mCount === 0) {
+      moralComment = "Little to no moral vocabulary — closer to descriptive contempt than sermon.";
+    } else if (mCount < 4) {
+      moralComment = "Some moral language (“should/must/right/wrong”). Consider whether judgement or description is doing the real work.";
+    } else {
+      moralComment = "High moral vocabulary — the passage is still moralising. Try removing “should/must/right/wrong” and simply describe what the species does.";
+    }
+    moralSummary.textContent = moralComment;
+    moralSummary.classList.remove("empty-note");
+  }
+
+  async function runAnalysis() {
+    const text = editorEl.value || "";
+    const stats = basicStats(text);
+    statWords.textContent = stats.words;
+    statSentences.textContent = stats.sentences;
+    statAvgLen.textContent = stats.avgLen;
+    lastSentences = stats.sentencesArray.slice();
+
+    focusedSentenceBox.innerHTML = '<span class="empty-note">No sentence selected.</span>';
+    focusedPrompts.innerHTML = '<li class="empty-note" style="list-style:none;padding-left:0;">No prompts yet.</li>';
+
+    buildPreview(text);
+
+    const grammarMessages = analyzeGrammar(text, stats);
+    grammarList.innerHTML = "";
+    grammarMessages.forEach(msg => {
+      const li = document.createElement('li');
+      li.textContent = msg;
+      grammarList.appendChild(li);
+    });
+
+    analyzePacing(stats);
+
+    const ltMatches = await checkLanguageTool(text);
+    if (ltMatches.length) {
+      ltMatches.slice(0, 10).forEach(m => {
+        const suggestion = m.replacements && m.replacements[0] ? m.replacements[0].value : null;
+        const li = document.createElement('li');
+        let msg = `LanguageTool: ${m.message}`;
+        if (suggestion) {
+          msg += ` (e.g. “${suggestion}”)`;
+        }
+        li.textContent = msg;
+        grammarList.appendChild(li);
+      });
+    }
+
+    const toneData = buildSentenceToneMap(stats.sentencesArray);
+    updateToneTrajectory(toneData);
+
+    const softness = analyzeSoftness(text);
+    buildTags(softTags, softness.hits, "negative");
+    softSuggestions.innerHTML = "";
+    if (softness.suggestions.length === 0 && softness.count === 0) {
+      const li = document.createElement('li');
+      li.className = "empty-note";
+      li.style.listStyle = "none";
+      li.style.paddingLeft = "0";
+      li.textContent = "No soft or hopeful language detected. If that was deliberate, good. If not, consider whether a single human crack might make the rest more believable.";
+      softSuggestions.appendChild(li);
+    } else if (softness.suggestions.length === 0) {
+      const li = document.createElement('li');
+      li.textContent = "Soft language detected, but nothing critical. If this passage is meant to be cold, consider stripping adjectives that sound like therapy.";
+      softSuggestions.appendChild(li);
+    } else {
+      softness.suggestions.forEach(s => {
+        const li = document.createElement('li');
+        li.textContent = s;
+        softSuggestions.appendChild(li);
+      });
+    }
+
+    const misanthropy = analyzeMisanthropy(text);
+    buildTags(misanthropeTags, misanthropy.hits, "positive");
+    misanthropeAdvice.innerHTML = "";
+    misanthropy.advice.forEach(a => {
+      const li = document.createElement('li');
+      li.textContent = a;
+      misanthropeAdvice.appendChild(li);
+    });
+
+    analyzeRepetition(text);
+
+    const profileKey = profileSelect.value || "cold";
+    const archetypeKey = archetypeSelect.value || "nihilist";
+    const tolerance = parseInt(softToleranceEl.value || "0", 10);
+
+    analyzeSemantic(text, stats, profileKey);
+    analyzePsychological(text);
+    updateToneLabel(misanthropy, softness, profileKey, tolerance, archetypeKey);
+    updateRewritePrompts(stats, softness, misanthropy, profileKey, archetypeKey);
+  }
+
+  // Tab switching
+  function setActiveTab(tabName) {
+    analysisTabs.forEach(btn => {
+      const target = btn.getAttribute('data-tab-target');
+      btn.classList.toggle('active', target === tabName);
+    });
+    tabbedElements.forEach(el => {
+      const t = el.getAttribute('data-tab');
+      if (t === tabName) {
+        el.style.display = '';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+  }
+
+  analysisTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-tab-target') || 'tone';
+      setActiveTab(target);
+    });
+  });
+
+  // Initial tab
+  setActiveTab('tone');
+
+  btnAnalyze.addEventListener('click', runAnalysis);
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      runAnalysis();
+    }
+  });
+
+  editorEl.addEventListener('input', () => {
+    const stats = basicStats(editorEl.value || "");
+    statWords.textContent = stats.words;
+    statSentences.textContent = stats.sentences;
+    statAvgLen.textContent = stats.avgLen;
+  });
+
+  softToleranceEl.addEventListener('input', () => {
+    softToleranceLabel.textContent = softToleranceEl.value;
+  });
+
+  sentenceToneList.addEventListener('click', (e) => {
+    const li = e.target.closest('li');
+    if (!li || !li.dataset.index) return;
+    const idx = parseInt(li.dataset.index, 10);
+    focusSentence(idx);
+  });
+
+  btnInsertSample.addEventListener('click', () => {
+    const sample = `Humanity has never been lost; it has simply become louder. The species dresses its reflexes in language and calls the result “progress”. We pretend to heal, to grow, to move forward, yet the same primate nervous system keeps flinching at shadows and worshipping crowds.
+
+If there is anything worth preserving, it is not the herd but the thin sliver of clarity that appears when you finally step away from it. In solitude, the noise fades. What remains is not hope, but a kind of clean disgust: the realization that you no longer need to be saved by the very thing that keeps injuring you.`;
+    editorEl.value = sample;
+    const stats = basicStats(sample);
+    statWords.textContent = stats.words;
+    statSentences.textContent = stats.sentences;
+    statAvgLen.textContent = stats.avgLen;
+    buildPreview(sample);
+    lastSentences = stats.sentencesArray.slice();
+  });
+
+  // Save to file
+  btnSaveFile.addEventListener('click', () => {
+    const text = editorEl.value || "";
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'misanthropic-draft.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Load from file
+  btnLoadFile.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      editorEl.value = ev.target.result || "";
+      const stats = basicStats(editorEl.value);
+      statWords.textContent = stats.words;
+      statSentences.textContent = stats.sentences;
+      statAvgLen.textContent = stats.avgLen;
+      buildPreview(editorEl.value);
+      lastSentences = stats.sentencesArray.slice();
+    };
+    reader.readAsText(file);
+    fileInput.value = '';
+  });
+
+  // Toggle analysis sidebar / focus mode
+  btnToggleAnalysis.addEventListener('click', () => {
+    const body = document.body;
+    const hidden = body.classList.toggle('analysis-hidden');
+    btnToggleAnalysis.textContent = hidden ? 'Show analysis' : 'Hide analysis';
+  });
+
+  // Compact mode toggle
+  compactToggle.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      document.body.classList.add('compact');
+    } else {
+      document.body.classList.remove('compact');
+    }
+  });
+
+  // Export diagnostic report via print-to-PDF
+  btnExportReport.addEventListener('click', () => {
+    const text = editorEl.value || "";
+    const tone = toneLabel.textContent || "n/a";
+    const misScore = statMisanthropeScore.textContent || "0";
+    const softScore = statSoftScore.textContent || "0";
+    const netScore = statToneScore.textContent || "0";
+    const snapshot = summaryComment.textContent || "";
+    const pacing = pacingSummary.textContent || "";
+    const polarity = polaritySummary.textContent || "";
+    const descRatio = descriptorRatioEl.textContent || "0";
+    const descComment = descriptorCommentEl.textContent || "";
+    const imgDensity = imageDensityLabel.textContent || "0";
+    const imgComment = imageComment.textContent || "";
+    const tenseText = tenseSummary.textContent || "";
+    const empathyText = empathySummaryEl.textContent || "";
+    const pronounText = pronounCountsEl.textContent || "";
+    const moralCountText = statMoralCount.textContent || "0";
+    const moralText = moralSummary.textContent || "";
+
+    const sentencesHTML = sentenceToneList.innerText || "";
+    const rewriteHTML = rewriteList.innerText || "";
+
+    const reportWindow = window.open("", "_blank");
+    if (!reportWindow) return;
+
+    const reportHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Misanthropic Tone Report</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+      font-size: 12px;
+      color: #111;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    h1, h2, h3 {
+      margin: 0 0 6px;
+      font-weight: 600;
+    }
+    h1 { font-size: 20px; margin-bottom: 12px; }
+    h2 { font-size: 15px; margin-top: 14px; }
+    h3 { font-size: 13px; margin-top: 10px; }
+    .section {
+      margin-bottom: 14px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+    .small {
+      font-size: 11px;
+      color: #555;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: "JetBrains Mono", ui-monospace, Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", monospace;
+      border: 1px solid #ddd;
+      padding: 8px;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <h1>Misanthropic Tone Diagnostic</h1>
+  <p class="small">Generated by Misanthropic Tone Studio · ${new Date().toLocaleString()}</p>
+
+  <div class="section">
+    <h2>1. Tone Snapshot</h2>
+    <p><strong>Tone label:</strong> ${escapeHtml(tone)}</p>
+    <p><strong>Misanthropic weight:</strong> ${escapeHtml(misScore)}</p>
+    <p><strong>Soft/hopeful weight:</strong> ${escapeHtml(softScore)}</p>
+    <p><strong>Net tone score:</strong> ${escapeHtml(netScore)}</p>
+    <p><strong>Commentary:</strong> ${escapeHtml(snapshot)}</p>
+  </div>
+
+  <div class="section">
+    <h2>2. Rhythm & Trajectory</h2>
+    <p><strong>Pacing:</strong> ${escapeHtml(pacing)}</p>
+    <p><strong>Polarity & drift:</strong> ${escapeHtml(polarity)}</p>
+  </div>
+
+  <div class="section">
+    <h2>3. Semantic Texture</h2>
+    <p><strong>Descriptor ratio:</strong> ${escapeHtml(descRatio)}</p>
+    <p>${escapeHtml(descComment)}</p>
+    <p><strong>Visual texture:</strong> ${escapeHtml(imgDensity)}</p>
+    <p>${escapeHtml(imgComment)}</p>
+    <p><strong>Temporal bias:</strong> ${escapeHtml(tenseText)}</p>
+  </div>
+
+  <div class="section">
+    <h2>4. Psychological Calibration</h2>
+    <p><strong>Pronouns (I / we / you / they):</strong> ${escapeHtml(pronounText)}</p>
+    <p>${escapeHtml(empathyText)}</p>
+    <p><strong>Moral vocabulary count:</strong> ${escapeHtml(moralCountText)}</p>
+    <p>${escapeHtml(moralText)}</p>
+  </div>
+
+  <div class="section">
+    <h2>5. Sentence Map</h2>
+    <pre>${escapeHtml(sentencesHTML || "No sentences listed.")}</pre>
+  </div>
+
+  <div class="section">
+    <h2>6. Rewrite Prompts</h2>
+    <pre>${escapeHtml(rewriteHTML || "No prompts available. Run analysis on a longer passage.")}</pre>
+  </div>
+
+  <div class="section">
+    <h2>7. Original Draft</h2>
+    <pre>${escapeHtml(text || "No draft text.")}</pre>
+  </div>
+</body>
+</html>
+    `;
+
+    reportWindow.document.open();
+    reportWindow.document.write(reportHTML);
+    reportWindow.document.close();
+    reportWindow.focus();
+    reportWindow.print();
+  });
+</script>
+</body>
+</html>

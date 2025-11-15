@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>McCarthy Minimalism Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A local, HTML-first tool to push your prose toward Cormac McCarthy-style minimalism.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="title-block">
+      <h1>McCarthy Minimalism Engine</h1>
+      <p class="subtitle">Local-only austerity checker for Cormac-style prose.</p>
+    </div>
+    <div class="controls-block">
+      <label for="modeSelect" class="label">Mode</label>
+      <select id="modeSelect">
+        <option value="blood">Blood Meridian mode</option>
+        <option value="road">The Road mode</option>
+        <option value="suttree">Suttree mode</option>
+      </select>
+      <button id="makeBiblicalBtn" class="ghost-btn" title="Apply a biblical-style cadence to the selected sentence.">Make it Biblical</button>
+      <button id="clearTextBtn" class="ghost-btn">Clear</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel panel-editor">
+      <div class="panel-header">
+        <h2>Text</h2>
+        <span class="hint">Write or paste your prose. Analysis runs as you type.</span>
+      </div>
+      <textarea id="editor" spellcheck="false" placeholder="He walked out into the ruined light and there was nothing in the road but ash."></textarea>
+      <div class="editor-footer">
+        <div id="charCount" class="meta-pill">0 chars</div>
+        <div id="wordCount" class="meta-pill">0 words</div>
+        <div id="sentenceCount" class="meta-pill">0 sentences</div>
+      </div>
+    </section>
+
+    <section class="panel panel-analysis">
+      <div class="panel-header">
+        <h2>Minimalism Console</h2>
+        <span class="hint">Heuristics only. No AI. All local.</span>
+      </div>
+
+      <div class="purity-card">
+        <div class="purity-header">
+          <span class="purity-label">Minimalist Purity Index</span>
+          <span id="purityScoreLabel" class="purity-score">0</span>
+        </div>
+        <div class="purity-bar">
+          <div id="purityBarFill" class="purity-bar-fill"></div>
+        </div>
+        <p id="puritySentence" class="purity-sentence">The page is empty yet and without judgment.</p>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h3>Commas</h3>
+          <p><span id="commaCount">0</span> total</p>
+          <p class="meta-line"><span id="commaOveruse">0</span> sentences over limit</p>
+        </div>
+        <div class="metric-card">
+          <h3>Adjectives</h3>
+          <p><span id="adjCount">0</span> detected</p>
+          <p class="meta-line"><span id="adjOverLimit">0</span> over the 1-per-sentence rule</p>
+        </div>
+        <div class="metric-card">
+          <h3>Adverbs</h3>
+          <p><span id="advCount">0</span> flagged</p>
+          <button id="stripAdverbsBtn" class="tiny-btn">Strip adverbs</button>
+        </div>
+        <div class="metric-card">
+          <h3>Abstract Nouns</h3>
+          <p><span id="abstractCount">0</span> ghosts</p>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="violations">Violations</button>
+        <button class="tab-btn" data-tab="cadence">Cadence & Tone</button>
+        <button class="tab-btn" data-tab="dialogue">Dialogue & Quotes</button>
+        <button class="tab-btn" data-tab="lexicon">Lexicon</button>
+      </div>
+
+      <div class="tab-content" id="tab-violations">
+        <ul id="violationsList" class="list"></ul>
+      </div>
+
+      <div class="tab-content hidden" id="tab-cadence">
+        <div class="cadence-block">
+          <p><strong>Average sentence length:</strong> <span id="avgSentenceLength">0</span> words</p>
+          <p><strong>Cadence impression:</strong> <span id="cadenceLabel">—</span></p>
+          <div class="cadence-bars" id="cadenceBars"></div>
+        </div>
+        <p class="micro-hint">
+          * Long, wave-like sentences with sparse punctuation tend toward Blood Meridian. Short, bare utterances lean into The Road.
+        </p>
+      </div>
+
+      <div class="tab-content hidden" id="tab-dialogue">
+        <ul id="dialogueList" class="list"></ul>
+        <p class="micro-hint">
+          McCarthy tends to omit quotation marks and keeps tags minimal. Dialogue is sparse, dry, and often context-bound.
+        </p>
+      </div>
+
+      <div class="tab-content hidden" id="tab-lexicon">
+        <div class="lexicon-card">
+          <h3>Detected Abstract Nouns</h3>
+          <ul id="abstractList" class="pill-list"></ul>
+        </div>
+        <div class="lexicon-card">
+          <h3>Biblical Tone Markers</h3>
+          <ul id="biblicalList" class="pill-list"></ul>
+        </div>
+        <p class="micro-hint">
+          Abstract nouns are where the prose floats off the ground. The biblical tone is where it speaks like scripture.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>HTML-first · Local-only · No tracking.</span>
+    <span class="footer-right">Built as a seed tool. Remix freely.</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

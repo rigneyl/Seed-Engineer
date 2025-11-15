@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SourceShadow · Style Alignment Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f1115;
+      --bg-soft: #151821;
+      --bg-softer: #1b1f2b;
+      --border-subtle: #252a3a;
+      --accent: #f5c451;
+      --accent-soft: rgba(245,196,81,0.12);
+      --accent-soft-2: rgba(245,196,81,0.28);
+      --text: #f7f7f2;
+      --text-soft: #c2c6da;
+      --text-muted: #7b8094;
+      --danger: #ff5c7a;
+      --danger-soft: rgba(255,92,122,0.15);
+      --good: #67e8a5;
+      --good-soft: rgba(103,232,165,0.12);
+      --shadow-soft: 0 18px 45px rgba(0,0,0,0.55);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: radial-gradient(circle at top left, #191d28 0, #080910 45%, #020308 100%);
+      color: var(--text);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 16px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin: 0;
+      color: var(--text);
+    }
+
+    .badge {
+      border-radius: var(--radius-pill);
+      padding: 2px 10px;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(245,196,81,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(245,196,81,0.4);
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      max-width: 520px;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button, .chip-toggle {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: rgba(14,16,23,0.85);
+      color: var(--text-soft);
+      font-size: 0.76rem;
+      padding: 6px 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease, box-shadow 0.12s ease;
+      font-family: var(--font-sans);
+      white-space: nowrap;
+    }
+
+    button span.icon,
+    .chip-toggle span.icon {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent-soft-2));
+      border-color: rgba(245,196,81,0.85);
+      color: #111111;
+      font-weight: 600;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 18px 35px rgba(0,0,0,0.85);
+    }
+
+    button.primary:hover {
+      background: linear-gradient(135deg, var(--accent-soft-2), #ffda7b);
+      transform: translateY(-0.5px);
+    }
+
+    button:hover,
+    .chip-toggle:hover {
+      background: rgba(33,38,54,0.9);
+      border-color: #343a52;
+      transform: translateY(-0.5px);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.55);
+    }
+
+    button:active,
+    .chip-toggle:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .chip-toggle.active {
+      background: rgba(245,196,81,0.16);
+      border-color: rgba(245,196,81,0.9);
+      color: var(--accent);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+      min-height: 72vh;
+    }
+
+    .panel {
+      background: radial-gradient(circle at top left, #202436 0, #0b0d16 45%, #050610 100%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(85,92,120,0.55);
+      padding: 12px 12px 10px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .panel-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+    }
+
+    .panel-kicker {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      opacity: 0.78;
+    }
+
+    .hint {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hint kbd {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      border-radius: 5px;
+      border: 1px solid rgba(106,115,148,0.7);
+      padding: 2px 6px;
+      background: radial-gradient(circle at top left, #272b3f 0, #111320 45%, #070812 100%);
+      color: var(--text-soft);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 240px;
+      resize: vertical;
+      border-radius: 12px;
+      border: 1px solid #31364a;
+      background: radial-gradient(circle at top left, #1d2133 0, #090b14 45%, #050611 100%);
+      color: var(--text);
+      padding: 10px 11px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    textarea:focus {
+      border-color: rgba(245,196,81,0.8);
+      box-shadow: 0 0 0 1px rgba(245,196,81,0.5), 0 0 25px rgba(0,0,0,0.8);
+      background: radial-gradient(circle at top left, #252941 0, #0f111f 45%, #050611 100%);
+    }
+
+    textarea::placeholder {
+      color: #646a82;
+    }
+
+    .source-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .source-controls small {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+      height: 100%;
+      width: 100%;
+    }
+
+    .soft-pill {
+      border-radius: var(--radius-pill);
+      padding: 2px 8px;
+      font-size: 0.65rem;
+      background: rgba(18,21,36,0.9);
+      border: 1px solid rgba(70,78,115,0.8);
+      color: var(--text-muted);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .metric-card {
+      border-radius: 10px;
+      border: 1px solid rgba(70,78,115,0.9);
+      background: radial-gradient(circle at top left, #262a3c 0, #101320 45%, #050611 100%);
+      padding: 6px 7px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .metric-label {
+      font-size: 0.64rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metric-main {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .metric-sub {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      opacity: 0.85;
+    }
+
+    .similarity-score {
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .pill-bar {
+      width: 100%;
+      height: 7px;
+      border-radius: var(--radius-pill);
+      background: rgba(20,25,40,0.98);
+      overflow: hidden;
+      border: 1px solid rgba(52,59,86,0.9);
+      margin-top: 6px;
+    }
+
+    .pill-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(90deg, #f5c451, #ffda7b);
+      transition: width 0.25s ease-out;
+    }
+
+    .tone-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .tone-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+    }
+
+    .tone-row span.label {
+      width: 82px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.64rem;
+    }
+
+    .tone-track {
+      flex: 1;
+      height: 6px;
+      border-radius: var(--radius-pill);
+      background: rgba(16,19,33,0.96);
+      border: 1px solid rgba(46,52,81,0.9);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tone-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(245,196,81,0.1), rgba(245,196,81,0.9));
+      border-radius: var(--radius-pill);
+      transition: width 0.25s ease-out;
+    }
+
+    .tone-value {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      width: 32px;
+      text-align: right;
+    }
+
+    .drift-note {
+      margin-top: 6px;
+      font-size: 0.7rem;
+      color: var(--text-soft);
+    }
+
+    .drift-note strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .badge-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(10,14,25,0.95);
+      border: 1px solid rgba(71,78,109,0.85);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .badge-inline span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(245,196,81,0.8);
+    }
+
+    .status-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.7rem;
+      padding: 5px 9px;
+      border-radius: 10px;
+      background: rgba(8,11,20,0.9);
+      border: 1px dashed rgba(78,86,118,0.9);
+    }
+
+    .status-strip span.label {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.66rem;
+    }
+
+    .status-strip span.value {
+      color: var(--text-soft);
+    }
+
+    .status-strip span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 10px rgba(74,222,128,0.8);
+    }
+
+    .status-strip.off span.dot {
+      background: #f97373;
+      box-shadow: 0 0 10px rgba(248,113,113,0.8);
+    }
+
+    .status-strip.off {
+      border-style: solid;
+      border-color: rgba(140,68,81,0.9);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .inline-list {
+      font-size: 0.68rem;
+      color: var(--text-soft);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+    }
+
+    .inline-list strong {
+      color: var(--accent);
+    }
+
+    .footer {
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(45,52,80,0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .footer span.brand {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 0.65rem;
+    }
+
+    .footer span.keys {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer span.keys kbd {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      border-radius: 5px;
+      border: 1px solid rgba(106,115,148,0.7);
+      padding: 2px 6px;
+      background: radial-gradient(circle at top left, #272b3f 0, #111320 45%, #070812 100%);
+      color: var(--text-soft);
+    }
+
+    .focus-mode .dashboard-panel {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(8px);
+    }
+
+    .focus-mode .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .focus-mode .writer-panel textarea {
+      min-height: 60vh;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .focus-mode .hint {
+      opacity: 0.3;
+    }
+
+    .focus-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      background: rgba(8,11,20,0.9);
+      border: 1px solid rgba(133,77,54,0.85);
+      color: var(--text-soft);
+    }
+
+    .focus-pill span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #f97316;
+      box-shadow: 0 0 10px rgba(248,113,22,0.9);
+    }
+
+    .focus-mode .focus-pill span.dot {
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34,197,94,0.9);
+    }
+
+    .focus-mode .focus-pill {
+      border-color: rgba(34,197,94,0.85);
+    }
+
+    .overlay-toast {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      padding: 7px 10px;
+      border-radius: 13px;
+      border: 1px solid rgba(68,88,130,0.95);
+      background: radial-gradient(circle at top left, #303651 0, #141828 40%, #060714 100%);
+      color: var(--text-soft);
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.85);
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+      z-index: 50;
+    }
+
+    .overlay-toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .overlay-toast span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(245,196,81,0.9);
+      flex-shrink: 0;
+    }
+
+    .overlay-toast button {
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 0.68rem;
+      border-color: rgba(92,103,140,0.9);
+      background: rgba(8,11,20,0.9);
+      color: var(--text-soft);
+      box-shadow: none;
+    }
+
+    .overlay-toast button:hover {
+      background: rgba(24,30,52,0.95);
+    }
+
+    .micro {
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: auto;
+      }
+      .panel {
+        padding: 10px;
+      }
+      textarea {
+        min-height: 180px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls-row {
+        justify-content: flex-start;
+      }
+      .subtitle {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="title-block">
+        <div class="title-row">
+          <h1>SourceShadow</h1>
+          <span class="badge"><span>Local Style Alignment Lab</span></span>
+        </div>
+        <p class="subtitle">
+          Drop in a source passage, then write into the void. SourceShadow quietly measures how your style drifts:
+          sentence shape, tone, dialogue, and cadence. No cloud. No AI. Just pattern-watching.
+        </p>
+      </div>
+      <div class="controls-row">
+        <div class="focus-pill" id="focusStatus">
+          <span class="dot"></span>
+          <span>Focus <strong>OFF</strong></span>
+        </div>
+        <button class="chip-toggle" id="focusToggle">
+          <span class="icon">🌓</span>
+          <span>Toggle Focus (F)</span>
+        </button>
+        <button class="chip-toggle" id="clearWriting">
+          <span class="icon">🧹</span>
+          <span>Clear Writing</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout" id="layoutRoot">
+      <section class="panel writer-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Writing Surface</div>
+            <div class="panel-kicker">Your text is never sent anywhere. Stored only in this browser.</div>
+          </div>
+          <div class="hint">
+            <span>Press</span>
+            <kbd>F</kbd>
+            <span>for focus ·</span>
+            <span>Autosaves as you type</span>
+          </div>
+        </div>
+        <textarea id="writerInput" placeholder="Begin writing here. SourceShadow will compare this text against your loaded source sample."></textarea>
+        <div class="micro">
+          Tip: Draft at least 2–3 paragraphs before taking the similarity score too seriously. The longer the sample, the more stable the pattern.
+        </div>
+      </section>
+
+      <aside class="panel dashboard-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Shadow Dashboard</div>
+            <div class="panel-kicker">Source profile + live deviation from its style.</div>
+          </div>
+          <div class="hint">
+            <span>Source loaded:</span>
+            <span id="sourceStatus" class="soft-pill">None yet</span>
+          </div>
+        </div>
+
+        <div class="source-controls">
+          <div class="file-input-wrapper">
+            <button class="chip-toggle">
+              <span class="icon">📁</span>
+              <span>Load source (.txt)</span>
+            </button>
+            <input type="file" id="fileInput" accept=".txt,.md,.text">
+          </div>
+          <button class="chip-toggle" id="useSourceTextarea">
+            <span class="icon">✂️</span>
+            <span>Use manual source below</span>
+          </button>
+          <small>Paste a page or two from any writer to set the “shadow”.</small>
+        </div>
+
+        <textarea id="sourceInput" placeholder="Paste your source text here (e.g., a few paragraphs from McCarthy, Bukowski, Ligotti...).&#10;Then click “Use manual source” to lock it in."></textarea>
+
+        <div class="status-strip" id="analysisStatus">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="dot"></span>
+            <span class="label">Analyzer</span>
+            <span class="value" id="statusLabel">Waiting for source + writing…</span>
+          </div>
+          <span class="label" id="sampleHint">Need ≥ 80 words in each sample</span>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="metric-label">Similarity</div>
+            <div class="metric-main similarity-score" id="similarityScore">—</div>
+            <div class="pill-bar">
+              <div class="pill-bar-fill" id="similarityFill"></div>
+            </div>
+            <div class="drift-note" id="driftNote">
+              Load a source text and start writing to see how closely you’re tracking its style.
+            </div>
+          </div>
+          <div>
+            <div class="metric-label">Quick profile</div>
+            <div class="inline-list" id="quickProfile">
+              <span>Source: <strong>—</strong></span>
+              <span>Yours: <strong>—</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Avg Sentence Length</div>
+            <div class="metric-main"><span id="srcSentLen">—</span> ➜ <span id="userSentLen">—</span></div>
+            <div class="metric-sub">Words per sentence (source → you)</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Punctuation Density</div>
+            <div class="metric-main"><span id="srcCommaRate">—</span> ➜ <span id="userCommaRate">—</span></div>
+            <div class="metric-sub">Commas per 100 words (source → you)</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Dialogue</div>
+            <div class="metric-main"><span id="srcDialogue">—</span> ➜ <span id="userDialogue">—</span></div>
+            <div class="metric-sub">% of sentences starting with quotation marks</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Lexical Variety</div>
+            <div class="metric-main"><span id="srcTTR">—</span> ➜ <span id="userTTR">—</span></div>
+            <div class="metric-sub">Type–token ratio (unique / total words)</div>
+          </div>
+        </div>
+
+        <div style="margin-top:6px;">
+          <div class="metric-label">Tone Vector</div>
+          <div class="tone-bars">
+            <div class="tone-row">
+              <span class="label">Harsh</span>
+              <div class="tone-track">
+                <div class="tone-fill" id="toneHarshSrc"></div>
+              </div>
+              <div class="tone-value" id="toneHarshSrcVal">—</div>
+            </div>
+            <div class="tone-row">
+              <span class="label">Soft</span>
+              <div class="tone-track">
+                <div class="tone-fill" id="toneSoftSrc"></div>
+              </div>
+              <div class="tone-value" id="toneSoftSrcVal">—</div>
+            </div>
+            <div class="tone-row">
+              <span class="label">Bleak</span>
+              <div class="tone-track">
+                <div class="tone-fill" id="toneBleakSrc"></div>
+              </div>
+              <div class="tone-value" id="toneBleakSrcVal">—</div>
+            </div>
+            <div class="tone-row">
+              <span class="label">Hope</span>
+              <div class="tone-track">
+                <div class="tone-fill" id="toneHopeSrc"></div>
+              </div>
+              <div class="tone-value" id="toneHopeSrcVal">—</div>
+            </div>
+          </div>
+          <div class="tone-bars" style="margin-top:6px;">
+            <div class="tone-row">
+              <span class="label">Yours: Harsh</span>
+              <div class="tone-track">
+                <div class="tone-fill" id="toneHarshUser"></div>
+              </div>
+              <div class="tone-value" id="toneHarshUserVal">—</div>
+            </div>
+            <div class="tone-row">
+              <span class="label">Yours: Soft</span>
+              <div class="tone-track">
+                <div class="tone-fill" id="toneSoftUser"></div>
+              </div>
+              <div class="tone-value" id="toneSoftUserVal">—</div>
+            </div>
+            <div class="tone-row">
+              <span class="label">Yours: Bleak</span>
+              <div class="tone-track">
+                <div class="tone-fill" id="toneBleakUser"></div>
+              </div>
+              <div class="tone-value" id="toneBleakUserVal">—</div>
+            </div>
+            <div class="tone-row">
+              <span class="label">Yours: Hope</span>
+              <div class="tone-track">
+                <div class="tone-fill" id="toneHopeUser"></div>
+              </div>
+              <div class="tone-value" id="toneHopeUserVal">—</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <div class="footer">
+      <span class="brand">Seed Engineer Lab · SourceShadow v0.1</span>
+      <span class="keys">
+        <span>Keyboard:</span>
+        <kbd>F</kbd><span>focus</span>
+        <kbd>Ctrl</kbd>+<kbd>Enter</kbd><span>force analyze</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="overlay-toast" id="toast">
+    <span class="dot"></span>
+    <div id="toastMessage">Parsing source text…</div>
+    <button id="toastDismiss">Close</button>
+  </div>
+
+  <script>
+    // --- Simple util functions ---
+    function debounce(fn, delay) {
+      let t;
+      return function() {
+        const ctx = this;
+        const args = arguments;
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(ctx, args), delay);
+      };
+    }
+
+    function clamp(val, min, max) {
+      return Math.min(max, Math.max(min, val));
+    }
+
+    function round(val, decimals) {
+      if (isNaN(val)) return 0;
+      const f = Math.pow(10, decimals || 0);
+      return Math.round(val * f) / f;
+    }
+
+    function showToast(msg, timeout) {
+      const el = document.getElementById('toast');
+      const msgEl = document.getElementById('toastMessage');
+      msgEl.textContent = msg;
+      el.classList.add('visible');
+      if (timeout) {
+        setTimeout(() => {
+          el.classList.remove('visible');
+        }, timeout);
+      }
+    }
+
+    function hideToast() {
+      document.getElementById('toast').classList.remove('visible');
+    }
+
+    document.getElementById('toastDismiss').addEventListener('click', hideToast);
+
+    // --- Tone lexicons (very rough, just to get a vector) ---
+    const toneLexicon = {
+      harsh: [
+        "hate","loath","brutal","cruel","violence","violent","blood","rage","ravage","ruin","broken","crushed","filth","worthless","useless","pathetic","ugly"
+      ],
+      soft: [
+        "gentle","soft","warm","kind","caress","tender","quiet","peaceful","soothe","comfort","embrace","calm","hope","slow","rest","forgive","forgiveness"
+      ],
+      bleak: [
+        "empty","nothing","void","futile","meaningless","absurd","bleak","despair","ruin","waste","cold","numb","alone","lonely","silent","death","dead","grave","decay"
+      ],
+      hope: [
+        "light","bright","beginning","start","future","promise","dream","believe","faith","joy","smile","love","healing","rebirth","spring","renew","rise","rising"
+      ]
+    };
+
+    function tokenize(text) {
+      return text
+        .toLowerCase()
+        .replace(/[^a-z0-9'"\- ]+/g, " ")
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    function countTone(text) {
+      const tokens = tokenize(text);
+      const total = tokens.length || 1;
+      const scores = { harsh:0, soft:0, bleak:0, hope:0 };
+      for (const t of tokens) {
+        for (const key in toneLexicon) {
+          if (toneLexicon[key].includes(t)) {
+            scores[key] += 1;
+          }
+        }
+      }
+      for (const key in scores) {
+        scores[key] = scores[key] / total;
+      }
+      return scores;
+    }
+
+    function computeStats(text) {
+      const trimmed = text.trim();
+      if (!trimmed) {
+        return {
+          wordCount: 0,
+          sentenceCount: 0,
+          avgSentenceLength: 0,
+          commaRate: 0,
+          dialogueRate: 0,
+          ttr: 0,
+          tones: { harsh:0, soft:0, bleak:0, hope:0 }
+        };
+      }
+
+      const sentences = trimmed
+        .replace(/([.!?])+/g, "$1|")
+        .split("|")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const tokens = tokenize(trimmed);
+      const wordCount = tokens.length;
+      const sentenceCount = sentences.length || 1;
+      const avgSentenceLength = wordCount / sentenceCount;
+
+      const commas = (trimmed.match(/,/g) || []).length;
+      const commaRate = commas / (wordCount || 1) * 100;
+
+      const dialogueSentences = sentences.filter(s => s.startsWith('"') || s.startsWith("'")).length;
+      const dialogueRate = dialogueSentences / sentenceCount * 100;
+
+      const uniques = new Set(tokens);
+      const ttr = uniques.size / (tokens.length || 1);
+
+      const tones = countTone(trimmed);
+
+      return {
+        wordCount,
+        sentenceCount,
+        avgSentenceLength,
+        commaRate,
+        dialogueRate,
+        ttr,
+        tones
+      };
+    }
+
+    function similarityScore(src, user) {
+      if (src.wordCount < 40 || user.wordCount < 40) return null;
+
+      const combos = [];
+
+      function addMetric(srcVal, userVal, weight, maxSpread) {
+        const spread = maxSpread || Math.max(Math.abs(srcVal), Math.abs(userVal), 1);
+        const diff = Math.abs(srcVal - userVal);
+        const norm = Math.min(diff / spread, 1);
+        combos.push({ norm, weight });
+      }
+
+      addMetric(src.avgSentenceLength, user.avgSentenceLength, 3, 25);
+      addMetric(src.commaRate, user.commaRate, 2, 30);
+      addMetric(src.dialogueRate, user.dialogueRate, 1.5, 60);
+      addMetric(src.ttr, user.ttr, 2, 0.35);
+
+      // Tone metrics
+      for (const key of ["harsh","soft","bleak","hope"]) {
+        addMetric(src.tones[key], user.tones[key], 1.5, 0.1);
+      }
+
+      const totalWeight = combos.reduce((s, c) => s + c.weight, 0);
+      const weightedDiff = combos.reduce((s, c) => s + c.norm * c.weight, 0);
+      const similarity = (1 - weightedDiff / (totalWeight || 1)) * 100;
+      return clamp(similarity, 0, 100);
+    }
+
+    function describeProfile(stats) {
+      if (!stats || stats.wordCount === 0) {
+        return "—";
+      }
+      const parts = [];
+
+      if (stats.avgSentenceLength <= 9) parts.push("very short");
+      else if (stats.avgSentenceLength <= 15) parts.push("short");
+      else if (stats.avgSentenceLength <= 23) parts.push("medium");
+      else parts.push("long");
+
+      if (stats.commaRate < 5) parts.push("spare");
+      else if (stats.commaRate > 20) parts.push("heavily punctuated");
+
+      if (stats.tones.bleak > 0.02) parts.push("bleak");
+      if (stats.tones.harsh > 0.02) parts.push("harsh");
+      if (stats.tones.hope > 0.02 && stats.tones.bleak < 0.01) parts.push("light");
+
+      if (stats.ttr < 0.25) parts.push("plain");
+      else if (stats.ttr > 0.4) parts.push("varied");
+
+      if (!parts.length) return "neutral";
+      return parts.join(" · ");
+    }
+
+    function updateToneBars(prefix, tones) {
+      const keys = ["Harsh","Soft","Bleak","Hope"];
+      keys.forEach(k => {
+        const key = k.toLowerCase();
+        const val = tones ? tones[key] || 0 : 0;
+        const pct = clamp(val * 300, 0, 100); // exaggerated mapping
+        const fill = document.getElementById(`tone${k}${prefix}`);
+        const label = document.getElementById(`tone${k}${prefix}Val`);
+        if (fill) fill.style.width = pct + "%";
+        if (label) label.textContent = tones ? Math.round(val * 100) + "%" : "—";
+      });
+    }
+
+    function updateUI(srcStats, userStats) {
+      const src = srcStats || { wordCount:0, sentenceCount:0, avgSentenceLength:0, commaRate:0, dialogueRate:0, ttr:0, tones:{harsh:0,soft:0,bleak:0,hope:0} };
+      const user = userStats || { wordCount:0, sentenceCount:0, avgSentenceLength:0, commaRate:0, dialogueRate:0, ttr:0, tones:{harsh:0,soft:0,bleak:0,hope:0} };
+
+      document.getElementById("srcSentLen").textContent = src.sentenceCount ? round(src.avgSentenceLength,1) : "—";
+      document.getElementById("userSentLen").textContent = user.sentenceCount ? round(user.avgSentenceLength,1) : "—";
+
+      document.getElementById("srcCommaRate").textContent = src.wordCount ? round(src.commaRate,1) : "—";
+      document.getElementById("userCommaRate").textContent = user.wordCount ? round(user.commaRate,1) : "—";
+
+      document.getElementById("srcDialogue").textContent = src.sentenceCount ? round(src.dialogueRate,1) + "%" : "—";
+      document.getElementById("userDialogue").textContent = user.sentenceCount ? round(user.dialogueRate,1) + "%" : "—";
+
+      document.getElementById("srcTTR").textContent = src.wordCount ? round(src.ttr,2) : "—";
+      document.getElementById("userTTR").textContent = user.wordCount ? round(user.ttr,2) : "—";
+
+      updateToneBars("Src", src.tones);
+      updateToneBars("User", user.tones);
+
+      const sim = similarityScore(src, user);
+      const simEl = document.getElementById("similarityScore");
+      const simFill = document.getElementById("similarityFill");
+      const driftNote = document.getElementById("driftNote");
+      const statusStrip = document.getElementById("analysisStatus");
+      const statusLabel = document.getElementById("statusLabel");
+      const sampleHint = document.getElementById("sampleHint");
+
+      if (sim === null || isNaN(sim)) {
+        simEl.textContent = "—";
+        simFill.style.width = "0%";
+        driftNote.textContent = "You’ll get a meaningful similarity score once both samples have at least ~80 words.";
+        statusStrip.classList.add("off");
+        statusLabel.textContent = "Samples too short for full pattern match.";
+        sampleHint.textContent = `Source: ${src.wordCount} words · Yours: ${user.wordCount} words`;
+      } else {
+        const s = Math.round(sim);
+        simEl.textContent = s + "";
+        simFill.style.width = s + "%";
+        statusStrip.classList.remove("off");
+        statusLabel.textContent = "Analyzing cadence + tone every few seconds.";
+        sampleHint.textContent = `Source: ${src.wordCount} words · Yours: ${user.wordCount} words`;
+
+        if (s >= 80) {
+          driftNote.innerHTML = "You’re <strong>strongly aligned</strong> with the source’s surface pattern. Consider where you might deliberately break it.";
+        } else if (s >= 60) {
+          driftNote.innerHTML = "You’re in a <strong>loose orbit</strong> around the source. Close enough to feel related, far enough to be your own creature.";
+        } else if (s >= 40) {
+          driftNote.innerHTML = "You’re only <strong>lightly echoing</strong> the source. If you’re aiming for mimicry, tighten sentence length + punctuation rhythm.";
+        } else {
+          driftNote.innerHTML = "You’re mostly <strong>departed</strong> from the source’s style. That can be good—just make sure it’s intentional.";
+        }
+      }
+
+      const quick = document.getElementById("quickProfile");
+      quick.innerHTML = `<span>Source: <strong>${describeProfile(src)}</strong></span><span>Yours: <strong>${describeProfile(user)}</strong></span>`;
+    }
+
+    // --- State ---
+    let sourceText = "";
+    let sourceStats = null;
+    let userStats = null;
+
+    function analyzeAll() {
+      if (sourceText && sourceText.trim().length) {
+        sourceStats = computeStats(sourceText);
+      } else {
+        sourceStats = computeStats("");
+      }
+
+      const userText = document.getElementById("writerInput").value || "";
+      userStats = computeStats(userText);
+
+      updateUI(sourceStats, userStats);
+      saveState();
+    }
+
+    const debouncedAnalyze = debounce(analyzeAll, 600);
+
+    // --- Persistence ---
+    const STORAGE_KEY = "sourceShadowState_v01";
+
+    function saveState() {
+      try {
+        const state = {
+          writer: document.getElementById("writerInput").value || "",
+          source: sourceText || "",
+          sourceInput: document.getElementById("sourceInput").value || ""
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn("Unable to save state", e);
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        if (state.writer) {
+          document.getElementById("writerInput").value = state.writer;
+        }
+        if (state.sourceInput) {
+          document.getElementById("sourceInput").value = state.sourceInput;
+        }
+        if (state.source) {
+          sourceText = state.source;
+          document.getElementById("sourceStatus").textContent = "Loaded (" + state.source.split(/\s+/).filter(Boolean).length + " words)";
+        }
+      } catch (e) {
+        console.warn("Unable to load state", e);
+      }
+    }
+
+    // --- Focus mode ---
+    const focusToggle = document.getElementById("focusToggle");
+    const layoutRoot = document.getElementById("layoutRoot");
+    const focusStatus = document.getElementById("focusStatus");
+
+    function setFocusMode(on) {
+      if (on) {
+        layoutRoot.classList.add("focus-mode");
+        focusToggle.classList.add("active");
+        focusStatus.querySelector("strong").textContent = "ON";
+      } else {
+        layoutRoot.classList.remove("focus-mode");
+        focusToggle.classList.remove("active");
+        focusStatus.querySelector("strong").textContent = "OFF";
+      }
+    }
+
+    let focusMode = false;
+
+    function toggleFocus() {
+      focusMode = !focusMode;
+      setFocusMode(focusMode);
+    }
+
+    focusToggle.addEventListener("click", () => {
+      toggleFocus();
+    });
+
+    // --- File handling ---
+    const fileInput = document.getElementById("fileInput");
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      showToast("Parsing source text from file…", 0);
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        hideToast();
+        const text = ev.target.result || "";
+        document.getElementById("sourceInput").value = text;
+        lockInSource(text, "File: " + (file.name || "source"));
+      };
+      reader.onerror = function() {
+        hideToast();
+        showToast("Failed to read file. Try a simple .txt export.", 2400);
+      };
+      reader.readAsText(file);
+    });
+
+    function lockInSource(text, label) {
+      sourceText = text || "";
+      const words = sourceText.split(/\s+/).filter(Boolean).length;
+      document.getElementById("sourceStatus").textContent = label + " (" + words + " words)";
+      showToast("Source locked. Start writing into the left pane.", 2600);
+      debouncedAnalyze();
+    }
+
+    document.getElementById("useSourceTextarea").addEventListener("click", () => {
+      const text = document.getElementById("sourceInput").value || "";
+      if (!text.trim()) {
+        showToast("Paste some source text first.", 2200);
+        return;
+      }
+      lockInSource(text, "Manual source");
+    });
+
+    // --- Writer input ---
+    const writerInput = document.getElementById("writerInput");
+    writerInput.addEventListener("input", () => {
+      debouncedAnalyze();
+    });
+
+    document.getElementById("sourceInput").addEventListener("input", () => {
+      saveState();
+    });
+
+    document.getElementById("clearWriting").addEventListener("click", () => {
+      if (confirm("Clear your current writing from this session? This cannot be undone.")) {
+        writerInput.value = "";
+        debouncedAnalyze();
+      }
+    });
+
+    // --- Keyboard shortcuts ---
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        toggleFocus();
+      }
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        analyzeAll();
+        showToast("Manual analysis triggered.", 1500);
+      }
+    });
+
+    // --- Init ---
+    window.addEventListener("load", () => {
+      loadState();
+      analyzeAll();
+    });
+  </script>
+</body>
+</html>

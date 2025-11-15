@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Real-Time Readability Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span class="dot"></span>
+        <div class="brand-text">
+          <h1>Real-Time Readability Lab</h1>
+          <p>Write on the left. Watch clarity on the right.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="sampleBtn" class="ghost-btn" type="button">Load sample text</button>
+        <button id="clearBtn" class="ghost-btn" type="button">Clear</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="editor-panel">
+        <div class="panel-header">
+          <h2>Draft</h2>
+          <span class="hint">Live analysis runs as you type.</span>
+        </div>
+        <textarea id="editor" spellcheck="true" placeholder="Start typing your paragraph, abstract, or blog draft here..."></textarea>
+        <div class="editor-footer">
+          <span id="charCount">0 characters</span>
+          <span id="wordCount">0 words</span>
+        </div>
+      </section>
+
+      <section class="analysis-panel">
+        <div class="panel-header">
+          <h2>Readability</h2>
+          <span class="hint">Flesch–Kincaid · Gunning Fog · Problem spots</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Flesch–Kincaid Grade</div>
+            <div id="fkScore" class="metric-value">–</div>
+            <div id="fkBand" class="metric-band">Waiting for text…</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Gunning Fog Index</div>
+            <div id="fogScore" class="metric-value">–</div>
+            <div id="fogBand" class="metric-band">Waiting for text…</div>
+          </div>
+          <div class="metric-card metric-small">
+            <div class="metric-label">Sentences</div>
+            <div id="sentenceCount" class="metric-value small">0</div>
+          </div>
+          <div class="metric-card metric-small">
+            <div class="metric-label">Avg. words / sentence</div>
+            <div id="avgWordsPerSentence" class="metric-value small">0</div>
+          </div>
+        </div>
+
+        <div class="sentence-legend">
+          <span><span class="swatch swatch-ok"></span>Clear</span>
+          <span><span class="swatch swatch-warn"></span>Complex</span>
+          <span><span class="swatch swatch-bad"></span>Very complex</span>
+        </div>
+
+        <div id="sentenceStream" class="sentence-stream" aria-label="Sentence complexity overview"></div>
+
+        <section class="suggestions">
+          <header class="suggestions-header">
+            <h3>Suggestions</h3>
+            <span class="hint">Wordiness · Jargon · Possible simplifications</span>
+          </header>
+          <ul id="suggestionsList"></ul>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

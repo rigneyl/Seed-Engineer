@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lexical Mood Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>Lexical Mood Scanner</h1>
+        <p class="subtitle">Deterministic mood analysis using curated word lists. No AI. Local-only.</p>
+      </div>
+      <div class="header-controls">
+        <label class="inline-label">
+          Target mood:
+          <select id="target-mood">
+            <option value="">None</option>
+            <option value="melancholy">Melancholy</option>
+            <option value="despair">Despair</option>
+            <option value="aggression">Aggression</option>
+            <option value="contempt">Contempt</option>
+            <option value="hope">Hope</option>
+            <option value="numb">Numb/Detached</option>
+          </select>
+        </label>
+        <button id="scan-btn" class="primary-btn">Scan text</button>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <!-- LEFT: INPUT + HIGHLIGHTED VIEW -->
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Text</h2>
+          <div class="panel-actions">
+            <button id="sample-text-btn" class="ghost-btn">Load sample</button>
+            <label class="inline-toggle">
+              <input type="checkbox" id="toggle-highlights" checked>
+              <span>Show highlighted view</span>
+            </label>
+          </div>
+        </div>
+        <textarea id="input-text" class="text-input" spellcheck="false"
+          placeholder="Paste or type your text here, then click ‘Scan text’."></textarea>
+
+        <div id="highlight-wrapper" class="highlight-wrapper">
+          <div class="highlight-header">
+            <span>Highlighted view (read-only)</span>
+            <span class="legend">
+              <span class="legend-chip despair">despair</span>
+              <span class="legend-chip aggression">aggression</span>
+              <span class="legend-chip melancholy">melancholy</span>
+              <span class="legend-chip contempt">contempt</span>
+              <span class="legend-chip hope">hope</span>
+              <span class="legend-chip numb">numb</span>
+              <span class="legend-chip leak">leak</span>
+            </span>
+          </div>
+          <div id="highlighted-output" class="highlighted-output"></div>
+        </div>
+      </section>
+
+      <!-- RIGHT: ANALYSIS -->
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Mood analysis</h2>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Total words</div>
+            <div id="stat-total-words" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Emotional words</div>
+            <div id="stat-emotional-words" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Dominant mood</div>
+            <div id="stat-dominant-mood" class="stat-value">–</div>
+          </div>
+        </div>
+
+        <div class="chart-block">
+          <h3>Mood distribution</h3>
+          <p class="microcopy">Percentages relative to total word count.</p>
+          <div id="bar-chart" class="bar-chart">
+            <!-- bars injected here -->
+          </div>
+        </div>
+
+        <div class="panel-subsection">
+          <h3>Emotional leaks</h3>
+          <p class="microcopy">
+            Words from minor moods that break with the dominant emotional palette.
+          </p>
+          <ul id="leak-list" class="leak-list empty">
+            <li class="empty-message">No leaks detected yet.</li>
+          </ul>
+        </div>
+
+        <div class="panel-subsection">
+          <h3>Target mood check</h3>
+          <p id="target-feedback" class="microcopy">No target mood selected.</p>
+        </div>
+
+        <div class="panel-subsection">
+          <div class="panel-header tight">
+            <h3>Export report</h3>
+            <button id="download-report-btn" class="ghost-btn" disabled>Download .md</button>
+          </div>
+          <textarea id="report-output" class="report-output" readonly
+            placeholder="Scan text to generate a Markdown mood report."></textarea>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>Lexical Mood Scanner · HTML-first · Local-only · Zero tracking</span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

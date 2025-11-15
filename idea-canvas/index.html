@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Idea → Launch Manuscript Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Lightweight offline book-writing workspace. Turn scattered ideas into structured, export-ready manuscripts.">
+  <meta name="theme-color" content="#f5b85c">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-dot"></div>
+      <div class="brand-text">
+        <h1>Idea → Launch</h1>
+        <p class="subtitle">Lightweight studio for turning book ideas into manuscripts.</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div id="connection-status" class="connection-status" title="Connection status">
+        <span class="status-dot"></span>
+        <span class="status-text">Online</span>
+      </div>
+      <button id="sample-data-btn" class="ghost small">Load Sample Project</button>
+      <button id="theme-toggle-btn" class="secondary small">☾ Dark</button>
+      <nav class="top-nav">
+        <button class="nav-btn active" data-tab="ideas">Ideas</button>
+        <button class="nav-btn" data-tab="outline">Outline</button>
+        <button class="nav-btn" data-tab="draft">Draft</button>
+        <button class="nav-btn" data-tab="export">Export</button>
+        <button class="nav-btn" data-tab="about">About</button>
+        <button class="nav-btn" data-tab="help">Help</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section class="left-column">
+      <section class="tab active" id="tab-ideas">
+        <h2>Idea Canvas</h2>
+        <p class="section-help">
+          Capture rough book ideas quickly. Later, pick one to turn into an outline and draft.
+        </p>
+        <form id="idea-form" class="panel">
+          <div class="field-row">
+            <label>Title</label>
+            <input type="text" id="idea-title" placeholder="e.g. The Quiet After Midnight" required>
+          </div>
+          <div class="field-row">
+            <label>One-line hook</label>
+            <input type="text" id="idea-hook" placeholder="A misanthropic writer documents the slow collapse of a noisy city.">
+          </div>
+          <div class="field-grid">
+            <div class="field-row">
+              <label>Type</label>
+              <select id="idea-type">
+                <option value="nonfiction">Non-fiction</option>
+                <option value="fiction">Fiction</option>
+                <option value="hybrid">Hybrid / Experimental</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <label>Genre / Category</label>
+              <input type="text" id="idea-genre" placeholder="e.g. dark literary, creative nonfiction">
+            </div>
+          </div>
+          <div class="field-row">
+            <label>Notes</label>
+            <textarea id="idea-notes" rows="3" placeholder="What itch is this book scratching? Who is it for? Why now?"></textarea>
+          </div>
+          <div class="field-row range-row">
+            <label>Excitement level</label>
+            <input type="range" id="idea-score" min="1" max="5" value="3">
+            <span id="idea-score-label">3 / 5</span>
+          </div>
+          <div class="actions-row">
+            <button type="submit" class="primary">Add Idea</button>
+            <button type="button" id="clear-ideas" class="ghost">Clear All Ideas</button>
+          </div>
+        </form>
+
+        <div class="panel idea-list-panel">
+          <div class="panel-header">
+            <h3>Saved Ideas</h3>
+            <div class="header-controls">
+              <select id="idea-sort" class="small-select">
+                <option value="date-desc">Newest First</option>
+                <option value="date-asc">Oldest First</option>
+                <option value="excitement-desc">Highest Excitement</option>
+                <option value="excitement-asc">Lowest Excitement</option>
+                <option value="title-asc">Title A-Z</option>
+                <option value="title-desc">Title Z-A</option>
+              </select>
+              <span class="badge" id="idea-count-badge">0</span>
+            </div>
+          </div>
+          <div id="idea-list" class="idea-list empty-state">
+            <p>No ideas yet. Capture the first one above.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-outline">
+        <h2>Outline Builder</h2>
+        <p class="section-help">
+          Choose an idea and generate a starting outline. Edit freely — this is scaffolding, not a prison.
+        </p>
+        <div class="panel selected-idea-panel" id="selected-idea-panel">
+          <h3>Selected Idea</h3>
+          <p id="selected-idea-empty">No idea selected. Go to the Ideas tab and click “Use for Outline”.</p>
+          <div id="selected-idea-details" class="selected-idea-details hidden">
+            <h4 id="sel-idea-title"></h4>
+            <p id="sel-idea-hook"></p>
+            <p class="meta">
+              <span id="sel-idea-type"></span> •
+              <span id="sel-idea-genre"></span> •
+              Excitement: <span id="sel-idea-score"></span>/5
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="field-grid">
+            <div class="field-row">
+              <label>Structure template</label>
+              <select id="outline-structure">
+                <option value="nf_linear">Non-fiction · Linear (Problem → Solution)</option>
+                <option value="nf_playbook">Non-fiction · Playbook / Steps</option>
+                <option value="memoir">Non-fiction · Memoir / Personal Story</option>
+                <option value="business">Non-fiction · Business Book</option>
+                <option value="self_help">Non-fiction · Self-Help / Transformation</option>
+                <option value="fic_3act">Fiction · 3-Act</option>
+              </select>
+            </div>
+            <div class="field-row align-end">
+              <button type="button" id="generate-outline" class="primary">
+                Generate Outline
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="outline-panel">
+          <div class="panel-header">
+            <h3>Outline Sections</h3>
+            <span class="badge" id="outline-count-badge">0</span>
+          </div>
+          <div id="outline-list" class="outline-list empty-state">
+            <p>No outline yet. Choose a structure and generate one.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-draft">
+        <div class="tab-header-with-actions">
+          <div>
+            <h2>Draft Workspace</h2>
+            <p class="section-help">
+              Draft each section in short, focused passes. Pick a section on the left, then write on the right.
+            </p>
+          </div>
+          <button type="button" id="distraction-free-toggle" class="secondary small" title="Toggle distraction-free writing mode (hides sidebar)">
+            <span id="df-icon">📝</span> Focus Mode
+          </button>
+        </div>
+        <div class="draft-layout panel">
+          <div class="draft-outline">
+            <h3>Sections</h3>
+            <div id="draft-outline-list" class="draft-outline-list empty-state">
+              <p>No outline loaded. Create one in the Outline tab.</p>
+            </div>
+          </div>
+          <div class="draft-editor">
+            <div class="draft-editor-header">
+              <div>
+                <h3 id="current-section-title">No section selected</h3>
+                <p id="current-section-note" class="hint"></p>
+              </div>
+              <button type="button" id="clear-section" class="ghost small" disabled>Clear Section Text</button>
+            </div>
+            <textarea id="draft-textarea" rows="14" placeholder="Select a section to begin drafting..." disabled></textarea>
+            <div class="draft-footer">
+              <button type="button" id="save-draft" class="primary" disabled>Save Draft for Section</button>
+              <span id="draft-wordcount" class="meta">0 words</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-export">
+        <h2>Export & Backup</h2>
+        <p class="section-help">
+          Compile your outline and drafts into a single manuscript file or back up your entire project.
+        </p>
+        <div class="panel">
+          <div class="field-row">
+            <label>Export title</label>
+            <input type="text" id="export-title" placeholder="Will default to the selected idea title">
+          </div>
+          <div class="field-row">
+            <label>Export format</label>
+            <select id="export-format">
+              <option value="txt">Plain Text (.txt)</option>
+              <option value="md">Markdown (.md)</option>
+            </select>
+          </div>
+          <div class="export-actions">
+            <button type="button" id="refresh-export" class="ghost">Refresh Preview</button>
+            <button type="button" id="copy-export" class="secondary">Copy to Clipboard</button>
+            <button type="button" id="download-export" class="primary">Download File</button>
+          </div>
+          <textarea id="export-textarea" rows="10" readonly placeholder="Export preview will appear here."></textarea>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Project Backup</h3>
+          </div>
+          <p class="section-help">
+            Use this to save your work as a <code>.json</code> file and load it later on any machine.
+          </p>
+          <div id="backup-drop-zone" class="backup-drop-zone">
+            <div class="drop-zone-content">
+              <p>Drag & drop a backup file here</p>
+              <p class="meta">or use the buttons below</p>
+            </div>
+          </div>
+          <div class="export-actions">
+            <button type="button" id="download-backup" class="secondary">Download Backup (.json)</button>
+            <label class="file-label">
+              <input type="file" id="load-backup-input" accept="application/json">
+              <span>Load Backup (.json)</span>
+            </label>
+          </div>
+          <div class="storage-info">
+            <div class="storage-bar-container">
+              <div id="storage-bar" class="storage-bar" style="width: 0%"></div>
+            </div>
+            <p class="meta" id="storage-text">Storage: 0 KB used</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-about">
+        <h2>About Idea → Launch</h2>
+        <div class="panel">
+          <p>
+            <strong>Idea → Launch Manuscript Studio</strong> is a small, offline-friendly tool for
+            writers who generate lots of ideas and want a simple way to move a few of them all the
+            way to a finished manuscript.
+          </p>
+          <p>
+            It focuses on four stages:
+          </p>
+          <ul class="about-list">
+            <li><strong>Capture</strong> – quickly record ideas with hooks, genres, and excitement scores.</li>
+            <li><strong>Structure</strong> – turn a chosen idea into an outline using simple templates.</li>
+            <li><strong>Draft</strong> – write in short, focused sections rather than one giant document.</li>
+            <li><strong>Compile</strong> – export your work to a plain-text manuscript you can refine anywhere.</li>
+          </ul>
+          <p class="meta">
+            All data stays in your browser (localStorage). You can back it up as a JSON file and load it again later.
+          </p>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-help">
+        <h2>Help & Shortcuts</h2>
+        <div class="panel">
+          <h3>How it works</h3>
+          <ol class="help-list">
+            <li><strong>Start on Ideas</strong>: add a few book ideas with hooks and excitement scores.</li>
+            <li><strong>Select an idea</strong>: click “Use for Outline” on the one you want to explore.</li>
+            <li><strong>Build an outline</strong>: open the Outline tab, choose a structure, generate, then tweak sections.</li>
+            <li><strong>Draft in chunks</strong>: in the Draft tab, click a section pill and write a focused pass.</li>
+            <li><strong>Export</strong>: compile to a manuscript in the Export tab and copy or download the text.</li>
+            <li><strong>Back up</strong>: download a JSON backup so you can restore the project later.</li>
+          </ol>
+
+          <h3>Keyboard shortcuts</h3>
+          <ul class="help-list">
+            <li><code>Alt + 1</code> – Ideas</li>
+            <li><code>Alt + 2</code> – Outline</li>
+            <li><code>Alt + 3</code> – Draft</li>
+            <li><code>Alt + 4</code> – Export</li>
+            <li><code>Alt + 5</code> – About</li>
+            <li><code>Alt + 6</code> – Help</li>
+            <li><code>Ctrl + Shift + S</code> – Save draft for current section</li>
+            <li><code>Ctrl + Shift + E</code> – Refresh export preview</li>
+          </ul>
+
+          <p class="meta">
+            Shortcuts work when this window has focus. On macOS, use <code>⌘</code> instead of <code>Ctrl</code>
+            for the save / export commands.
+          </p>
+        </div>
+      </section>
+    </section>
+
+    <aside class="right-column">
+      <section class="panel">
+        <div class="panel-header">
+          <h3>Session Snapshot</h3>
+          <span id="auto-save-indicator" class="auto-save-indicator">Auto-saved</span>
+        </div>
+        <ul class="stats-list">
+          <li><span>Total ideas</span><strong id="stat-ideas">0</strong></li>
+          <li><span>Outline sections</span><strong id="stat-outline">0</strong></li>
+          <li><span>Sections with drafts</span><strong id="stat-drafted">0</strong></li>
+          <li><span>Total draft words</span><strong id="stat-words">0</strong></li>
+        </ul>
+      </section>
+      <section class="panel">
+        <h3>Working Notes</h3>
+        <textarea id="session-notes" rows="10" placeholder="Scratchpad for this session. Saved locally in your browser."></textarea>
+      </section>
+      <section class="panel">
+        <h3>Tips</h3>
+        <ul class="tips-list">
+          <li>Keep ideas rough. The goal is volume, not polish.</li>
+          <li>Generate an outline, then immediately draft 1–2 sections.</li>
+          <li>Use exports as a base for Scrivener, Word, or your formatter of choice.</li>
+        </ul>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="app-footer">
+    <span>Data is stored in your browser only (localStorage). Back up via Export → Project Backup.</span>
+    <span id="install-prompt" class="install-prompt hidden">
+      <button id="install-btn" class="install-btn">Install App</button>
+    </span>
+  </footer>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
