@@ -1,4 +1,4 @@
-# Seed Engineer Lab · Writer Mechanics Suite · v1.10
+# Seed Engineer Lab · Writer Mechanics Suite · v1.11
 
 This bundle includes a primary focus-writing space, a stitched manuscript dashboard, plus sixteen diagnostic tools,
 all HTML-first and offline.
@@ -68,3 +68,8 @@ Open the root `index.html` to see a launcher page with cards for the Focus Write
 the Beyond Grammar Report, and all other diagnostics. Click any card to open that tool in the same browser.
 
 Everything runs locally. No backend, no tracking, no external dependencies.
+
+
+### New in v1.11
+
+- Added **Bukowski Poem Lab** — a poem-focused analyzer that scores grit, simplicity, confession, line punch, and anti-pretension with a Bukowski bias slider and in-page lexicon editor.

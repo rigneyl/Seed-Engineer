@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bukowski Poem Lab · Seed Engineer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <style>
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11px;
+    }
+    .metric-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      font-size: 10px;
+    }
+    .metric-val {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    .badge-style {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      background: rgba(227, 179, 65, 0.12);
+      color: var(--accent);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .badge-style-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+    .badge-style-muted {
+      background: rgba(160, 164, 184, 0.18);
+      color: var(--muted);
+    }
+    .badge-style-muted .badge-style-dot {
+      background: var(--muted);
+    }
+    .flagged-list {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .flagged-list strong {
+      color: var(--fg);
+      font-weight: 500;
+    }
+
+    .bias-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .bias-row label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 10px;
+    }
+    .bias-slider {
+      flex: 1;
+      min-width: 120px;
+    }
+    .bias-slider input[type="range"] {
+      width: 100%;
+    }
+    .bias-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      opacity: 0.8;
+    }
+    details.lexicon-editor {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    details.lexicon-editor summary {
+      cursor: pointer;
+      list-style: none;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    details.lexicon-editor summary::marker {
+      display: none;
+    }
+    .lexicon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .lexicon-group textarea {
+      min-height: 70px;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .lexicon-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 2px;
+      color: var(--muted);
+    }
+    .lexicon-help {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+    <a class="back-link" href="../index.html">&larr; Back to launcher</a>
+      <div class="app-title-block">
+        <div class="app-kicker">Bukowski</div>
+        <div class="app-title">Bukowski Poem Lab</div>
+        <p class="app-subtitle">
+          Paste a poem and get a rough, rule-based measure of how close it sits to a Bukowski-style voice:
+          short lines, plain vocabulary, first-person confession, booze and gutter, low pretension.
+        </p>
+      </div>
+      <div class="app-meta">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Mode</span>
+          <span class="pill-value">Poem analysis</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Scope</span>
+          <span class="pill-value">Grit · simplicity · confession</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel">
+        <header class="panel-header">
+          <h2 class="panel-title">Poem</h2>
+          <div class="panel-actions">
+            <button class="btn-secondary btn" type="button" id="btn-sample"><span>Sample</span></button>
+            <button class="btn-secondary btn" type="button" id="btn-clear"><span>Clear</span></button>
+            <button class="btn btn" type="button" id="btn-run"><span>Analyze</span></button>
+          </div>
+        </header>
+        <p class="panel-subtitle">
+          Bukowski lived in the short line, plain word, first-person gutter. This lab doesn&apos;t grade beauty,
+          just how closely your piece leans into those habits.
+        </p>
+        <textarea id="poem-input" placeholder="Paste or write a poem here. Free verse works best."></textarea>
+      </section>
+
+      <section class="panel panel-muted">
+        <header class="panel-header">
+          <h2 class="panel-title">Bukowski-style breakdown</h2>
+          <div class="tag-row" id="tag-row"></div>
+        </header>
+        <div class="bias-row">
+          <label for="bias-range">Bukowski corpus bias</label>
+          <div class="bias-slider">
+            <input type="range" id="bias-range" min="0" max="2" step="1" value="1" />
+            <div class="bias-labels">
+              <span>Light</span>
+              <span>Medium</span>
+              <span>Heavy</span>
+            </div>
+          </div>
+          <span id="bias-label">Medium</span>
+        </div>
+        <details class="lexicon-editor">
+          <summary>Lexicon editor (advanced)</summary>
+          <div class="lexicon-help">
+            Edit comma-separated lists below to nudge what counts as grit, booze, grind, and abstraction.
+            Changes only live in this browser tab.
+          </div>
+          <div class="lexicon-grid">
+            <div class="lexicon-group">
+              <div class="lexicon-label">Swears</div>
+              <textarea id="lex-swears"></textarea>
+            </div>
+            <div class="lexicon-group">
+              <div class="lexicon-label">Booze / bar</div>
+              <textarea id="lex-booze"></textarea>
+            </div>
+            <div class="lexicon-group">
+              <div class="lexicon-label">Grind / work</div>
+              <textarea id="lex-grind"></textarea>
+            </div>
+            <div class="lexicon-group">
+              <div class="lexicon-label">Abstract / lofty</div>
+              <textarea id="lex-abstract"></textarea>
+            </div>
+          </div>
+          <div class="lexicon-help">
+            Tip: keep entries lowercased. Separate each word or short phrase with a comma.
+          </div>
+          <div style="margin-top:6px; display:flex; gap:6px; justify-content:flex-end;">
+            <button type="button" class="btn-secondary btn" id="lex-reset"><span>Reset to defaults</span></button>
+            <button type="button" class="btn btn" id="lex-apply"><span>Apply changes</span></button>
+          </div>
+        </details>
+
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="results-block">
+          <div class="results-heading" id="results-heading">Waiting for a poem…</div>
+          <div class="results-list" id="results-list"></div>
+        </div>
+        <div class="footer-note">
+          Rule-based only; no AI. If you disagree with its idea of Bukowski, open <code>app.js</code> and change
+          the lexicons and thresholds.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
